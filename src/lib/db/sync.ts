@@ -56,6 +56,11 @@ export async function syncUpstreamItemMappings(): Promise<void> {
         })
         .execute();
     });
+    console.log(
+      "Mappings updated at " +
+        new Date().toLocaleString("en-AU", { timeZone: "Australia/Brisbane" }) +
+        " AEST",
+    );
   } catch (error) {
     console.error("Could not update mappings from upstream");
   }
@@ -88,8 +93,14 @@ export async function syncUpstreamPrices(): Promise<void> {
             : null,
           last_updated: new Date(),
         })
+        .where(eq(items.id, Number(id)))
         .execute();
     });
+    console.log(
+      "Prices updated at " +
+        new Date().toLocaleString("en-AU", { timeZone: "Australia/Brisbane" }) +
+        " AEST",
+    );
   } catch (error) {
     console.error("Could not update prices from upstream");
   }
