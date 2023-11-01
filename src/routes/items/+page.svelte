@@ -15,7 +15,7 @@
 </script>
 
 <section>
-  <h1 class="text-4xl lg:text-5xl mt-3 tracking-right text-slate-900">Items</h1>
+  <h1 class="text-4xl lg:text-5xl mt-3 tracking-tight text-slate-900">Items</h1>
   <Table>
     <TableHeader>
       <TableRow>

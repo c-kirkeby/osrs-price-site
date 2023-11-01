@@ -1,10 +1,15 @@
-<script>
-  let className = "";
+<script lang="ts">
+  import { cn } from "$lib/utils";
+  import type { HTMLTdAttributes } from "svelte/elements";
+
+  type $$Props = HTMLTdAttributes;
+
+  let className: $$Props["class"] = undefined;
   export { className as class };
 </script>
 
 <td
-  class="p-4 align-middle [&:has([role=checkbpx])]:pr-0 {className}"
+  class={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
   {...$$restProps}
 >
   <slot />
