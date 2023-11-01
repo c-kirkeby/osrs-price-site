@@ -1,4 +1,4 @@
-import { db } from "$lib/db/pool";
+import { db } from "$lib/db";
 import { items } from "$lib/db/schema";
 import { sql } from "drizzle-orm";
 

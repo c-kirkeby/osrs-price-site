@@ -1,6 +1,6 @@
-import { db } from "$lib/db/pool";
-import { items } from "$lib/db/schema";
+import { db } from "$lib/db";
 import { eq } from "drizzle-orm";
+import { items } from "$lib/db/schema";
 
 export interface Mapping {
   examine: string;

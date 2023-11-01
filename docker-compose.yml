@@ -4,10 +4,8 @@ services:
   db:
     image: postgres:latest
     restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 559q#895
-      POSTGRES_DB: osrs_price_db
+    env_file:
+      - .env
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
