@@ -1,6 +1,7 @@
 {
   "version": "0.2",
   "language": "en",
-  "words": ["alch", "lowalch", "highalch", "osrs"],
+  "dictionaries": ["en-GB"],
+  "words": ["alch", "clsx", "highalch", "lowalch", "osrs"],
   "ignorePaths": ["node_modules/**", "dist/**"]
 }
