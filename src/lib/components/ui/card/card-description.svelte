@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { cn } from "$lib/utils";
 	import type { HTMLAttributes } from "svelte/elements";
+	import { cn } from "$lib/utils";
 
-	type $$Props = HTMLAttributes<HTMLTableSectionElement>;
+	type $$Props = HTMLAttributes<HTMLParagraphElement>;
 
 	let className: $$Props["class"] = undefined;
 	export { className as class };
 </script>
 
-<thead class={cn("[&_tr]:border-b", className)} {...$$restProps}>
+<p class={cn("text-sm text-muted-foreground", className)} {...$$restProps}>
 	<slot />
-</thead>
+</p>

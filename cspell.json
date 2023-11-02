@@ -2,6 +2,14 @@
   "version": "0.2",
   "language": "en",
   "dictionaries": ["en-GB"],
-  "words": ["alch", "clsx", "highalch", "lowalch", "osrs"],
+  "words": [
+    "alch",
+    "clsx",
+    "highalch",
+    "lowalch",
+    "osrs",
+    "lucide",
+    "tailwindcss"
+  ],
   "ignorePaths": ["node_modules/**", "dist/**"]
 }
