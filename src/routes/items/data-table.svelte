@@ -10,8 +10,8 @@
   import { readable } from "svelte/store";
   import * as Table from "$lib/components/ui/table";
   import formatDistance from "date-fns/formatDistance";
-  import { Button } from "$lib/components/ui/button";
   import DataTableLink from "./data-table-link.svelte";
+  import DataTablePagination from "./data-table-pagination.svelte";
 
   export let data: Item[];
 
@@ -81,14 +81,16 @@
     }),
   ]);
 
+  const tableModel = table.createViewModel(columns);
+
   const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates } =
-    table.createViewModel(columns);
+    tableModel;
 
   const { hasNextPage, hasPreviousPage, pageIndex } = pluginStates.page;
 </script>
 
-<div>
-  <div class="rounded-md">
+<div class="space-y-4">
+  <div class="rounded-md border">
     <Table.Root {...$tableAttrs}>
       <Table.Header>
         {#each $headerRows as headerRow}
@@ -122,22 +124,5 @@
       </Table.Body>
     </Table.Root>
   </div>
-  <div class="flex items-center justify-end space-x-2 py-4">
-    <Button
-      variant="outline"
-      size="sm"
-      on:click={() => ($pageIndex = $pageIndex - 1)}
-      disabled={!$hasPreviousPage}
-    >
-      Previous</Button
-    >
-    <Button
-      variant="outline"
-      size="sm"
-      on:click={() => ($pageIndex = $pageIndex + 1)}
-      disabled={!$hasNextPage}
-    >
-      Next</Button
-    >
-  </div>
+  <DataTablePagination {tableModel} />
 </div>
