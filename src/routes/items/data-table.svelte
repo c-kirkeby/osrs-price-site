@@ -1,11 +1,17 @@
 <script lang="ts">
   import type { Item } from "$lib/db/schema";
-  import { createTable, Render, Subscribe } from "svelte-headless-table";
+  import {
+    createRender,
+    createTable,
+    Render,
+    Subscribe,
+  } from "svelte-headless-table";
   import { addPagination } from "svelte-headless-table/plugins";
   import { readable } from "svelte/store";
   import * as Table from "$lib/components/ui/table";
   import formatDistance from "date-fns/formatDistance";
   import { Button } from "$lib/components/ui/button";
+  import DataTableLink from "./data-table-link.svelte";
 
   export let data: Item[];
 
@@ -18,6 +24,10 @@
     table.column({
       accessor: "name",
       header: "Name",
+      cell: ({ row, value }) =>
+        createRender(DataTableLink, {
+          href: `/items/${row.id}`,
+        }).slot(value ?? ""),
     }),
     table.column({
       accessor: "is_members",
