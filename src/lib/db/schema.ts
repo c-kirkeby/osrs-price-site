@@ -1,3 +1,4 @@
+import type { InferSelectModel } from "drizzle-orm";
 import {
   boolean,
   integer,
@@ -22,3 +23,5 @@ export const items = pgTable("items", {
   examine_text: text("examine_text"),
   last_updated: timestamp("last_updated"),
 });
+
+export type Item = InferSelectModel<typeof items>;
