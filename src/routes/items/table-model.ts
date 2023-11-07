@@ -2,13 +2,13 @@ import type { Item } from "$lib/db/schema";
 import formatDistance from "date-fns/formatDistance";
 import { createRender, createTable } from "svelte-headless-table";
 import { addPagination, addSortBy } from "svelte-headless-table/plugins";
-import { readable } from "svelte/store";
 import { DataTableLink } from "$lib/components/data-table";
+import type { ReadOrWritable } from "svelte-headless-table/lib/utils/store";
 
 const formatter = new Intl.NumberFormat();
 
-export const createTableModel = (data: Item[]) => {
-  const table = createTable(readable(data), {
+export const createTableModel = (data: ReadOrWritable<Item[]>) => {
+  const table = createTable(data, {
     page: addPagination(),
     sort: addSortBy({
       toggleOrder: ["asc", "desc"],

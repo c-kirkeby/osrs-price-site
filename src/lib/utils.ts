@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { cubicOut } from "svelte/easing";
 import type { TransitionConfig } from "svelte/transition";
+import { onMount } from "svelte";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -60,3 +61,13 @@ export const flyAndScale = (
     easing: cubicOut,
   };
 };
+
+export function poll(fn: () => void, milliseconds: number, lazy = true) {
+  onMount(() => {
+    const interval = setInterval(fn, milliseconds);
+    if (!lazy) {
+      fn();
+    }
+    return () => clearInterval(interval);
+  });
+}
