@@ -1,10 +1,9 @@
-import { db } from "$lib/db";
-import { items } from "$lib/db/schema";
+import { syncUpstreamPrices } from "$lib/db/sync";
+import { fetchItems } from "$lib/server/items";
 
 export async function load() {
-  const itemQuery = db.select().from(items).execute();
-  const data = await itemQuery;
+  await syncUpstreamPrices();
   return {
-    items: data,
+    items: fetchItems(),
   };
 }

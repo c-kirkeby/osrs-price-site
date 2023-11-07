@@ -1,7 +1,6 @@
-<script lang="ts">
+<script lang="ts" generics="T">
   import Button from "$lib/components/ui/button/button.svelte";
   import * as Select from "$lib/components/ui/select";
-  import type { Item } from "$lib/db/schema";
   import type { TableViewModel } from "svelte-headless-table";
   import type { AnyPlugins } from "svelte-headless-table/lib/types/TablePlugin";
   import {
@@ -11,7 +10,7 @@
     ChevronsRightIcon,
   } from "lucide-svelte";
 
-  export let tableModel: TableViewModel<Item, AnyPlugins>;
+  export let tableModel: TableViewModel<T, AnyPlugins>;
 
   const { pluginStates, rows } = tableModel;
 
@@ -38,7 +37,7 @@
       </Select.Content>
     </Select.Root>
     <div class="w-[100px] items-center justify-center text-sm font-medium">
-      Page {$pageIndex} of {$pageCount}
+      Page {$pageIndex + 1} of {$pageCount}
     </div>
     <div class="flex items-center space-x-2">
       <Button
