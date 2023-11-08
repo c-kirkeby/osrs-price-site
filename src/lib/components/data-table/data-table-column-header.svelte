@@ -16,6 +16,13 @@
       disabled: boolean;
     };
   };
+
+  function handleSort(event: Event, order: "asc" | "desc") {
+    if (props.sort.order === order) {
+      return;
+    }
+    props.sort.toggle(event);
+  }
 </script>
 
 {#if !props.sort.disabled}
@@ -40,11 +47,11 @@
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.Item on:click={(event) => props.sort.toggle(event)}>
+        <DropdownMenu.Item on:click={(event) => handleSort(event, "asc")}>
           <ArrowUp class="w-4 h-4 mr-2" />
           Asc</DropdownMenu.Item
         >
-        <DropdownMenu.Item on:click={(event) => props.sort.toggle(event)}>
+        <DropdownMenu.Item on:click={(event) => handleSort(event, "desc")}>
           <ArrowDown class="w-4 h-4 mr-2" />
           Desc</DropdownMenu.Item
         >
