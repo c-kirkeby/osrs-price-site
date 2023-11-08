@@ -1,4 +1,5 @@
 <script lang="ts" generics="T">
+  import DataTableColumnHeader from "./data-table-column-header.svelte";
   import type { AnyPlugins } from "svelte-headless-table/lib/types/TablePlugin";
   import {
     Render,
@@ -21,9 +22,17 @@
           <Subscribe rowAttrs={headerRow.attrs()}>
             <Table.Row>
               {#each headerRow.cells as cell (cell.id)}
-                <Subscribe attrs={cell.attrs()} let:attrs props={cell.props()}>
+                <Subscribe
+                  attrs={cell.attrs()}
+                  let:attrs
+                  props={cell.props()}
+                  let:props
+                >
                   <Table.Head {...attrs}>
-                    <Render of={cell.render()} />
+                    <!-- @todo fix this type issue - props seems to be generic -->
+                    <DataTableColumnHeader {props}
+                      ><Render of={cell.render()} /></DataTableColumnHeader
+                    >
                   </Table.Head>
                 </Subscribe>
               {/each}
