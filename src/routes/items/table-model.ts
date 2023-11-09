@@ -7,6 +7,12 @@ import type { ReadOrWritable } from "svelte-headless-table/lib/utils/store";
 
 const formatter = new Intl.NumberFormat();
 
+const formatNumberCell = (value: number | null) =>
+  value ? formatter.format(value) : "";
+
+const formatBooleanCell = (value: boolean | null) =>
+  value === true ? "Yes" : value === false ? "No" : "";
+
 export const createTableModel = (data: ReadOrWritable<Item[]>) => {
   const table = createTable(data, {
     page: addPagination(),
@@ -26,52 +32,60 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
     table.column({
       accessor: "is_members",
       header: "Members?",
+      cell: ({ value }) => formatBooleanCell(value),
     }),
     table.column({
       accessor: "alch_low",
       header: "Alch Low",
+      cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
       accessor: "alch_high",
       header: "Alch High",
+      cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
-      accessor: (row) => row.buy_limit && formatter.format(row.buy_limit),
+      accessor: "buy_limit",
       header: "Limit",
+      cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
-      accessor: (row) => row.value && formatter.format(row.value),
+      accessor: "value",
       header: "Value",
+      cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
       accessor: "buy_price",
       header: "Buy Price",
+      cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
-      accessor: (row) => {
-        if (row.buy_price_timestamp) {
-          return formatDistance(new Date(row.buy_price_timestamp), new Date(), {
+      accessor: "buy_price_timestamp",
+      header: "Last Bought",
+      cell: ({ value }) => {
+        if (value) {
+          return formatDistance(new Date(value), new Date(), {
             addSuffix: true,
           }).replace("about", "");
         }
         return "";
       },
-      header: "Last Bought",
     }),
     table.column({
       accessor: (row) => row.sell_price && formatter.format(row.sell_price),
       header: "Sell Price",
     }),
     table.column({
-      accessor: (row) => {
-        if (row.buy_price_timestamp) {
-          return formatDistance(new Date(row.buy_price_timestamp), new Date(), {
+      accessor: "sell_price_timestamp",
+      header: "Last Sold",
+      cell: ({ value }) => {
+        if (value) {
+          return formatDistance(new Date(value), new Date(), {
             addSuffix: true,
           }).replace("about", "");
         }
         return "";
       },
-      header: "Last Sold",
     }),
   ]);
 

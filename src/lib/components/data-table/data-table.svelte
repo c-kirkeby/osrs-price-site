@@ -28,7 +28,7 @@
                   props={cell.props()}
                   let:props
                 >
-                  <Table.Head {...attrs}>
+                  <Table.Head class="p-2" {...attrs}>
                     <!-- @todo fix this type issue - props seems to be generic -->
                     <DataTableColumnHeader {props}
                       ><Render of={cell.render()} /></DataTableColumnHeader
@@ -46,7 +46,7 @@
             <Table.Row {...rowAttrs}>
               {#each row.cells as cell}
                 <Subscribe attrs={cell.attrs()} let:attrs>
-                  <Table.Cell {...attrs}>
+                  <Table.Cell class="p-2" {...attrs}>
                     <Render of={cell.render()} />
                   </Table.Cell>
                 </Subscribe>
