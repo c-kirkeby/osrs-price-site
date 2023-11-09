@@ -31,10 +31,6 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       accessor: "name",
       header: "Name",
       cell: ({ row, value }) => {
-        console.debug({
-          row,
-          value,
-        });
         return createRender(DataTableLink, {
           // @ts-expect-error find if there's a better way to get the ID
           href: `/items/${row.cells.find((cell) => cell.id === "id")?.value}`,

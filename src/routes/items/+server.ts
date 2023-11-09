@@ -5,7 +5,7 @@ import { syncUpstreamPrices } from "$lib/db/sync";
 
 export async function GET(event) {
   event.setHeaders({
-    "Cache-Control": "max-age=60",
+    "Cache-Control": "max-age=1, stale-while-revalidate=59",
   });
   await syncUpstreamPrices();
   const itemQuery = db.select().from(items).execute();
