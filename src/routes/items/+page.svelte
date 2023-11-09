@@ -4,6 +4,7 @@
   import { createTableModel } from "./table-model";
   import { poll } from "$lib/utils";
   import { headers } from "$lib/api/headers";
+  import { ChevronRight } from "lucide-svelte";
 
   export let data;
 
@@ -22,6 +23,11 @@
 </script>
 
 <section class="space-y-6">
-  <h1 class="text-3xl font-bold">Items</h1>
+  <div class="mb-4 flex items-center space-x-1 text-sm">
+    <div class="overflow-hidden text-ellipsis whitespace-nowrap">Dashboard</div>
+    <ChevronRight class="h-4 w-4" />
+    <div class="font-medium text-foreground">Items</div>
+  </div>
+  <h1 class="text-3xl font-bold tracking-tight">Items</h1>
   <DataTable {tableModel} />
 </section>
