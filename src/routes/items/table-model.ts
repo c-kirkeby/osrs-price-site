@@ -22,44 +22,63 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
   });
   const columns = table.createColumns([
     table.column({
-      accessor: "name",
-      header: "Name",
-      cell: ({ row, value }) =>
-        createRender(DataTableLink, {
-          href: `/items/${row.id}`,
-        }).slot(value ?? ""),
+      id: "id",
+      accessor: "id",
+      header: "Item",
     }),
     table.column({
+      id: "name",
+      accessor: "name",
+      header: "Name",
+      cell: ({ row, value }) => {
+        console.debug({
+          row,
+          value,
+        });
+        return createRender(DataTableLink, {
+          // @ts-expect-error find if there's a better way to get the ID
+          href: `/items/${row.cells.find((cell) => cell.id === "id")?.value}`,
+        }).slot(value ?? "");
+      },
+    }),
+    table.column({
+      id: "is_members",
       accessor: "is_members",
       header: "Members?",
       cell: ({ value }) => formatBooleanCell(value),
     }),
     table.column({
+      id: "alch_low",
       accessor: "alch_low",
       header: "Alch Low",
       cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
+      id: "alch_high",
       accessor: "alch_high",
       header: "Alch High",
       cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
+      id: "buy_limit",
       accessor: "buy_limit",
       header: "Limit",
       cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
+      id: "value",
       accessor: "value",
       header: "Value",
       cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
+      id: "buy_price",
       accessor: "buy_price",
       header: "Buy Price",
       cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
+      id: "buy_price_timestamp",
       accessor: "buy_price_timestamp",
       header: "Last Bought",
       cell: ({ value }) => {
@@ -72,8 +91,9 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       },
     }),
     table.column({
-      accessor: (row) => row.sell_price && formatter.format(row.sell_price),
+      accessor: "sell_price",
       header: "Sell Price",
+      cell: ({ value }) => formatNumberCell(value),
     }),
     table.column({
       accessor: "sell_price_timestamp",
