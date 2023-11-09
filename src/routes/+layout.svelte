@@ -1,8 +1,10 @@
 <script>
   import { page } from "$app/stores";
+  import { ModeWatcher } from "mode-watcher";
   import { MenuIcon, X, GaugeIcon, ListIcon } from "lucide-svelte";
   import { cn } from "$lib/utils";
   import "../app.postcss";
+  import ThemeToggle from "$lib/components/theme-toggle.svelte";
 
   let menuItems = [
     { href: "/", title: "Home", icon: GaugeIcon },
@@ -12,6 +14,7 @@
   let showMobileMenu = false;
 </script>
 
+<ModeWatcher />
 <div class="min-h-screen bg-background font-sans antialiased">
   <div class="flex min-h-screen flex-col space-y-6">
     <header class="sticky sticky-top-0 z-40 border-b bg-background">
@@ -31,6 +34,7 @@
             </a>
           {/each}
         </nav>
+        <ThemeToggle />
         <button
           class="flex items-center space-x-2 md:hidden"
           on:click={() => (showMobileMenu = !showMobileMenu)}
