@@ -1,5 +1,4 @@
 <script lang="ts" generics="T">
-  import DataTableColumnHeader from "./data-table-column-header.svelte";
   import type { AnyPlugins } from "svelte-headless-table/lib/types/TablePlugin";
   import {
     Render,
@@ -7,7 +6,7 @@
     type TableViewModel,
   } from "svelte-headless-table";
   import * as Table from "$lib/components/ui/table";
-  import DataTablePagination from "./data-table-pagination.svelte";
+  import * as DataTable from "$lib/components/data-table";
 
   export let tableModel: TableViewModel<T, AnyPlugins>;
 
@@ -15,6 +14,7 @@
 </script>
 
 <div class="space-y-4">
+  <DataTable.Toolbar {tableModel} />
   <div class="rounded-md border">
     <Table.Root {...$tableAttrs}>
       <Table.Header>
@@ -30,8 +30,8 @@
                 >
                   <Table.Head class="p-2" {...attrs}>
                     <!-- @todo fix this type issue - props seems to be generic -->
-                    <DataTableColumnHeader {props}
-                      ><Render of={cell.render()} /></DataTableColumnHeader
+                    <DataTable.ColumnHeader {props}
+                      ><Render of={cell.render()} /></DataTable.ColumnHeader
                     >
                   </Table.Head>
                 </Subscribe>
@@ -57,5 +57,5 @@
       </Table.Body>
     </Table.Root>
   </div>
-  <DataTablePagination {tableModel} />
+  <DataTable.Pagination {tableModel} />
 </div>

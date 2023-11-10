@@ -1,7 +1,11 @@
 import type { Item } from "$lib/db/schema";
 import formatDistance from "date-fns/formatDistance";
 import { createRender, createTable } from "svelte-headless-table";
-import { addPagination, addSortBy } from "svelte-headless-table/plugins";
+import {
+  addHiddenColumns,
+  addPagination,
+  addSortBy,
+} from "svelte-headless-table/plugins";
 import { DataTableLink } from "$lib/components/data-table";
 import type { ReadOrWritable } from "svelte-headless-table/lib/utils/store";
 
@@ -19,12 +23,13 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
     sort: addSortBy({
       toggleOrder: ["asc", "desc"],
     }),
+    hide: addHiddenColumns(),
   });
   const columns = table.createColumns([
     table.column({
       id: "id",
       accessor: "id",
-      header: "Item",
+      header: "ID",
     }),
     table.column({
       id: "name",

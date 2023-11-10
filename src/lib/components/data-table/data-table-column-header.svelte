@@ -1,6 +1,5 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
-  //   import { ArrowDown, ArrowUp, CaretSort } from "radix-icons-svelte";
   import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Button } from "$lib/components/ui/button";
