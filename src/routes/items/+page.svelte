@@ -22,6 +22,10 @@
   const tableModel = createTableModel(itemsStore);
 </script>
 
+<svelte:head>
+  <title>Items</title>
+</svelte:head>
+
 <section class="space-y-6">
   <div class="mb-4 flex items-center space-x-1 text-sm">
     <div class="overflow-hidden text-ellipsis whitespace-nowrap">Dashboard</div>
