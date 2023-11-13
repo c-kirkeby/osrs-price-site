@@ -1,13 +1,15 @@
-import type { Item } from "$lib/db/schema";
-import formatDistance from "date-fns/formatDistance";
-import { createRender, createTable } from "svelte-headless-table";
 import {
   addHiddenColumns,
   addPagination,
   addSortBy,
 } from "svelte-headless-table/plugins";
+import { createRender, createTable } from "svelte-headless-table";
+
+import DataTableImage from "$lib/components/data-table/data-table-image.svelte";
 import { DataTableLink } from "$lib/components/data-table";
+import type { Item } from "$lib/db/schema";
 import type { ReadOrWritable } from "svelte-headless-table/lib/utils/store";
+import formatDistance from "date-fns/formatDistance";
 
 const formatter = new Intl.NumberFormat();
 
@@ -30,6 +32,20 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       id: "id",
       accessor: "id",
       header: "ID",
+    }),
+    table.column({
+      id: "icon",
+      accessor: "icon",
+      header: "Icon",
+      cell: ({ value, row }) => {
+        return createRender(DataTableImage, {
+          src: `https://oldschool.runescape.wiki/images/${encodeURIComponent(
+            value?.replaceAll(" ", "_"),
+          )}`,
+          alt: row.cells.find((cell) => cell.id === "name")?.value,
+          class: "object-contain h-5 w-5 mx-auto",
+        });
+      },
     }),
     table.column({
       id: "name",
