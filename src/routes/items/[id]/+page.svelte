@@ -8,9 +8,9 @@
 
 <section>
   <h1>{data.item.name}</h1>
-  <ul>
-    {#each Object.entries(data.item) as [key, value]}
-      <li>{key}: {value}</li>
-    {/each}
-  </ul>
+  <code
+    class="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold"
+  >
+    {JSON.stringify(data.item, null, 2)}
+  </code>
 </section>

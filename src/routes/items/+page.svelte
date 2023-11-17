@@ -5,18 +5,37 @@
   import { poll } from "$lib/utils";
   import { headers } from "$lib/api/headers";
   import { ChevronRight } from "lucide-svelte";
+  import type { Item } from "$lib/db/schema";
 
   export let data;
 
   const itemsStore = writable(data.items);
 
   poll(async () => {
-    const response = await (
-      await fetch("/items", {
-        headers,
-      })
+    const response: Partial<Item[]> = await (
+      await fetch(
+        "/items?" +
+          new URLSearchParams(
+            [
+              "id",
+              "buy_price",
+              "buy_price_timestamp",
+              "sell_price",
+              "sell_price_timestamp",
+              "last_updated",
+            ].map((field) => ["fields[items]", field]),
+          ).toString(),
+        {
+          headers,
+        },
+      )
     ).json();
-    $itemsStore = response;
+    $itemsStore = $itemsStore.map((item) =>
+      Object.assign(
+        item,
+        response.find((price) => price?.id === item.id),
+      ),
+    );
   }, 60_000);
 
   const tableModel = createTableModel(itemsStore);
