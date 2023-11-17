@@ -1,6 +1,7 @@
 import {
   addHiddenColumns,
   addPagination,
+  addTableFilter,
   addSortBy,
 } from "svelte-headless-table/plugins";
 import { createRender, createTable } from "svelte-headless-table";
@@ -25,6 +26,10 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
     sort: addSortBy({
       toggleOrder: ["asc", "desc"],
     }),
+    filter: addTableFilter({
+      fn: ({ filterValue, value }) =>
+        value.toLowerCase().includes(filterValue.toLowerCase()),
+    }),
     hide: addHiddenColumns(),
   });
   const columns = table.createColumns([
@@ -37,6 +42,11 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       id: "icon",
       accessor: "icon",
       header: "Icon",
+      plugins: {
+        filter: {
+          exclude: true,
+        },
+      },
       cell: ({ value, row }) => {
         return createRender(DataTableImage, {
           src: `https://oldschool.runescape.wiki/images/${encodeURIComponent(
