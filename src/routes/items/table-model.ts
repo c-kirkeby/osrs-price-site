@@ -12,7 +12,9 @@ import type { Item } from "$lib/db/schema";
 import type { ReadOrWritable } from "svelte-headless-table/lib/utils/store";
 import formatDistance from "date-fns/formatDistance";
 
-const formatter = new Intl.NumberFormat();
+const formatter = new Intl.NumberFormat(undefined, {
+  maximumSignificantDigits: 2,
+});
 
 const formatNumberCell = (value: number | null) =>
   value ? formatter.format(value) : "";
@@ -132,6 +134,81 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
           }).replace("about", "");
         }
         return "";
+      },
+    }),
+    table.column({
+      id: "profit",
+      accessor: (item) => item,
+      header: "Profit",
+      cell: ({ value }) => {
+        if (value.buy_price && value.sell_price) {
+          return formatNumberCell(
+            Math.round(
+              value.sell_price -
+                value.buy_price -
+                Math.round(value.buy_price * 0.01),
+            ),
+          );
+        }
+        return "";
+      },
+      plugins: {
+        sort: {
+          getSortValue: (item) => {
+            if (item.buy_price && item.sell_price) {
+              return Math.floor(
+                item.sell_price -
+                  item.buy_price -
+                  Math.round(item.buy_price * 0.01),
+              );
+            }
+            return 0;
+          },
+        },
+      },
+    }),
+    table.column({
+      id: "tax",
+      accessor: (item) => item,
+      header: "Tax",
+      cell: ({ value }) => {
+        if (value.sell_price) {
+          return formatNumberCell(Math.round(value.sell_price * 0.01));
+        }
+        return "";
+      },
+      plugins: {
+        sort: {
+          getSortValue: (item) => {
+            if (item.sell_price) {
+              return Math.floor(item.sell_price * 0.01);
+            }
+            return 0;
+          },
+        },
+      },
+    }),
+    table.column({
+      id: "roi",
+      accessor: (item) => item,
+      header: "ROI",
+      cell: ({ value }) => {
+        if (value.buy_price && value.sell_price) {
+          return formatNumberCell(
+            (value.sell_price * 0.99) / value.buy_price,
+          ).concat("%");
+        }
+        return "";
+      },
+      plugins: {
+        sort: {
+          getSortValue: (item) => {
+            if (item.buy_price && item.sell_price) {
+              return Math.floor(item.sell_price * 0.99) / item.buy_price;
+            }
+            return 0;
+          },
+        },
       },
     }),
   ]);
