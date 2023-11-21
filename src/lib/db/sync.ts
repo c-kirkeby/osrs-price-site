@@ -66,10 +66,11 @@ export async function syncUpstreamItemMappings(): Promise<void> {
   }
 }
 
-export async function syncUpstreamPrices(): Promise<void> {
+export async function syncUpstreamPrices(id?: number): Promise<void> {
   try {
+    const queryString = id ? `?id=${id}` : "";
     const response: Data<Price> = await fetch(
-      "https://prices.runescape.wiki/api/v1/osrs/latest",
+      "https://prices.runescape.wiki/api/v1/osrs/latest" + queryString,
       {
         headers: {
           "User-Agent": "osrs-price-site",
@@ -99,7 +100,8 @@ export async function syncUpstreamPrices(): Promise<void> {
     console.log(
       "Prices updated at " +
         new Date().toLocaleString("en-AU", { timeZone: "Australia/Brisbane" }) +
-        " AEST",
+        " AEST for " +
+        (id ? `item id ${id}` : "all items"),
     );
   } catch (error) {
     console.error("Could not update prices from upstream");
