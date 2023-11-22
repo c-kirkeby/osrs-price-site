@@ -5,6 +5,7 @@
     VisBulletLegend,
     VisCrosshair,
     VisLine,
+    VisScatter,
     VisTooltip,
     VisXYContainer,
   } from "@unovis/svelte";
@@ -36,21 +37,19 @@
   ];
   const template = (data: TimeSeries) => {
     return `
-      <div class="flex gap-2 flex-col">
-        <div class="flex flex-row justify-between">
-          <div class="text-xs">Date</div>
-          <div class="text-xs">${new Date(
+      <div class="grid gap-2 grid-cols-2">
+          <div class="text-xs col-span-2">${new Date(
             data.timestamp * 1000,
           ).toLocaleDateString()}</div>
-        </div>
-        <div class="flex flex-row justify-between">
-          <div class="text-xs">Buy Price</div>
+          <div class="text-xs">
+            <svg class="inline-block align-baseline" height="10" width="10"><circle cx="5" cy="5" r="5" fill="var(--vis-color0)" /></svg>
+            Buy Price
+            </div>
           <div class="text-xs">${formatter.format(data.avgHighPrice)}</div>
-        </div>
-        <div class="flex flex-row justify-between">
-          <div class="text-xs">Sell Price</div>
+          <div class="text-xs">
+            <svg class="inline-block align-baseline" height="10" width="10"><circle cx="5" cy="5" r="5" fill="var(--vis-color1)" /></svg>
+            Sell Price</div>
           <div class="text-xs">${formatter.format(data.avgLowPrice)}</div>
-        </div>
       </div>
     `;
   };
@@ -61,6 +60,7 @@
   <VisTooltip {triggers} />
   <VisAxis type="x" tickFormat={XTickFormat} gridLine={false} />
   <VisAxis type="y" tickFormat={YTickFormat} gridLine={false} />
+  <VisScatter {x} {y} size={5} />
   <VisBulletLegend {items} />
   <VisCrosshair {template} />
 </VisXYContainer>
