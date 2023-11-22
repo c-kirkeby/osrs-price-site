@@ -9,7 +9,8 @@
     "lowalch",
     "osrs",
     "lucide",
-    "tailwindcss"
+    "tailwindcss",
+    "unovis"
   ],
   "ignorePaths": ["node_modules/**", "dist/**"]
 }

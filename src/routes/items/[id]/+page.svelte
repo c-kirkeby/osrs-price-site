@@ -15,6 +15,7 @@
   import type { Item } from "$lib/db/schema";
   import { writable } from "svelte/store";
   import { cn } from "$lib/utils";
+  import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
 
   const formatter = new Intl.NumberFormat();
 
@@ -22,13 +23,28 @@
 
   let itemStore = writable(data.item);
 
-  $: tax = Math.round($itemStore.buy_price * 0.01);
-  $: profit = Math.round($itemStore.sell_price - $itemStore.buy_price - tax);
-  $: highAlchProfit = Math.round($itemStore.alch_high - $itemStore.buy_price);
-  $: lowAlchProfit = Math.round($itemStore.alch_low - $itemStore.buy_price);
-  $: potentialProfit = Math.round(
-    $itemStore.sell_price - $itemStore.buy_price - tax * $itemStore.buy_limit,
-  );
+  $: tax = $itemStore.buy_price
+    ? Math.round($itemStore.buy_price * 0.01)
+    : null;
+  $: profit =
+    $itemStore.sell_price && $itemStore.buy_price && tax
+      ? Math.round($itemStore.sell_price - $itemStore.buy_price - tax)
+      : null;
+  $: highAlchProfit =
+    $itemStore.alch_high && $itemStore.buy_price
+      ? Math.round($itemStore.alch_high - $itemStore.buy_price)
+      : null;
+  $: lowAlchProfit =
+    $itemStore.alch_low && $itemStore.buy_price
+      ? Math.round($itemStore.alch_low - $itemStore.buy_price)
+      : null;
+  $: potentialProfit =
+    $itemStore.sell_price && $itemStore.buy_price && tax && $itemStore.buy_limit
+      ? Math.round(
+          ($itemStore.sell_price - $itemStore.buy_price - tax) *
+            $itemStore.buy_limit,
+        )
+      : null;
 
   let now = new Date();
 
@@ -181,7 +197,7 @@
         <Tooltip.Root>
           <Tooltip.Trigger>
             <div class="text-2xl font-bold">
-              {#if $itemStore.buy_price && $itemStore.sell_price}
+              {#if profit}
                 <span
                   class={cn({
                     "text-red-500": profit < 0,
@@ -208,7 +224,7 @@
           {/if}
         </Tooltip.Root>
         <p class="text-xs text-muted-foreground">
-          {#if $itemStore.buy_price && $itemStore.sell_price && $itemStore.buy_limit}
+          {#if potentialProfit}
             {formatter.format(potentialProfit)}
           {:else}
             Unknown
@@ -245,36 +261,24 @@
           {#if $itemStore.alch_high}
             <Tooltip.Content>
               <span>
-                {#if $itemStore.alch_high}
-                  High Alch: {formatter.format($itemStore.alch_high)}
-                {:else}
-                  Unknown
-                {/if}
+                High Alch: {formatter.format($itemStore.alch_high)}
               </span>
             </Tooltip.Content>
           {/if}
         </Tooltip.Root>
-        {#if $itemStore.alch_low && $itemStore.buy_price}
+        {#if lowAlchProfit}
           <p>
             <Tooltip.Root>
               <Tooltip.Trigger>
                 <span class="text-xs text-muted-foreground">
-                  {#if lowAlchProfit}
-                    {formatter.format(lowAlchProfit)}
-                  {:else}
-                    Unknown
-                  {/if}
+                  {formatter.format(lowAlchProfit)}
                   <Info class="inline-block h-3 w-3" />
                 </span>
               </Tooltip.Trigger>
               {#if $itemStore.alch_low}
                 <Tooltip.Content>
                   <span>
-                    {#if $itemStore.alch_low}
-                      Low Alch: {formatter.format($itemStore.alch_low)}
-                    {:else}
-                      Unknown
-                    {/if}
+                    Low Alch: {formatter.format($itemStore.alch_low)}
                   </span>
                 </Tooltip.Content>
               {/if}
@@ -284,4 +288,20 @@
       </Card.Content>
     </Card.Root>
   </div>
+  <Card.Root>
+    <Card.Header
+      class="flex flex-row items-center justify-between space-y-0 pb-2"
+    >
+      <Card.Title class="text-base font-normal">Item History</Card.Title>
+    </Card.Header>
+    <Card.Content>
+      {#await data.streamed.history}
+        Loading...
+      {:then value}
+        <PriceSeriesChart data={value.data} />
+      {:catch error}
+        {error.message}
+      {/await}
+    </Card.Content>
+  </Card.Root>
 </section>
