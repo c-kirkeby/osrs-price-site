@@ -16,6 +16,8 @@
   import { writable } from "svelte/store";
   import { cn } from "$lib/utils";
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
+  import Button from "$lib/components/ui/button/button.svelte";
+  import { page } from "$app/stores";
 
   const formatter = new Intl.NumberFormat();
 
@@ -92,9 +94,13 @@
 
 <section class="space-y-6">
   <div class="mb-4 flex items-center space-x-1 text-sm">
-    <div class="overflow-hidden text-ellipsis whitespace-nowrap">Dashboard</div>
+    <div class="overflow-hidden text-ellipsis whitespace-nowrap">
+      <a href="/items">Items</a>
+    </div>
     <ChevronRight class="h-4 w-4" />
-    <div class="font-medium text-foreground">Items</div>
+    <div class="font-medium text-foreground">
+      <a href={`/items/${$page.params.id}`}>{data.item.name}</a>
+    </div>
   </div>
   <h1 class="text-3xl font-bold tracking-tight">
     {#if $itemStore.icon}
@@ -293,6 +299,13 @@
       class="flex flex-row items-center justify-between space-y-0 pb-2"
     >
       <Card.Title class="text-base font-normal">Item History</Card.Title>
+      <Button
+        variant="outline"
+        role="combobox"
+        class="w-[200px] justify-between"
+      >
+        5 Mins
+      </Button>
     </Card.Header>
     <Card.Content>
       {#await data.streamed.history}
