@@ -23,28 +23,24 @@
 
   export let data;
 
-  let itemStore = writable(data.item);
-
-  $: tax = $itemStore.buy_price
-    ? Math.round($itemStore.buy_price * 0.01)
-    : null;
+  $: tax = data.item.buy_price ? Math.round(data.item.buy_price * 0.01) : null;
   $: profit =
-    $itemStore.sell_price && $itemStore.buy_price && tax
-      ? Math.round($itemStore.sell_price - $itemStore.buy_price - tax)
+    data.item.sell_price && data.item.buy_price && tax
+      ? Math.round(data.item.sell_price - data.item.buy_price - tax)
       : null;
   $: highAlchProfit =
-    $itemStore.alch_high && $itemStore.buy_price
-      ? Math.round($itemStore.alch_high - $itemStore.buy_price)
+    data.item.alch_high && data.item.buy_price
+      ? Math.round(data.item.alch_high - data.item.buy_price)
       : null;
   $: lowAlchProfit =
-    $itemStore.alch_low && $itemStore.buy_price
-      ? Math.round($itemStore.alch_low - $itemStore.buy_price)
+    data.item.alch_low && data.item.buy_price
+      ? Math.round(data.item.alch_low - data.item.buy_price)
       : null;
   $: potentialProfit =
-    $itemStore.sell_price && $itemStore.buy_price && tax && $itemStore.buy_limit
+    data.item.sell_price && data.item.buy_price && tax && data.item.buy_limit
       ? Math.round(
-          ($itemStore.sell_price - $itemStore.buy_price - tax) *
-            $itemStore.buy_limit,
+          (data.item.sell_price - data.item.buy_price - tax) *
+            data.item.buy_limit,
         )
       : null;
 
@@ -74,7 +70,7 @@
           },
         )
       ).json();
-      $itemStore = Object.assign($itemStore, response[0]);
+      data.item = Object.assign(data.item, response[0]);
     }
     const priceInterval = setInterval(
       async () => await getPrices(data.item.id),
@@ -103,16 +99,16 @@
     </div>
   </div>
   <h1 class="text-3xl font-bold tracking-tight">
-    {#if $itemStore.icon}
+    {#if data.item.icon}
       <img
         src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(
-          $itemStore.icon.replaceAll(" ", "_"),
+          data.item.icon.replaceAll(" ", "_"),
         )}`}
-        alt={$itemStore.name}
+        alt={data.item.name}
         class="object-contain inline-block mr-2"
       />
     {/if}
-    {$itemStore.name}
+    {data.item.name}
   </h1>
   <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
     <Card.Root>
@@ -125,30 +121,30 @@
       <Card.Content>
         <p>
           <span class="text-2xl font-bold">
-            {#if $itemStore.buy_price}
-              {formatter.format($itemStore.buy_price)}
+            {#if data.item.buy_price}
+              {formatter.format(data.item.buy_price)}
             {:else}
               Unknown
             {/if}
           </span>
-          {#if $itemStore.buy_limit}
+          {#if data.item.buy_limit}
             <span class=" text-sm text-muted-foreground"
-              >(limit: {formatter.format($itemStore.buy_limit)})</span
+              >(limit: {formatter.format(data.item.buy_limit)})</span
             >
           {/if}
         </p>
-        {#if $itemStore.buy_price_timestamp}
+        {#if data.item.buy_price_timestamp}
           <Tooltip.Root>
             <Tooltip.Trigger>
               <p class="text-xs text-muted-foreground">
-                {formatDistance(new Date($itemStore.buy_price_timestamp), now, {
+                {formatDistance(new Date(data.item.buy_price_timestamp), now, {
                   addSuffix: true,
                 })}
                 <Info class="inline-block h-3 w-3" />
               </p>
             </Tooltip.Trigger>
             <Tooltip.Content>
-              <span>{new Date($itemStore.buy_price_timestamp)}</span>
+              <span>{new Date(data.item.buy_price_timestamp)}</span>
             </Tooltip.Content>
           </Tooltip.Root>
         {/if}
@@ -163,28 +159,24 @@
       </Card.Header>
       <Card.Content>
         <div class="text-2xl font-bold">
-          {#if $itemStore.sell_price}
-            {formatter.format($itemStore.sell_price)}
+          {#if data.item.sell_price}
+            {formatter.format(data.item.sell_price)}
           {:else}
             Unknown
           {/if}
         </div>
-        {#if $itemStore.sell_price_timestamp}
+        {#if data.item.sell_price_timestamp}
           <Tooltip.Root>
             <Tooltip.Trigger>
               <p class="text-xs text-muted-foreground">
-                {formatDistance(
-                  new Date($itemStore.sell_price_timestamp),
-                  now,
-                  {
-                    addSuffix: true,
-                  },
-                )}
+                {formatDistance(new Date(data.item.sell_price_timestamp), now, {
+                  addSuffix: true,
+                })}
                 <Info class="inline-block h-3 w-3" />
               </p>
             </Tooltip.Trigger>
             <Tooltip.Content>
-              <span>{new Date($itemStore.sell_price_timestamp)}</span>
+              <span>{new Date(data.item.sell_price_timestamp)}</span>
             </Tooltip.Content>
           </Tooltip.Root>
         {/if}
@@ -218,13 +210,13 @@
               {/if}
             </div>
           </Tooltip.Trigger>
-          {#if $itemStore.buy_price && $itemStore.sell_price}
+          {#if data.item.buy_price && data.item.sell_price}
             <Tooltip.Content>
               <span
-                >{formatter.format($itemStore.sell_price)} - {formatter.format(
-                  $itemStore.buy_price,
+                >{formatter.format(data.item.sell_price)} - {formatter.format(
+                  data.item.buy_price,
                 )} -
-                {formatter.format(Math.round($itemStore.sell_price * 0.01))} (tax)</span
+                {formatter.format(Math.round(data.item.sell_price * 0.01))} (tax)</span
               >
             </Tooltip.Content>
           {/if}
@@ -264,10 +256,10 @@
               {/if}
             </div>
           </Tooltip.Trigger>
-          {#if $itemStore.alch_high}
+          {#if data.item.alch_high}
             <Tooltip.Content>
               <span>
-                High Alch: {formatter.format($itemStore.alch_high)}
+                High Alch: {formatter.format(data.item.alch_high)}
               </span>
             </Tooltip.Content>
           {/if}
@@ -281,10 +273,10 @@
                   <Info class="inline-block h-3 w-3" />
                 </span>
               </Tooltip.Trigger>
-              {#if $itemStore.alch_low}
+              {#if data.item.alch_low}
                 <Tooltip.Content>
                   <span>
-                    Low Alch: {formatter.format($itemStore.alch_low)}
+                    Low Alch: {formatter.format(data.item.alch_low)}
                   </span>
                 </Tooltip.Content>
               {/if}
