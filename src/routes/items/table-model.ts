@@ -12,9 +12,7 @@ import type { Item } from "$lib/db/schema";
 import type { ReadOrWritable } from "svelte-headless-table/lib/utils/store";
 import formatDistance from "date-fns/formatDistance";
 
-const formatter = new Intl.NumberFormat(undefined, {
-  maximumSignificantDigits: 2,
-});
+const formatter = new Intl.NumberFormat();
 
 const formatNumberCell = (value: number | null) =>
   value ? formatter.format(value) : "";
