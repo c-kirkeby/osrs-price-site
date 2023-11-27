@@ -5,6 +5,7 @@
   import { cn } from "$lib/utils";
   import "../app.postcss";
   import ThemeToggle from "$lib/components/theme-toggle.svelte";
+  import CommandMenu from "$lib/components/command-menu.svelte";
 
   let menuItems = [
     { href: "/", title: "Home", icon: GaugeIcon },
@@ -34,6 +35,7 @@
             </a>
           {/each}
         </nav>
+        <CommandMenu />
         <ThemeToggle />
         <button
           class="flex items-center space-x-2 md:hidden"

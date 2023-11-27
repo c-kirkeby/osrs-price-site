@@ -4,7 +4,6 @@
   import { createTableModel } from "./table-model";
   import { poll } from "$lib/utils";
   import { headers } from "$lib/api/headers";
-  import { ChevronRight } from "lucide-svelte";
   import type { Item } from "$lib/db/schema";
 
   export let data;
@@ -30,7 +29,7 @@
         },
       )
     ).json();
-    $itemsStore = $itemsStore.map((item) =>
+    $itemsStore = $itemsStore.map((item: Item) =>
       Object.assign(
         item,
         response.find((price) => price?.id === item.id),

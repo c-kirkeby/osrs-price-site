@@ -1,16 +1,25 @@
 {
   "version": "0.2",
   "language": "en",
-  "dictionaries": ["en-GB"],
+  "dictionaries": [
+    "en-GB"
+  ],
   "words": [
     "alch",
     "clsx",
+    "cmdk",
     "highalch",
     "lowalch",
-    "osrs",
     "lucide",
+    "osrs",
+    "setweight",
     "tailwindcss",
+    "tsquery",
+    "tsvector",
     "unovis"
   ],
-  "ignorePaths": ["node_modules/**", "dist/**"]
+  "ignorePaths": [
+    "node_modules/**",
+    "dist/**"
+  ]
 }
