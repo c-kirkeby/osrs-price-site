@@ -13,7 +13,6 @@
   import { onMount } from "svelte";
   import { headers } from "$lib/api/headers";
   import type { Item } from "$lib/db/schema";
-  import { writable } from "svelte/store";
   import { cn } from "$lib/utils";
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
@@ -25,7 +24,7 @@
 
   $: tax = data.item.buy_price ? Math.round(data.item.buy_price * 0.01) : null;
   $: profit =
-    data.item.sell_price && data.item.buy_price && tax
+    data.item.sell_price && data.item.buy_price && typeof tax === "number"
       ? Math.round(data.item.sell_price - data.item.buy_price - tax)
       : null;
   $: highAlchProfit =
@@ -37,7 +36,10 @@
       ? Math.round(data.item.alch_low - data.item.buy_price)
       : null;
   $: potentialProfit =
-    data.item.sell_price && data.item.buy_price && tax && data.item.buy_limit
+    data.item.sell_price &&
+    data.item.buy_price &&
+    typeof tax === "number" &&
+    data.item.buy_limit
       ? Math.round(
           (data.item.sell_price - data.item.buy_price - tax) *
             data.item.buy_limit,
@@ -195,7 +197,7 @@
         <Tooltip.Root>
           <Tooltip.Trigger>
             <div class="text-2xl font-bold">
-              {#if profit}
+              {#if typeof profit === "number"}
                 <span
                   class={cn({
                     "text-red-500": profit < 0,
@@ -222,7 +224,7 @@
           {/if}
         </Tooltip.Root>
         <p class="text-xs text-muted-foreground">
-          {#if potentialProfit}
+          {#if typeof potentialProfit === "number"}
             {formatter.format(potentialProfit)}
           {:else}
             Unknown

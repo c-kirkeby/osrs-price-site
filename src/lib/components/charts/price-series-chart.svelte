@@ -55,12 +55,16 @@
   };
 </script>
 
-<VisXYContainer {data} class="font-sans text-muted-foreground" height={400}>
-  <VisLine {x} {y} />
-  <VisTooltip {triggers} />
-  <VisAxis type="x" tickFormat={XTickFormat} gridLine={false} />
-  <VisAxis type="y" tickFormat={YTickFormat} gridLine={false} />
-  <VisScatter {x} {y} size={5} />
-  <VisBulletLegend {items} />
-  <VisCrosshair {template} />
-</VisXYContainer>
+{#if data.length > 0}
+  <VisXYContainer {data} class="font-sans text-muted-foreground" height="400">
+    <VisLine {x} {y} />
+    <VisTooltip {triggers} />
+    <VisAxis type="x" tickFormat={XTickFormat} gridLine={false} />
+    <VisAxis type="y" tickFormat={YTickFormat} gridLine={false} />
+    <VisScatter {x} {y} size={5} />
+    <VisBulletLegend {items} />
+    <VisCrosshair {template} />
+  </VisXYContainer>
+{:else}
+  <div class="h-[400px] flex items-center text-xl justify-center">No data</div>
+{/if}
