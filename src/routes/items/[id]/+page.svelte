@@ -11,12 +11,12 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { formatDistance } from "date-fns";
   import { onMount } from "svelte";
-  import { headers } from "$lib/api/headers";
-  import type { Item } from "$lib/db/schema";
   import { cn } from "$lib/utils";
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import { page } from "$app/stores";
+  import { getItem } from "$lib/api/item";
+  import { natureRune } from "$lib/stores/alch";
 
   const formatter = new Intl.NumberFormat();
 
@@ -28,12 +28,16 @@
       ? Math.round(data.item.sell_price - data.item.buy_price - tax)
       : null;
   $: highAlchProfit =
-    data.item.alch_high && data.item.buy_price
-      ? Math.round(data.item.alch_high - data.item.buy_price)
+    data.item.alch_high && data.item.buy_price && $natureRune.buy_price
+      ? Math.round(
+          data.item.alch_high - data.item.buy_price - $natureRune.buy_price,
+        )
       : null;
   $: lowAlchProfit =
-    data.item.alch_low && data.item.buy_price
-      ? Math.round(data.item.alch_low - data.item.buy_price)
+    data.item.alch_low && data.item.buy_price && $natureRune.buy_price
+      ? Math.round(
+          data.item.alch_low - data.item.buy_price - $natureRune.buy_price,
+        )
       : null;
   $: potentialProfit =
     data.item.sell_price &&
@@ -53,29 +57,18 @@
       now = new Date();
     }, 1000);
 
-    async function getPrices(id: number) {
-      const response: Item[] = await (
-        await fetch(
-          `/items/${id}?` +
-            new URLSearchParams(
-              [
-                "id",
-                "buy_price",
-                "buy_price_timestamp",
-                "sell_price",
-                "sell_price_timestamp",
-                "last_updated",
-              ].map((field) => ["fields[items]", field]),
-            ).toString(),
-          {
-            headers,
-          },
-        )
-      ).json();
-      data.item = Object.assign(data.item, response[0]);
-    }
     const priceInterval = setInterval(
-      async () => await getPrices(data.item.id),
+      () =>
+        getItem(data.item.id, [
+          "id",
+          "buy_price",
+          "buy_price_timestamp",
+          "sell_price",
+          "sell_price_timestamp",
+          "last_updated",
+        ]).then((response) => {
+          data.item = Object.assign(data.item, response);
+        }),
       30_000,
     );
 
@@ -241,44 +234,55 @@
       </Card.Header>
       <Card.Content>
         <Tooltip.Root>
-          <Tooltip.Trigger>
-            <div class="text-2xl font-bold">
-              {#if highAlchProfit}
+          {#if highAlchProfit}
+            <Tooltip.Trigger>
+              <p>
                 <span
-                  class={cn({
+                  class={cn("text-2xl font-bold", {
                     "text-red-500": highAlchProfit < 0,
                     "text-green-500": highAlchProfit > 0,
                   })}
                 >
                   {formatter.format(highAlchProfit)}
                 </span>
+                {#if data.item.alch_high}
+                  <span class=" text-sm text-muted-foreground"
+                    >(high alch: {formatter.format(data.item.alch_high)})</span
+                  >
+                {/if}
                 <Info class="inline-block h-4 w-4" />
-              {:else}
-                Unknown
-              {/if}
-            </div>
-          </Tooltip.Trigger>
-          {#if data.item.alch_high}
+              </p>
+            </Tooltip.Trigger>
+          {:else}
+            <div class="text-2xl font-bold">Unknown</div>
+          {/if}
+          {#if data.item.alch_high && data.item.buy_price && $natureRune.buy_price}
             <Tooltip.Content>
               <span>
-                High Alch: {formatter.format(data.item.alch_high)}
+                {formatter.format(data.item.alch_high)} - {formatter.format(
+                  data.item.buy_price,
+                )} - {formatter.format($natureRune.buy_price)} (nature rune)
               </span>
             </Tooltip.Content>
           {/if}
         </Tooltip.Root>
-        {#if lowAlchProfit}
+        {#if lowAlchProfit && data.item.alch_low}
           <p>
             <Tooltip.Root>
               <Tooltip.Trigger>
                 <span class="text-xs text-muted-foreground">
-                  {formatter.format(lowAlchProfit)}
+                  {formatter.format(lowAlchProfit)} (low alch: {formatter.format(
+                    data.item.alch_low,
+                  )})
                   <Info class="inline-block h-3 w-3" />
                 </span>
               </Tooltip.Trigger>
-              {#if data.item.alch_low}
+              {#if data.item.buy_price && $natureRune.buy_price}
                 <Tooltip.Content>
                   <span>
-                    Low Alch: {formatter.format(data.item.alch_low)}
+                    {formatter.format(data.item.alch_low)} - {formatter.format(
+                      data.item.buy_price,
+                    )} - {formatter.format($natureRune.buy_price)} (nature rune)
                   </span>
                 </Tooltip.Content>
               {/if}

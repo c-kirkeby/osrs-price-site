@@ -1,11 +1,13 @@
-<script>
+<script lang="ts">
   import { page } from "$app/stores";
   import { ModeWatcher } from "mode-watcher";
   import { MenuIcon, X, GaugeIcon, ListIcon } from "lucide-svelte";
-  import { cn } from "$lib/utils";
+  import { cn, poll } from "$lib/utils";
   import "../app.postcss";
   import ThemeToggle from "$lib/components/theme-toggle.svelte";
   import CommandMenu from "$lib/components/command-menu.svelte";
+  import { getItem } from "$lib/api/item";
+  import { natureRune, natureRuneItemId } from "$lib/stores/alch";
 
   let menuItems = [
     { href: "/", title: "Home", icon: GaugeIcon },
@@ -13,6 +15,19 @@
   ];
 
   let showMobileMenu = false;
+
+  export let data;
+
+  $natureRune = data.natureRunePrice;
+
+  poll(async () => {
+    $natureRune = await getItem(natureRuneItemId, [
+      "id",
+      "buy_price",
+      "buy_price_timestamp",
+      "last_updated",
+    ]);
+  }, 30_000);
 </script>
 
 <ModeWatcher />
