@@ -71,3 +71,52 @@ export function poll(fn: () => void, milliseconds: number, lazy = true) {
     return () => clearInterval(interval);
   });
 }
+
+/**
+ *
+ * Returns a 1% tax on the sell price of an item if it is >= 100gp <= 5m and
+ * is not exempt.
+ * @param sellPrice
+ * @param itemId
+ * @returns
+ */
+export function calculateTax(sellPrice: number, itemId: number) {
+  if (sellPrice < 100 || isItemTaxExempt(itemId)) {
+    console.debug("Item is tax exempt or too cheap to tax");
+    return 0;
+  }
+
+  const potentialTax = Math.floor(sellPrice * 0.01);
+
+  if (potentialTax > 5_000_000) {
+    return 5_000_000;
+  } else {
+    return potentialTax;
+  }
+}
+
+/**
+ * @todo move to a database table
+ */
+export function isItemTaxExempt(itemId: number) {
+  const taxExemptItems = [
+    13190, // Old school bond
+    1755, // Chisel
+    5325, // Gardening Trowel
+    1785, // Glassblowing Pipe
+    2347, // Hammer
+    1733, // Needle
+    233, // Pestle and mortar
+    5341, // Rake
+    8794, // Saw
+    5329, // Secateurs
+    5343, // Seed dibber
+    1735, // Shears
+    952, // Spade
+    5331, // Watering can
+  ];
+
+  if (taxExemptItems.includes(itemId)) {
+    return true;
+  }
+}

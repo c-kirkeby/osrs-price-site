@@ -11,7 +11,7 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { formatDistance } from "date-fns";
   import { onMount } from "svelte";
-  import { cn } from "$lib/utils";
+  import { calculateTax, cn } from "$lib/utils";
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import { page } from "$app/stores";
@@ -22,20 +22,22 @@
 
   export let data;
 
-  $: tax = data.item.buy_price ? Math.round(data.item.buy_price * 0.01) : null;
+  $: tax = data.item.sell_price
+    ? calculateTax(data.item.sell_price, data.item.id)
+    : null;
   $: profit =
     data.item.sell_price && data.item.buy_price && typeof tax === "number"
-      ? Math.round(data.item.sell_price - data.item.buy_price - tax)
+      ? Math.floor(data.item.sell_price - data.item.buy_price - tax)
       : null;
   $: highAlchProfit =
     data.item.alch_high && data.item.buy_price && $natureRune.buy_price
-      ? Math.round(
+      ? Math.floor(
           data.item.alch_high - data.item.buy_price - $natureRune.buy_price,
         )
       : null;
   $: lowAlchProfit =
     data.item.alch_low && data.item.buy_price && $natureRune.buy_price
-      ? Math.round(
+      ? Math.floor(
           data.item.alch_low - data.item.buy_price - $natureRune.buy_price,
         )
       : null;
@@ -44,7 +46,7 @@
     data.item.buy_price &&
     typeof tax === "number" &&
     data.item.buy_limit
-      ? Math.round(
+      ? Math.floor(
           (data.item.sell_price - data.item.buy_price - tax) *
             data.item.buy_limit,
         )
@@ -205,13 +207,13 @@
               {/if}
             </div>
           </Tooltip.Trigger>
-          {#if data.item.buy_price && data.item.sell_price}
+          {#if data.item.buy_price && data.item.sell_price && typeof tax === "number"}
             <Tooltip.Content>
               <span
                 >{formatter.format(data.item.sell_price)} - {formatter.format(
                   data.item.buy_price,
                 )} -
-                {formatter.format(Math.round(data.item.sell_price * 0.01))} (tax)</span
+                {formatter.format(tax)} (tax)</span
               >
             </Tooltip.Content>
           {/if}

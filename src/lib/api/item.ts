@@ -1,4 +1,5 @@
 import type { Item } from "$lib/db/schema";
+import { headers } from "./headers";
 
 export async function getItem<T extends (keyof Item)[]>(
   id: number,
@@ -11,6 +12,7 @@ export async function getItem<T extends (keyof Item)[]>(
           new URLSearchParams(
             fields ? fields.map((field) => ["fields[items]", field]) : [],
           ).toString(),
+        { headers },
       )
     ).json()
   )[0] as Pick<Item, T[number]>;

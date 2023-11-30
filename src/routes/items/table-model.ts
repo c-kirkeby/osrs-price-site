@@ -1,8 +1,8 @@
 import {
   addHiddenColumns,
   addPagination,
-  addTableFilter,
   addSortBy,
+  addTableFilter,
 } from "svelte-headless-table/plugins";
 import { createRender, createTable } from "svelte-headless-table";
 
@@ -11,6 +11,7 @@ import { DataTableLink } from "$lib/components/data-table";
 import type { Item } from "$lib/db/schema";
 import type { ReadOrWritable } from "svelte-headless-table/lib/utils/store";
 import formatDistance from "date-fns/formatDistance";
+import { calculateTax } from "$lib/utils";
 
 const formatter = new Intl.NumberFormat();
 
@@ -135,16 +136,16 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       },
     }),
     table.column({
-      id: "profit",
+      id: "margin",
       accessor: (item) => item,
-      header: "Profit",
+      header: "Margin",
       cell: ({ value }) => {
         if (value.buy_price && value.sell_price) {
           return formatNumberCell(
             Math.round(
               value.sell_price -
                 value.buy_price -
-                Math.round(value.buy_price * 0.01),
+                calculateTax(value.buy_price, value?.id),
             ),
           );
         }
@@ -171,9 +172,9 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       header: "Tax",
       cell: ({ value }) => {
         if (value.sell_price) {
-          return formatNumberCell(Math.round(value.sell_price * 0.01));
+          return formatNumberCell(calculateTax(value.sell_price, value?.id));
         }
-        return "";
+        return "0";
       },
       plugins: {
         sort: {
