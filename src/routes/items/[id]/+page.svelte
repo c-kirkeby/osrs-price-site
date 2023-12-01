@@ -95,18 +95,29 @@
       <a href={`/items/${$page.params.id}`}>{data.item.name}</a>
     </div>
   </div>
-  <h1 class="text-3xl font-bold tracking-tight">
-    {#if data.item.icon}
-      <img
-        src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(
-          data.item.icon.replaceAll(" ", "_"),
-        )}`}
-        alt={data.item.name}
-        class="object-contain inline-block mr-2"
-      />
-    {/if}
-    {data.item.name}
-  </h1>
+  <div class="flex items-center justify-between">
+    <h1 class="text-3xl font-bold tracking-tight">
+      {#if data.item.icon}
+        <img
+          src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(
+            data.item.icon.replaceAll(" ", "_"),
+          )}`}
+          alt={data.item.name}
+          class="object-contain inline-block mr-2"
+        />
+      {/if}
+      {data.item.name}
+    </h1>
+    <Button
+      variant="outline"
+      size="sm"
+      class="ml-auto hidden h-8 lg:flex"
+      href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${$page.params.id}`}
+      target="_blank"
+    >
+      Wiki</Button
+    >
+  </div>
   <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
     <Card.Root>
       <Card.Header
