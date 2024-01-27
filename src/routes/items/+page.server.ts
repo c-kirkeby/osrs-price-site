@@ -6,6 +6,7 @@ export async function load(params) {
     "Cache-Control": "max-age=1, stale-while-revalidate=59",
   });
   await syncUpstreamPrices();
+
   return {
     items: fetchItems(),
   };

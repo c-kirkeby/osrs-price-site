@@ -143,8 +143,8 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
         if (value.buy_price && value.sell_price) {
           return formatNumberCell(
             Math.round(
-              value.sell_price -
-                value.buy_price -
+              value.buy_price -
+                value.sell_price -
                 calculateTax(value.buy_price, value?.id),
             ),
           );
@@ -156,8 +156,8 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
           getSortValue: (item) => {
             if (item.buy_price && item.sell_price) {
               return Math.floor(
-                item.sell_price -
-                  item.buy_price -
+                item.buy_price -
+                  item.sell_price -
                   Math.round(item.buy_price * 0.01),
               );
             }

@@ -27,7 +27,7 @@
     : null;
   $: profit =
     data.item.sell_price && data.item.buy_price && typeof tax === "number"
-      ? Math.floor(data.item.sell_price - data.item.buy_price - tax)
+      ? Math.floor(data.item.buy_price - data.item.sell_price - tax)
       : null;
   $: highAlchProfit =
     data.item.alch_high && data.item.buy_price && $natureRune.buy_price
@@ -47,7 +47,7 @@
     typeof tax === "number" &&
     data.item.buy_limit
       ? Math.floor(
-          (data.item.sell_price - data.item.buy_price - tax) *
+          (data.item.buy_price - data.item.sell_price - tax) *
             data.item.buy_limit,
         )
       : null;
@@ -221,8 +221,8 @@
           {#if data.item.buy_price && data.item.sell_price && typeof tax === "number"}
             <Tooltip.Content>
               <span
-                >{formatter.format(data.item.sell_price)} - {formatter.format(
-                  data.item.buy_price,
+                >{formatter.format(data.item.buy_price)} - {formatter.format(
+                  data.item.sell_price,
                 )} -
                 {formatter.format(tax)} (tax)</span
               >

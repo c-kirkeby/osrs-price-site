@@ -11,13 +11,13 @@
 
   const ids = flatColumns.map((column) => column.id);
 
-  let hideForId = Object.fromEntries(ids.map((id) => [id, true]));
-
+  let hideForId = Object.fromEntries(ids.map((id) => [id, false]));
   $: $hiddenColumnIds = Object.entries(hideForId)
-    .filter(([, hide]) => !hide)
+    .filter(([, hide]) => hide)
     .map(([id]) => id);
 </script>
 
+<pre>{JSON.stringify($hiddenColumnIds, null, 2)}</pre>
 <DropdownMenu.Root>
   <DropdownMenu.Trigger asChild let:builder>
     <Button

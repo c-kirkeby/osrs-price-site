@@ -1,19 +1,14 @@
-import type { TimeSeries } from "$lib/types/time-series";
 import { db } from "$lib/db";
 import { eq } from "drizzle-orm";
-import { headers } from "$lib/api/headers";
+import { getTimeSeries } from "$lib/api/time-series";
 import { items } from "$lib/db/schema";
 import { syncUpstreamPrices } from "$lib/db/sync";
 
+type TimeStep = "5m" | "1h" | "6h" | "24h";
+
 export async function load({ params }) {
+  const timeStep: TimeStep = "5m";
   await syncUpstreamPrices(parseInt(params.id));
-  const fetchHistory = async (): Promise<{ data: TimeSeries[] }> =>
-    await (
-      await fetch(
-        `https://prices.runescape.wiki/api/v1/osrs/timeseries?id=${params.id}&timestep=24h`,
-        { headers },
-      )
-    ).json();
   const data = await db
     .select()
     .from(items)
@@ -23,7 +18,7 @@ export async function load({ params }) {
   return {
     item: data[0],
     streamed: {
-      history: await fetchHistory(),
+      history: getTimeSeries(params.id, timeStep),
     },
   };
 }

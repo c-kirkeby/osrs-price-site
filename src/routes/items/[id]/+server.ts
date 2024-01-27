@@ -16,9 +16,9 @@ export async function GET({ params, setHeaders, url }) {
   await syncUpstreamPrices(parseInt(params.id));
   const select = fields
     ? fields.reduce((obj, field) => {
-        obj[field] = items[field];
-        return obj;
-      }, {})
+      obj[field] = items[field];
+      return obj;
+    }, {})
     : {};
   const itemQuery = db
     .select(select)
