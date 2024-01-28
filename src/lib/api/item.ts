@@ -6,8 +6,8 @@ export async function getItem<T extends (keyof Item)[]>(
   fields?: T,
 ) {
   const response = await fetch(
-    `/api/item/${id}` +
-      new URLSearchParams(fields ? { fields: fields.join(",") } : {}),
+    `/items/${id}?` +
+    new URLSearchParams(fields ? { fields: fields.join(",") } : {}),
     {
       headers,
     },
