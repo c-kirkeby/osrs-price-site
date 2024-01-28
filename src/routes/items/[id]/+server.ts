@@ -1,10 +1,10 @@
 import { db } from "$lib/db";
 import { items, type Item } from "$lib/db/schema";
-import { json } from "@sveltejs/kit";
+import { json, type RequestEvent } from "@sveltejs/kit";
 import { syncUpstreamPrices } from "$lib/db/sync";
 import { eq } from "drizzle-orm";
 
-export async function GET({ params, setHeaders, url }) {
+export async function GET({ params, setHeaders, url }: RequestEvent) {
   let fields: Partial<keyof Item>[] = [];
 
   if (url.searchParams.has("fields[items]")) {

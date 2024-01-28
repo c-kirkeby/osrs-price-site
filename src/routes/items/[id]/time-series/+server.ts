@@ -1,8 +1,7 @@
-
-import { json } from "@sveltejs/kit";
+import { json, type RequestEvent } from "@sveltejs/kit";
 import { getTimeSeries } from "$lib/api/time-series";
 
-export async function GET({ params, setHeaders }) {
+export async function GET({ params, setHeaders }: RequestEvent) {
   setHeaders({
     "Cache-Control": "max-age=1, stale-while-revalidate=29",
   });
