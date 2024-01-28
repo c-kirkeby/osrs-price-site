@@ -5,12 +5,12 @@ export async function getItem<T extends (keyof Item)[]>(
   id: number,
   fields?: T,
 ) {
-  const response = await fetch(
+  const res = await fetch(
     `/items/${id}?` +
-    new URLSearchParams(fields ? { fields: fields.join(",") } : {}),
-    {
-      headers,
-    },
+    new URLSearchParams(
+      fields ? fields.map((field) => ["fields[items]", field]) : [],
+    ).toString(),
+    { headers },
   );
-  return (await response.json()) as Promise<Pick<Item, T[number]>>;
+  return (await res.json()[0]) as Promise<Pick<Item, T[number]>>;
 }
