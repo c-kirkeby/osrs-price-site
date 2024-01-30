@@ -19,6 +19,10 @@
   import { natureRune } from "$lib/stores/alch";
 
   const formatter = new Intl.NumberFormat();
+  const compactFormatter = new Intl.NumberFormat("en-AU", {
+    notation: "compact",
+    compactDisplay: "short",
+  });
 
   export let data;
 
@@ -210,7 +214,7 @@
                     "text-green-500": profit > 0,
                   })}
                 >
-                  {formatter.format(profit)}
+                  {compactFormatter.format(profit)}
                 </span>
                 <Info class="inline-block h-4 w-4" />
               {:else}
@@ -256,7 +260,11 @@
                     "text-green-500": highAlchProfit > 0,
                   })}
                 >
-                  {formatter.format(highAlchProfit)}
+                  {#if highAlchProfit > 1_000_000 || highAlchProfit < -1_000_000}
+                    {compactFormatter.format(highAlchProfit)}
+                  {:else}
+                    {formatter.format(highAlchProfit)}
+                  {/if}
                 </span>
                 {#if data.item.alch_high}
                   <span class=" text-sm text-muted-foreground"

@@ -21,12 +21,19 @@
   $natureRune = data.natureRunePrice;
 
   poll(async () => {
-    $natureRune = await getItem(natureRuneItemId, [
-      "id",
-      "buy_price",
-      "buy_price_timestamp",
-      "last_updated",
-    ]);
+    try {
+      const response = await getItem(natureRuneItemId, [
+        "id",
+        "buy_price",
+        "buy_price_timestamp",
+        "last_updated",
+      ]);
+      if (response) {
+        $natureRune = response;
+      }
+    } catch (error) {
+      console.error("Failed to fetch nature rune price", error);
+    }
   }, 30_000);
 </script>
 
