@@ -8,6 +8,6 @@ export async function load(params) {
   await syncUpstreamPrices();
 
   return {
-    items: fetchItems(),
+    items: await fetchItems(),
   };
 }
