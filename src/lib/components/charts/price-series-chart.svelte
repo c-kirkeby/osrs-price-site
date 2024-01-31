@@ -10,7 +10,7 @@
     VisXYContainer,
   } from "@unovis/svelte";
   import { Line } from "@unovis/ts";
-  import format from "date-fns/format";
+  import { format } from "date-fns/format";
 
   const formatter = new Intl.NumberFormat();
 

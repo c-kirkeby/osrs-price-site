@@ -9,8 +9,8 @@ import { createRender, createTable } from "svelte-headless-table";
 import DataTableImage from "$lib/components/data-table/data-table-image.svelte";
 import { DataTableLink } from "$lib/components/data-table";
 import type { Item } from "$lib/db/schema";
-import type { ReadOrWritable } from "svelte-headless-table/lib/utils/store";
-import formatDistance from "date-fns/formatDistance";
+import type { ReadOrWritable } from "svelte-headless-table";
+import { formatDistance } from "date-fns/formatDistance";
 import { calculateTax } from "$lib/utils";
 
 const formatter = new Intl.NumberFormat();
@@ -144,8 +144,8 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
           return formatNumberCell(
             Math.round(
               value.buy_price -
-                value.sell_price -
-                calculateTax(value.buy_price, value?.id),
+              value.sell_price -
+              calculateTax(value.buy_price, value?.id),
             ),
           );
         }
@@ -157,8 +157,8 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
             if (item.buy_price && item.sell_price) {
               return Math.floor(
                 item.buy_price -
-                  item.sell_price -
-                  Math.round(item.buy_price * 0.01),
+                item.sell_price -
+                Math.round(item.buy_price * 0.01),
               );
             }
             return 0;
