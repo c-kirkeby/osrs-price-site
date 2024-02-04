@@ -12,5 +12,6 @@ export async function getItem<T extends (keyof Item)[]>(
     ).toString(),
     { headers },
   );
-  return (await res.json()[0]) as Promise<Pick<Item, T[number]>>;
+  const data = await res.json();
+  return data[0] as Pick<Item, T[number]>;
 }
