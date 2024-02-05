@@ -11,6 +11,7 @@
   } from "@unovis/svelte";
   import { Line } from "@unovis/ts";
   import { format } from "date-fns/format";
+  import { formatDistanceToNowStrict } from "date-fns";
 
   const formatter = new Intl.NumberFormat();
 
@@ -25,7 +26,9 @@
     [Line.selectors.line]: (data: TimeSeries) => data.avgHighPrice,
   };
   const XTickFormat = (tick: number) =>
-    new Date(tick * 1000).toLocaleDateString();
+    formatDistanceToNowStrict(new Date(tick * 1000), {
+      addSuffix: true,
+    });
 
   const YTickFormat = (tick: number) => formatter.format(tick);
   const items = [
@@ -60,7 +63,7 @@
 
 {#if data.length > 0}
   <VisXYContainer {data} class="font-sans text-muted-foreground" height="300">
-    <VisLine fallbackValue={8000} {x} {y} />
+    <VisLine {x} {y} />
     <VisTooltip {triggers} />
     <VisAxis type="x" tickFormat={XTickFormat} gridLine={false} />
     <VisAxis type="y" tickFormat={YTickFormat} gridLine={false} />

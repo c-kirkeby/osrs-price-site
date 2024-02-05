@@ -10,7 +10,7 @@ import DataTableImage from "$lib/components/data-table/data-table-image.svelte";
 import { DataTableLink } from "$lib/components/data-table";
 import type { Item } from "$lib/db/schema";
 import type { ReadOrWritable } from "svelte-headless-table";
-import { formatDistance } from "date-fns/formatDistance";
+import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
 import { calculateTax } from "$lib/utils";
 
 const formatter = new Intl.NumberFormat();
@@ -111,9 +111,9 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       header: "Last Bought",
       cell: ({ value }) => {
         if (value) {
-          return formatDistance(new Date(value), new Date(), {
+          return formatDistanceToNowStrict(new Date(value), {
             addSuffix: true,
-          }).replace("about", "");
+          });
         }
         return "";
       },
@@ -128,9 +128,9 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       header: "Last Sold",
       cell: ({ value }) => {
         if (value) {
-          return formatDistance(new Date(value), new Date(), {
+          return formatDistanceToNowStrict(new Date(value), {
             addSuffix: true,
-          }).replace("about", "");
+          });
         }
         return "";
       },

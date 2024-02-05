@@ -1,5 +1,5 @@
 <script lang="ts" generics="T">
-  import type { AnyPlugins } from "svelte-headless-table/lib/types/TablePlugin";
+  import type { AnyPlugins } from "svelte-headless-table/plugins";
   import {
     Render,
     Subscribe,
@@ -29,7 +29,7 @@
                   let:props
                 >
                   <Table.Head class="p-2" {...attrs}>
-                    <!-- @todo fix this type issue - props seems to be generic -->
+                    <!-- @ts-expect-error fix this type issue - props seems to be generic -->
                     <DataTable.ColumnHeader {props}
                       ><Render of={cell.render()} /></DataTable.ColumnHeader
                     >

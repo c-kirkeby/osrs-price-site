@@ -9,7 +9,6 @@
   } from "lucide-svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { formatDistance } from "date-fns";
   import { onMount } from "svelte";
   import { calculateTax, cn } from "$lib/utils";
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
@@ -17,6 +16,7 @@
   import { page } from "$app/stores";
   import { getItem } from "$lib/api/item";
   import { natureRune } from "$lib/stores/alch";
+  import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
 
   const formatter = new Intl.NumberFormat();
   const compactFormatter = new Intl.NumberFormat("en-AU", {
@@ -55,8 +55,6 @@
             data.item.buy_limit,
         )
       : null;
-
-  let now = new Date();
 
   onMount(() => {
     const clockInterval = setInterval(() => {
@@ -149,9 +147,12 @@
           <Tooltip.Root>
             <Tooltip.Trigger>
               <p class="text-xs text-muted-foreground">
-                {formatDistance(new Date(data.item.buy_price_timestamp), now, {
-                  addSuffix: true,
-                })}
+                {formatDistanceToNowStrict(
+                  new Date(data.item.buy_price_timestamp),
+                  {
+                    addSuffix: true,
+                  },
+                )}
                 <Info class="inline-block h-3 w-3" />
               </p>
             </Tooltip.Trigger>
@@ -181,9 +182,12 @@
           <Tooltip.Root>
             <Tooltip.Trigger>
               <p class="text-xs text-muted-foreground">
-                {formatDistance(new Date(data.item.sell_price_timestamp), now, {
-                  addSuffix: true,
-                })}
+                {formatDistanceToNowStrict(
+                  new Date(data.item.sell_price_timestamp),
+                  {
+                    addSuffix: true,
+                  },
+                )}
                 <Info class="inline-block h-3 w-3" />
               </p>
             </Tooltip.Trigger>
