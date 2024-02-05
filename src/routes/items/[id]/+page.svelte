@@ -57,10 +57,6 @@
       : null;
 
   onMount(() => {
-    const clockInterval = setInterval(() => {
-      now = new Date();
-    }, 1000);
-
     const priceInterval = setInterval(
       () =>
         getItem(data.item.id, [
@@ -77,7 +73,6 @@
     );
 
     return () => {
-      clearInterval(clockInterval);
       clearInterval(priceInterval);
     };
   });
