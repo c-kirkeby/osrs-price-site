@@ -17,11 +17,18 @@
 
   export let data: TimeSeries[];
 
+  $: avgHighPriceSeries = data.filter((d) => d.avgHighPrice !== null);
+  $: avgLowPriceSeries = data.filter((d) => d.avgLowPrice !== null);
+
   const x = (data: TimeSeries) => data.timestamp;
   const y = [
     (data: TimeSeries) => (data.avgHighPrice ? data.avgHighPrice : undefined),
     (data: TimeSeries) => (data.avgLowPrice ? data.avgLowPrice : undefined),
   ];
+
+  const yAvgLowPrice = (data: TimeSeries) => data.avgLowPrice;
+  const yAvgHighPrice = (data: TimeSeries) => data.avgHighPrice;
+
   const triggers = {
     [Line.selectors.line]: (data: TimeSeries) => data.avgHighPrice,
   };
@@ -62,14 +69,27 @@
 </script>
 
 {#if data.length > 0}
-  <VisXYContainer {data} class="font-sans text-muted-foreground" height="300">
-    <VisLine {x} {y} />
+  <VisXYContainer class="font-sans text-muted-foreground" height="300">
+    <VisLine
+      curveType="linear"
+      data={avgLowPriceSeries}
+      {x}
+      y={yAvgLowPrice}
+      color="var(--vis-color1)"
+    />
+    <VisLine
+      curveType="linear"
+      data={avgHighPriceSeries}
+      {x}
+      y={yAvgHighPrice}
+      color="var(--vis-color0)"
+    />
     <VisTooltip {triggers} />
     <VisAxis type="x" tickFormat={XTickFormat} gridLine={false} />
     <VisAxis type="y" tickFormat={YTickFormat} gridLine={false} />
-    <VisScatter {x} {y} size={4} />
+    <VisScatter {data} {x} {y} size={4} />
     <VisBulletLegend {items} />
-    <VisCrosshair {template} />
+    <VisCrosshair {data} {template} />
   </VisXYContainer>
 {:else}
   <div class="h-[300px] flex items-center text-xl justify-center">No data</div>
