@@ -82,8 +82,8 @@
   <title>{data.item.name}</title>
 </svelte:head>
 
-<section class="space-y-6">
-  <div class="mb-4 flex items-center space-x-1 text-sm">
+<section class="flex-1 flex-col space-y-4 p-4 md:flex relative container">
+  <div class="flex items-center space-x-1 text-sm">
     <div class="overflow-hidden text-ellipsis whitespace-nowrap">
       <a href="/items">Items</a>
     </div>

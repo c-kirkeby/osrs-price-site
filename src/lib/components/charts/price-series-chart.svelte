@@ -69,7 +69,7 @@
 </script>
 
 {#if data.length > 0}
-  <VisXYContainer class="font-sans text-muted-foreground" height="300">
+  <VisXYContainer class="font-sans text-muted-foreground" height="200">
     <VisLine
       curveType="linear"
       data={avgLowPriceSeries}
