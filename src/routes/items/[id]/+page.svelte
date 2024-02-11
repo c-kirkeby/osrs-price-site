@@ -55,6 +55,10 @@
             data.item.buy_limit,
         )
       : null;
+  $: returnOnInvestment =
+    data.item.sell_price && data.item.buy_price && tax
+      ? (data.item.sell_price - tax - data.item.buy_price) / data.item.buy_price
+      : null;
 
   onMount(() => {
     const priceInterval = setInterval(
@@ -205,21 +209,26 @@
       <Card.Content>
         <Tooltip.Root>
           <Tooltip.Trigger>
-            <div class="text-2xl font-bold">
+            <p>
               {#if typeof profit === "number"}
                 <span
-                  class={cn({
+                  class={cn("text-2xl font-bold", {
                     "text-red-500": profit < 0,
                     "text-green-500": profit > 0,
                   })}
                 >
                   {compactFormatter.format(profit)}
                 </span>
+                {#if returnOnInvestment}
+                  <span class=" text-sm text-muted-foreground"
+                    >(ROI: {formatter.format(returnOnInvestment)}%)</span
+                  >
+                {/if}
                 <Info class="inline-block h-4 w-4" />
               {:else}
                 Unknown
               {/if}
-            </div>
+            </p>
           </Tooltip.Trigger>
           {#if data.item.buy_price && data.item.sell_price && typeof tax === "number"}
             <Tooltip.Content>
