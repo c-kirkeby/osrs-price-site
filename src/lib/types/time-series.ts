@@ -5,3 +5,5 @@ export interface TimeSeries {
   avgHighVolume: number;
   avgLowVolume: number;
 }
+
+export type TimeStep = "5m" | "1h" | "6h" | "24h";
