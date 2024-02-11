@@ -1,7 +1,7 @@
 <script lang="ts" generics="T">
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Button } from "$lib/components/ui/button";
-  import type { AnyPlugins } from "svelte-headless-table/lib/types/TablePlugin";
+  import type { AnyPlugins } from "svelte-headless-table/plugins";
   import type { TableViewModel } from "svelte-headless-table";
   import { SlidersHorizontalIcon } from "lucide-svelte";
 
@@ -11,13 +11,12 @@
 
   const ids = flatColumns.map((column) => column.id);
 
-  let hideForId = Object.fromEntries(ids.map((id) => [id, false]));
+  let hideForId = Object.fromEntries(ids.map((id) => [id, true]));
   $: $hiddenColumnIds = Object.entries(hideForId)
-    .filter(([, hide]) => hide)
+    .filter(([, hide]) => !hide)
     .map(([id]) => id);
 </script>
 
-<pre>{JSON.stringify($hiddenColumnIds, null, 2)}</pre>
 <DropdownMenu.Root>
   <DropdownMenu.Trigger asChild let:builder>
     <Button

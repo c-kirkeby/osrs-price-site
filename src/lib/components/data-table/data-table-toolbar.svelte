@@ -4,7 +4,7 @@
   import { Input } from "$lib/components/ui/input";
   import type { TableViewModel } from "svelte-headless-table";
 
-  import type { AnyPlugins } from "svelte-headless-table/lib/types/TablePlugin";
+  import type { AnyPlugins } from "svelte-headless-table/plugins";
 
   import { DataTableViewOptions } from "$lib/components/data-table";
   export let tableModel: TableViewModel<T, AnyPlugins>;

@@ -51,7 +51,7 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       cell: ({ value, row }) => {
         return createRender(DataTableImage, {
           src: `https://oldschool.runescape.wiki/images/${encodeURIComponent(
-            value?.replaceAll(" ", "_"),
+            value?.replaceAll(" ", "_") ?? "",
           )}`,
           alt: row.cells.find((cell) => cell.id === "name")?.value,
           class: "object-contain h-5 w-5 mx-auto",
@@ -144,8 +144,8 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
           return formatNumberCell(
             Math.round(
               value.buy_price -
-              value.sell_price -
-              calculateTax(value.buy_price, value?.id),
+                value.sell_price -
+                calculateTax(value.buy_price, value?.id),
             ),
           );
         }
@@ -157,8 +157,8 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
             if (item.buy_price && item.sell_price) {
               return Math.floor(
                 item.buy_price -
-                item.sell_price -
-                Math.round(item.buy_price * 0.01),
+                  item.sell_price -
+                  Math.round(item.buy_price * 0.01),
               );
             }
             return 0;

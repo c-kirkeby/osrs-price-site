@@ -2,7 +2,7 @@
   import Button from "$lib/components/ui/button/button.svelte";
   import * as Select from "$lib/components/ui/select";
   import type { TableViewModel } from "svelte-headless-table";
-  import type { AnyPlugins } from "svelte-headless-table/lib/types/TablePlugin";
+  import type { AnyPlugins } from "svelte-headless-table/plugins";
   import {
     ChevronLeftIcon,
     ChevronRightIcon,
