@@ -17,6 +17,7 @@
   import { getItem } from "$lib/api/item";
   import { natureRune } from "$lib/stores/alch";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
+  import { format } from "date-fns/format";
 
   const formatter = new Intl.NumberFormat();
   const compactFormatter = new Intl.NumberFormat("en-AU", {
@@ -156,7 +157,12 @@
               </p>
             </Tooltip.Trigger>
             <Tooltip.Content>
-              <span>{new Date(data.item.buy_price_timestamp)}</span>
+              <span
+                >{format(
+                  new Date(data.item.buy_price_timestamp),
+                  "yyyy-MM-dd HH:mm:ss",
+                )}</span
+              >
             </Tooltip.Content>
           </Tooltip.Root>
         {/if}
@@ -191,7 +197,12 @@
               </p>
             </Tooltip.Trigger>
             <Tooltip.Content>
-              <span>{new Date(data.item.sell_price_timestamp)}</span>
+              <span
+                >{format(
+                  new Date(data.item.sell_price_timestamp),
+                  "yyyy-MM-dd HH:mm:ss",
+                )}</span
+              >
             </Tooltip.Content>
           </Tooltip.Root>
         {/if}
