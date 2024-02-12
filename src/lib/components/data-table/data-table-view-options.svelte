@@ -11,7 +11,11 @@
 
   const ids = flatColumns.map((column) => column.id);
 
-  let hideForId = Object.fromEntries(ids.map((id) => [id, true]));
+  let hideForId = Object.fromEntries(
+    ids.map((id) =>
+      !$hiddenColumnIds.includes(id) ? [id, true] : [id, false],
+    ),
+  );
   $: $hiddenColumnIds = Object.entries(hideForId)
     .filter(([, hide]) => !hide)
     .map(([id]) => id);

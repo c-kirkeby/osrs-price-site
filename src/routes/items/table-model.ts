@@ -31,7 +31,9 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       fn: ({ filterValue, value }) =>
         value.toLowerCase().includes(filterValue.toLowerCase()),
     }),
-    hide: addHiddenColumns(),
+    hide: addHiddenColumns({
+      initialHiddenColumnIds: ["id", "is_members", "alch_low", "alch_high"],
+    }),
   });
   const columns = table.createColumns([
     table.column({
@@ -46,6 +48,9 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       plugins: {
         filter: {
           exclude: true,
+        },
+        sort: {
+          disable: true,
         },
       },
       cell: ({ value, row }) => {
@@ -65,7 +70,7 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       cell: ({ row, value }) => {
         return createRender(DataTableLink, {
           // @ts-expect-error find if there's a better way to get the ID
-          href: `/items/${row.cells.find((cell) => cell.id === "id")?.value}`,
+          href: `/items/${row.original.id}`,
         }).slot(value ?? "");
       },
     }),
