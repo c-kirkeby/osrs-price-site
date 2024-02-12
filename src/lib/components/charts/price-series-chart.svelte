@@ -92,5 +92,5 @@
     <VisCrosshair {data} {template} />
   </VisXYContainer>
 {:else}
-  <div class="h-[300px] flex items-center text-xl justify-center">No data</div>
+  <div class="h-[400px] flex items-center text-xl justify-center">No data</div>
 {/if}

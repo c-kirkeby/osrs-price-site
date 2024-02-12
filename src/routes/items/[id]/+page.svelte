@@ -11,13 +11,16 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { onMount } from "svelte";
   import { calculateTax, cn } from "$lib/utils";
+  import type { TimeSeriesOption } from "$lib/types/time-series";
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
+  import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
   import { page } from "$app/stores";
   import { getItem } from "$lib/api/item";
   import { natureRune } from "$lib/stores/alch";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
+  import { getTimeSeries } from "$lib/api/time-series";
 
   const formatter = new Intl.NumberFormat();
   const compactFormatter = new Intl.NumberFormat("en-AU", {
@@ -26,6 +29,13 @@
   });
 
   export let data;
+
+  let selected: TimeSeriesOption = {
+    value: "5m",
+    label: "1 Day",
+  };
+
+  $: data.streamed.history = getTimeSeries(data.item.id, selected.value);
 
   $: tax = data.item.sell_price
     ? calculateTax(data.item.sell_price, data.item.id)
@@ -337,13 +347,7 @@
       class="flex flex-row items-center justify-between space-y-0 pb-2"
     >
       <Card.Title class="text-base font-normal">Item History</Card.Title>
-      <Button
-        variant="outline"
-        role="combobox"
-        class="w-[200px] justify-between"
-      >
-        5 Mins
-      </Button>
+      <TimeStepDropdown bind:selected />
     </Card.Header>
     <Card.Content>
       {#await data.streamed.history}
