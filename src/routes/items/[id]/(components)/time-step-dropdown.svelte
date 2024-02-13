@@ -1,8 +1,6 @@
 <script lang="ts">
   import * as Select from "$lib/components/ui/select";
 
-  export let selected: { value: string; label: string };
-
   const timeSteps = [
     { value: "5m", label: "1 Day" },
     { value: "1h", label: "7 Days" },
@@ -11,7 +9,7 @@
   ];
 </script>
 
-<Select.Root bind:selected>
+<Select.Root {...$$restProps}>
   <Select.Trigger class="w-[180px]">
     <Select.Value placeholder="Select an interval" />
   </Select.Trigger>

@@ -15,12 +15,12 @@
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
-  import { page } from "$app/stores";
+  import { page, navigating } from "$app/stores";
   import { getItem } from "$lib/api/item";
   import { natureRune } from "$lib/stores/alch";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
-  import { getTimeSeries } from "$lib/api/time-series";
+  import { writable, type Writable } from "svelte/store";
 
   const formatter = new Intl.NumberFormat();
   const compactFormatter = new Intl.NumberFormat("en-AU", {
@@ -30,12 +30,17 @@
 
   export let data;
 
-  let selected: TimeSeriesOption = {
+  let selected: Writable<TimeSeriesOption> = writable({
     value: "5m",
     label: "1 Day",
-  };
+  });
 
-  $: data.streamed.history = getTimeSeries(data.item.id, selected.value);
+  $: if ($navigating) {
+    $selected = {
+      value: "5m",
+      label: "1 Day",
+    };
+  }
 
   $: tax = data.item.sell_price
     ? calculateTax(data.item.sell_price, data.item.id)
@@ -85,6 +90,14 @@
       clearInterval(priceInterval);
     };
   });
+
+  async function fetchHistory(interval: TimeSeriesOption) {
+    $selected = interval;
+    const response = await fetch(
+      `/items/${data.item.id}/time-series?timeStep=${interval.value}`,
+    );
+    data.streamed.history = response.json();
+  }
 </script>
 
 <svelte:head>
@@ -341,7 +354,10 @@
       class="flex flex-row items-center justify-between space-y-0 pb-2"
     >
       <Card.Title class="text-base font-normal">Item History</Card.Title>
-      <TimeStepDropdown bind:selected />
+      <TimeStepDropdown
+        bind:selected={$selected}
+        onSelectedChange={fetchHistory}
+      />
     </Card.Header>
     <Card.Content>
       {#await data.streamed.history}

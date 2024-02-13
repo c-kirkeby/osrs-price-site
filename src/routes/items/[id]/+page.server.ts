@@ -9,6 +9,7 @@ type TimeStep = "5m" | "1h" | "6h" | "24h";
 export async function load({ params }) {
   const timeStep: TimeStep = "5m";
   await syncUpstreamPrices(parseInt(params.id));
+
   const data = await db
     .select()
     .from(items)
