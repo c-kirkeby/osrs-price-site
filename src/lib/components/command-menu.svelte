@@ -2,12 +2,14 @@
   import { Button } from "$lib/components/ui/button";
   import * as Command from "$lib/components/ui/command";
   import type { Item } from "$lib/db/schema";
+  import { searchHistory } from "$lib/stores/searchHistory";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
+  import { X } from "lucide-svelte";
 
   let open = false;
   let value = "";
-  let items: Partial<Item>[] = [];
+  let items: Item[] = [];
   let loading = false;
 
   async function handleInput() {
@@ -68,17 +70,34 @@
     on:input={handleInput}
     bind:value
   />
-  <!-- <Input
-    placeholder="Type a command or search"
-    bind:value
-    on:input={handleInput}
-  /> -->
   <Command.List>
-    {#if items.length === 0}
-      <Command.Empty>No results found.</Command.Empty>
-    {:else}
-      <Command.Group heading="Item">
+    <Command.Empty>No results found.</Command.Empty>
+    {#if items.length > 0}
+      <Command.Group heading="Items">
         {#each items as item}
+          <Command.Item
+            onSelect={() =>
+              runCommand(() => {
+                open = false;
+                searchHistory.add(item);
+                goto(`/items/${item.id}`);
+              })}
+          >
+            <img
+              src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(
+                item.icon?.replaceAll(" ", "_") ?? "",
+              )}`}
+              alt={item.name}
+              class="object-contain inline-block mr-2 h-4 w-4"
+            />
+            {item.name}
+          </Command.Item>
+        {/each}
+      </Command.Group>
+    {/if}
+    {#if $searchHistory.length > 0}
+      <Command.Group heading="History">
+        {#each $searchHistory as item}
           <Command.Item
             onSelect={() =>
               runCommand(() => {
@@ -94,6 +113,14 @@
               class="object-contain inline-block mr-2 h-4 w-4"
             />
             {item.name}
+            <Button
+              variant="ghost"
+              size="sm"
+              class="ml-auto h-5"
+              on:click={() => searchHistory.remove(item)}
+            >
+              <X class="h-0.5" />
+            </Button>
           </Command.Item>
         {/each}
       </Command.Group>
