@@ -3,6 +3,7 @@
   import * as Command from "$lib/components/ui/command";
   import type { Item } from "$lib/db/schema";
   import { searchHistory } from "$lib/stores/searchHistory";
+  import { asyncDebounce } from "$lib/utils";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { X } from "lucide-svelte";
@@ -67,7 +68,7 @@
 <Command.Dialog bind:open>
   <Command.Input
     placeholder="Type a command or search"
-    on:input={handleInput}
+    on:input={asyncDebounce(handleInput, 200)}
     bind:value
   />
   <Command.List>
