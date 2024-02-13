@@ -10,7 +10,7 @@
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { onMount } from "svelte";
-  import { calculateTax, cn } from "$lib/utils";
+  import { calculateTax, calculateRoi, cn } from "$lib/utils";
   import type { TimeSeriesOption } from "$lib/types/time-series";
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
@@ -57,18 +57,12 @@
         )
       : null;
   $: potentialProfit =
-    data.item.sell_price &&
-    data.item.buy_price &&
-    typeof tax === "number" &&
-    data.item.buy_limit
-      ? Math.floor(
-          (data.item.buy_price - data.item.sell_price - tax) *
-            data.item.buy_limit,
-        )
+    profit && data.item.buy_limit
+      ? Math.floor(profit * data.item.buy_limit)
       : null;
   $: returnOnInvestment =
-    data.item.sell_price && data.item.buy_price && tax
-      ? (data.item.sell_price - tax - data.item.buy_price) / data.item.buy_price
+    data.item.sell_price && profit && tax
+      ? calculateRoi(data.item.sell_price, profit)
       : null;
 
   onMount(() => {

@@ -96,6 +96,16 @@ export function calculateTax(sellPrice: number, itemId: number) {
 }
 
 /**
+ * Returns the return on investment as a percentage.
+ * @param cost (tax included)
+ * @param profit
+ * @returns
+ */
+export function calculateRoi(cost: number, profit: number) {
+  return (profit / cost) * 100;
+}
+
+/**
  * @todo move to a database table
  */
 export function isItemTaxExempt(itemId: number) {

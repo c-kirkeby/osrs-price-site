@@ -11,15 +11,15 @@ import { DataTableLink } from "$lib/components/data-table";
 import type { Item } from "$lib/db/schema";
 import type { ReadOrWritable } from "svelte-headless-table";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
-import { calculateTax } from "$lib/utils";
+import { calculateRoi, calculateTax } from "$lib/utils";
 
 const formatter = new Intl.NumberFormat();
 
 const formatNumberCell = (value: number | null) =>
-  value ? formatter.format(value) : "";
+  value ? formatter.format(value) : "Unknown";
 
 const formatBooleanCell = (value: boolean | null) =>
-  value === true ? "Yes" : value === false ? "No" : "";
+  value === true ? "Yes" : value === false ? "No" : "Unknown";
 
 export const createTableModel = (data: ReadOrWritable<Item[]>) => {
   const table = createTable(data, {
@@ -53,12 +53,12 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
           disable: true,
         },
       },
-      cell: ({ value, row }) => {
+      cell: ({ value }) => {
         return createRender(DataTableImage, {
           src: `https://oldschool.runescape.wiki/images/${encodeURIComponent(
             value?.replaceAll(" ", "_") ?? "",
           )}`,
-          alt: row.cells.find((cell) => cell.id === "name")?.value,
+          alt: value,
           class: "object-contain h-5 w-5 mx-auto",
         });
       },
@@ -144,13 +144,13 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       id: "margin",
       accessor: (item) => item,
       header: "Margin",
-      cell: ({ value }) => {
+      cell: ({ row, value }) => {
         if (value.buy_price && value.sell_price) {
           return formatNumberCell(
             Math.round(
               value.buy_price -
-                value.sell_price -
-                calculateTax(value.buy_price, value?.id),
+              value.sell_price -
+              calculateTax(value.buy_price, value?.id),
             ),
           );
         }
@@ -162,8 +162,8 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
             if (item.buy_price && item.sell_price) {
               return Math.floor(
                 item.buy_price -
-                  item.sell_price -
-                  Math.round(item.buy_price * 0.01),
+                item.sell_price -
+                calculateTax(item.buy_price, item?.id),
               );
             }
             return 0;
@@ -199,7 +199,12 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       cell: ({ value }) => {
         if (value.buy_price && value.sell_price) {
           return formatNumberCell(
-            (value.sell_price * 0.99) / value.buy_price,
+            calculateRoi(
+              value.sell_price,
+              value.buy_price -
+              calculateTax(value.buy_price, value?.id) -
+              value.sell_price,
+            ),
           ).concat("%");
         }
         return "";
