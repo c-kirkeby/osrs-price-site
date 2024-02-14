@@ -10,6 +10,7 @@
   } from "lucide-svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import NotificationsDropdown from "$lib/components/notifications-dropdown.svelte";
   import { onMount } from "svelte";
   import { calculateTax, calculateRoi, cn } from "$lib/utils";
   import type { TimeSeriesOption } from "$lib/types/time-series";
@@ -128,16 +129,20 @@
       {/if}
       {data.item.name}
     </h1>
-    <Button
-      variant="outline"
-      size="sm"
-      class="ml-auto hidden h-8 lg:flex"
-      href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${$page.params.id}`}
-      target="_blank"
-    >
-      Wiki</Button
-    >
+    <div class="flex justify-between gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        class="ml-auto hidden h-8 lg:flex"
+        href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${$page.params.id}`}
+        target="_blank"
+      >
+        Wiki</Button
+      >
+      <NotificationsDropdown />
+    </div>
   </div>
+
   <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
     <Card.Root>
       <Card.Header
