@@ -6,6 +6,7 @@
     Coins,
     Info,
     FlaskRound,
+    Loader2,
   } from "lucide-svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -137,7 +138,7 @@
       Wiki</Button
     >
   </div>
-  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
     <Card.Root>
       <Card.Header
         class="flex flex-row items-center justify-between space-y-0 pb-2"
@@ -359,9 +360,11 @@
         onSelectedChange={fetchHistory}
       />
     </Card.Header>
-    <Card.Content>
+    <Card.Content class="h-[248px] w-full flex justify-center items-center">
       {#await data.streamed.history}
-        Loading...
+        <div class="text-muted-foreground flex items-center">
+          <Loader2 class="mr-2 h-4 w-4 animate-spin" />Loading...
+        </div>
       {:then value}
         <PriceSeriesChart data={value.data} />
       {:catch error}
