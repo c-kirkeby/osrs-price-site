@@ -6,8 +6,7 @@ function createSearchHistory(initialItems: Partial<Item>[]) {
 
   function add(item: Partial<Item>) {
     update((items) => {
-      const newItems = [item, ...items];
-      return newItems.slice(0, 5);
+      return [item, ...items.filter((i) => i.id !== item.id)].slice(0, 5);
     });
   }
 
