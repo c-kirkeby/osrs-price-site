@@ -6,7 +6,8 @@
   import { asyncDebounce } from "$lib/utils";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { X } from "lucide-svelte";
+  import { X, Sun, Moon, Laptop } from "lucide-svelte";
+  import { resetMode, setMode } from "mode-watcher";
 
   let open = false;
   let value = "";
@@ -95,6 +96,7 @@
           </Command.Item>
         {/each}
       </Command.Group>
+      <Command.Separator />
     {/if}
     {#if $searchHistory.length > 0}
       <Command.Group heading="History">
@@ -125,6 +127,30 @@
           </Command.Item>
         {/each}
       </Command.Group>
+      <Command.Separator />
     {/if}
+    <Command.Group heading="Theme">
+      <Command.Item
+        value="light"
+        onSelect={() => runCommand(() => setMode("light"))}
+      >
+        <Sun class="mr-2 h-4 w-4" />
+        Light
+      </Command.Item>
+      <Command.Item
+        value="dark"
+        onSelect={() => runCommand(() => setMode("dark"))}
+      >
+        <Moon class="mr-2 h-4 w-4" />
+        Dark
+      </Command.Item>
+      <Command.Item
+        value="system"
+        onSelect={() => runCommand(() => resetMode())}
+      >
+        <Laptop class="mr-2 h-4 w-4" />
+        System
+      </Command.Item>
+    </Command.Group>
   </Command.List>
 </Command.Dialog>
