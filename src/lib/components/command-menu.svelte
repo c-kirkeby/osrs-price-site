@@ -69,7 +69,7 @@
 <Command.Dialog bind:open>
   <Command.Input
     placeholder="Type a command or search"
-    on:input={asyncDebounce(handleInput, 200)}
+    on:input={asyncDebounce(handleInput, 300)}
     bind:value
   />
   <Command.List>

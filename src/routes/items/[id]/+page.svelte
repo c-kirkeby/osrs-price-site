@@ -116,7 +116,7 @@
     </div>
   </div>
   <div class="flex items-center justify-between">
-    <h1 class="text-3xl font-bold tracking-tight">
+    <h1 class="text-3xl tracking-tight">
       {#if data.item.icon}
         <img
           src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(
@@ -126,7 +126,10 @@
           class="object-contain inline-block mr-2"
         />
       {/if}
-      {data.item.name}
+      <span class="font-bold">{data.item.name}</span>
+      <span class="text-muted-foreground text-sm ml-2">
+        (ID: {data.item.id})
+      </span>
     </h1>
     <Button
       variant="outline"
