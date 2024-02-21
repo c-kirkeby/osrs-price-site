@@ -1,0 +1,115 @@
+{
+  "id": "277944b8-d47c-4902-a221-9368ef8fdaac",
+  "prevId": "8470ad0e-9b3c-4f5b-a885-692f488e2efd",
+  "version": "5",
+  "dialect": "pg",
+  "tables": {
+    "items": {
+      "name": "items",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_members": {
+          "name": "is_members",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alch_low": {
+          "name": "alch_low",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alch_high": {
+          "name": "alch_high",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "buy_limit": {
+          "name": "buy_limit",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "value": {
+          "name": "value",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "buy_price": {
+          "name": "buy_price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "buy_price_timestamp": {
+          "name": "buy_price_timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sell_price": {
+          "name": "sell_price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sell_price_timestamp": {
+          "name": "sell_price_timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "volume": {
+          "name": "volume",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "examine_text": {
+          "name": "examine_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_updated": {
+          "name": "last_updated",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

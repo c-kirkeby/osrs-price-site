@@ -107,3 +107,36 @@ export async function syncUpstreamPrices(id?: number): Promise<void> {
     console.error("Could not update prices from upstream");
   }
 }
+
+export async function syncUpstreamVolumes(): Promise<void> {
+  try {
+    const response: Data<number> = await fetch(
+      "https://prices.runescape.wiki/api/v1/osrs/volumes",
+      {
+        headers: {
+          "User-Agent": "osrs-price-site",
+        },
+      },
+    ).then((res) => res.json());
+
+    const { data } = response;
+
+    Object.keys(data).forEach((id) => {
+      const currentItem = data[id];
+      db.update(items)
+        .set({
+          volume: currentItem,
+          last_updated: new Date(),
+        })
+        .where(eq(items.id, Number(id)))
+        .execute();
+    });
+    console.log(
+      "Volumes updated at " +
+        new Date().toLocaleString("en-AU", { timeZone: "Australia/Brisbane" }) +
+        " AEST",
+    );
+  } catch (error) {
+    console.error("Could not update volumes from upstream");
+  }
+}

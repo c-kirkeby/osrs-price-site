@@ -26,13 +26,25 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
     page: addPagination(),
     sort: addSortBy({
       toggleOrder: ["asc", "desc"],
+      initialSortKeys: [
+        {
+          id: "volume_x_margin",
+          order: "desc",
+        },
+      ],
     }),
     filter: addTableFilter({
       fn: ({ filterValue, value }) =>
         value.toLowerCase().includes(filterValue.toLowerCase()),
     }),
     hide: addHiddenColumns({
-      initialHiddenColumnIds: ["id", "is_members", "alch_low", "alch_high"],
+      initialHiddenColumnIds: [
+        "id",
+        "value",
+        "is_members",
+        "alch_low",
+        "alch_high",
+      ],
     }),
   });
   const columns = table.createColumns([
@@ -144,13 +156,13 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       id: "margin",
       accessor: (item) => item,
       header: "Margin",
-      cell: ({ row, value }) => {
+      cell: ({ value }) => {
         if (value.buy_price && value.sell_price) {
           return formatNumberCell(
             Math.round(
               value.buy_price -
-              value.sell_price -
-              calculateTax(value.buy_price, value?.id),
+                value.sell_price -
+                calculateTax(value.buy_price, value?.id),
             ),
           );
         }
@@ -162,8 +174,52 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
             if (item.buy_price && item.sell_price) {
               return Math.floor(
                 item.buy_price -
-                item.sell_price -
-                calculateTax(item.buy_price, item?.id),
+                  item.sell_price -
+                  calculateTax(item.buy_price, item?.id),
+              );
+            }
+            return 0;
+          },
+        },
+      },
+    }),
+    table.column({
+      id: "volume",
+      accessor: (item) => item,
+      header: "Volume (24h)",
+      cell: ({ value }) => formatNumberCell(value.volume),
+      plugins: {
+        sort: {
+          getSortValue: (item) => item.volume,
+        },
+      },
+    }),
+    table.column({
+      id: "volume_x_margin",
+      accessor: (item) => item,
+      header: "Volume x Margin",
+      cell: ({ value }) => {
+        if (value.buy_price && value.sell_price && value.volume) {
+          return formatNumberCell(
+            Math.round(
+              value.volume *
+                (value.buy_price -
+                  value.sell_price -
+                  calculateTax(value.buy_price, value?.id)),
+            ),
+          );
+        }
+        return "";
+      },
+      plugins: {
+        sort: {
+          getSortValue: (item) => {
+            if (item.buy_price && item.sell_price && item.volume) {
+              return Math.floor(
+                item.volume *
+                  (item.buy_price -
+                    item.sell_price -
+                    calculateTax(item.buy_price, item?.id)),
               );
             }
             return 0;
@@ -202,8 +258,8 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
             calculateRoi(
               value.sell_price,
               value.buy_price -
-              calculateTax(value.buy_price, value?.id) -
-              value.sell_price,
+                calculateTax(value.buy_price, value?.id) -
+                value.sell_price,
             ),
           ).concat("%");
         }

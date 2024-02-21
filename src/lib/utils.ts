@@ -75,15 +75,14 @@ export function poll(fn: () => void, milliseconds: number, lazy = true) {
 
 /**
  *
- * Returns a 1% tax on the sell price of an item if it is >= 100gp <= 5m and
- * is not exempt.
+ * Returns a 1% (rounded down) tax on the sell price of an item if it is <=
+ * 5m and is not exempt.
  * @param sellPrice
  * @param itemId
  * @returns
  */
 export function calculateTax(sellPrice: number, itemId: number) {
-  if (sellPrice < 100 || isItemTaxExempt(itemId)) {
-    console.debug("Item is tax exempt or too cheap to tax");
+  if (isItemTaxExempt(itemId)) {
     return 0;
   }
 

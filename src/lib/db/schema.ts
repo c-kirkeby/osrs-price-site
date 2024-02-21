@@ -19,6 +19,7 @@ export const items = pgTable("items", {
   buy_price_timestamp: timestamp("buy_price_timestamp"),
   sell_price: integer("sell_price"),
   sell_price_timestamp: timestamp("sell_price_timestamp"),
+  volume: integer("volume"),
   icon: text("icon"),
   examine_text: text("examine_text"),
   last_updated: timestamp("last_updated"),
