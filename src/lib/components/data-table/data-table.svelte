@@ -30,9 +30,9 @@
                 >
                   <Table.Head class="p-2" {...attrs}>
                     <!-- @ts-expect-error fix this type issue - props seems to be generic -->
-                    <DataTable.ColumnHeader {props}
-                      ><Render of={cell.render()} /></DataTable.ColumnHeader
-                    >
+                    <DataTable.ColumnHeader {props}>
+                      <Render of={cell.render()} />
+                    </DataTable.ColumnHeader>
                   </Table.Head>
                 </Subscribe>
               {/each}
@@ -46,7 +46,7 @@
             <Table.Row {...rowAttrs}>
               {#each row.cells as cell}
                 <Subscribe attrs={cell.attrs()} let:attrs>
-                  <Table.Cell class="p-2" {...attrs}>
+                  <Table.Cell class="p-2 min-w-[40px]" {...attrs}>
                     <Render of={cell.render()} />
                   </Table.Cell>
                 </Subscribe>
