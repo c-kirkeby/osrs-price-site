@@ -134,7 +134,7 @@
     <Button
       variant="outline"
       size="sm"
-      class="ml-auto hidden h-8 lg:flex"
+      class="ml-auto hidden h-8 md:flex"
       href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${$page.params.id}`}
       target="_blank"
     >
@@ -159,7 +159,7 @@
             {/if}
           </span>
           {#if data.item.buy_limit}
-            <span class=" text-sm text-muted-foreground"
+            <span class="text-sm text-muted-foreground"
               >(limit: {formatter.format(data.item.buy_limit)})</span
             >
           {/if}

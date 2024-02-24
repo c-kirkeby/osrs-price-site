@@ -11,7 +11,8 @@ import { DataTableLink } from "$lib/components/data-table";
 import type { Item } from "$lib/db/schema";
 import type { ReadOrWritable } from "svelte-headless-table";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
-import { calculateRoi, calculateTax } from "$lib/utils";
+import { calculateRoi, calculateTax, cn } from "$lib/utils";
+import DataTableSpan from "$lib/components/data-table/data-table-span.svelte";
 
 const formatter = new Intl.NumberFormat();
 
@@ -20,6 +21,42 @@ const formatNumberCell = (value: number | null) =>
 
 const formatBooleanCell = (value: boolean | null) =>
   value === true ? "Yes" : value === false ? "No" : "Unknown";
+
+const styleDateCell = (value: Date | null) => {
+  if (!value) {
+    return "";
+  }
+
+  let className = "hsl(var(--foreground) / var(--tw-text-opacity))";
+
+  const time = new Date(value).getTime();
+
+  // 15 minutes
+  if (time > Date.now() - 15 * 60 * 1000) {
+    className = "text-green-500";
+    // 30 minutes
+  } else if (time > Date.now() - 60 * 60 * 1000) {
+    className = "text-green-300";
+  } else if (time > Date.now() - 2 * 60 * 60 * 1000) {
+    className = "text-green-100";
+  }
+  return cn(className, "text-right");
+};
+
+const styleNonGradedNumberCell = (value: number | null) => {
+  if (!value) {
+    return "";
+  }
+
+  let className;
+
+  if (value > 0) {
+    className = "text-green-500";
+  } else if (value < 0) {
+    className = "text-red-500";
+  }
+  return cn(className, "text-right");
+};
 
 export const createTableModel = (data: ReadOrWritable<Item[]>) => {
   const table = createTable(data, {
@@ -127,12 +164,17 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       accessor: "buy_price_timestamp",
       header: "Last Bought",
       cell: ({ value }) => {
-        if (value) {
-          return formatDistanceToNowStrict(new Date(value), {
-            addSuffix: true,
-          });
+        if (!value) {
+          return "";
         }
-        return "";
+
+        return createRender(DataTableSpan, {
+          class: styleDateCell(value),
+        }).slot(
+          formatDistanceToNowStrict(new Date(value), {
+            addSuffix: true,
+          }),
+        );
       },
     }),
     table.column({
@@ -144,12 +186,17 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       accessor: "sell_price_timestamp",
       header: "Last Sold",
       cell: ({ value }) => {
-        if (value) {
-          return formatDistanceToNowStrict(new Date(value), {
-            addSuffix: true,
-          });
+        if (!value) {
+          return "";
         }
-        return "";
+
+        return createRender(DataTableSpan, {
+          class: styleDateCell(value),
+        }).slot(
+          formatDistanceToNowStrict(new Date(value), {
+            addSuffix: true,
+          }),
+        );
       },
     }),
     table.column({
@@ -157,16 +204,19 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       accessor: (item) => item,
       header: "Margin",
       cell: ({ value }) => {
-        if (value.buy_price && value.sell_price) {
-          return formatNumberCell(
-            Math.round(
-              value.buy_price -
-                value.sell_price -
-                calculateTax(value.buy_price, value?.id),
-            ),
-          );
+        if (!value.buy_price || !value.sell_price) {
+          return "";
         }
-        return "";
+
+        const marginValue = Math.round(
+          value.buy_price -
+          value.sell_price -
+          calculateTax(value.buy_price, value?.id),
+        );
+
+        return createRender(DataTableSpan, {
+          class: styleNonGradedNumberCell(marginValue),
+        }).slot(formatNumberCell(marginValue));
       },
       plugins: {
         sort: {
@@ -174,8 +224,8 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
             if (item.buy_price && item.sell_price) {
               return Math.floor(
                 item.buy_price -
-                  item.sell_price -
-                  calculateTax(item.buy_price, item?.id),
+                item.sell_price -
+                calculateTax(item.buy_price, item?.id),
               );
             }
             return 0;
@@ -203,9 +253,9 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
           return formatNumberCell(
             Math.round(
               value.volume *
-                (value.buy_price -
-                  value.sell_price -
-                  calculateTax(value.buy_price, value?.id)),
+              (value.buy_price -
+                value.sell_price -
+                calculateTax(value.buy_price, value?.id)),
             ),
           );
         }
@@ -217,9 +267,9 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
             if (item.buy_price && item.sell_price && item.volume) {
               return Math.floor(
                 item.volume *
-                  (item.buy_price -
-                    item.sell_price -
-                    calculateTax(item.buy_price, item?.id)),
+                (item.buy_price -
+                  item.sell_price -
+                  calculateTax(item.buy_price, item?.id)),
               );
             }
             return 0;
@@ -241,7 +291,7 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
         sort: {
           getSortValue: (item) => {
             if (item.sell_price) {
-              return Math.floor(item.sell_price * 0.01);
+              return calculateTax(item.sell_price, item?.id);
             }
             return 0;
           },
@@ -253,23 +303,31 @@ export const createTableModel = (data: ReadOrWritable<Item[]>) => {
       accessor: (item) => item,
       header: "ROI",
       cell: ({ value }) => {
-        if (value.buy_price && value.sell_price) {
-          return formatNumberCell(
-            calculateRoi(
-              value.sell_price,
-              value.buy_price -
-                calculateTax(value.buy_price, value?.id) -
-                value.sell_price,
-            ),
-          ).concat("%");
+        if (!value.buy_price || !value.sell_price) {
+          return "";
         }
-        return "";
+
+        const roiValue = calculateRoi(
+          value.sell_price,
+          value.buy_price -
+          calculateTax(value.buy_price, value?.id) -
+          value.sell_price,
+        );
+
+        return createRender(DataTableSpan, {
+          class: styleNonGradedNumberCell(roiValue),
+        }).slot(formatNumberCell(roiValue).concat("%"));
       },
       plugins: {
         sort: {
           getSortValue: (item) => {
             if (item.buy_price && item.sell_price) {
-              return Math.floor(item.sell_price * 0.99) / item.buy_price;
+              return calculateRoi(
+                item.sell_price,
+                item.buy_price -
+                calculateTax(item.buy_price, item?.id) -
+                item.sell_price,
+              );
             }
             return 0;
           },

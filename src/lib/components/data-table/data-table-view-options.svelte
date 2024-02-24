@@ -26,7 +26,7 @@
     <Button
       variant="outline"
       size="sm"
-      class="ml-auto hidden h-8 lg:flex"
+      class="ml-auto hidden h-8 md:flex"
       builders={[builder]}
     >
       <SlidersHorizontalIcon class="mr-2 h-4 w-4" /> Columns

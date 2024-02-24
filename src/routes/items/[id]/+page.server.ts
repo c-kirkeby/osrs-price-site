@@ -6,7 +6,10 @@ import { syncUpstreamPrices } from "$lib/db/sync";
 
 type TimeStep = "5m" | "1h" | "6h" | "24h";
 
-export async function load({ params }) {
+export async function load({ params, setHeaders }) {
+  setHeaders({
+    "Cache-Control": "max-age=29, stale-while-revalidate=58",
+  });
   const timeStep: TimeStep = "5m";
   await syncUpstreamPrices(parseInt(params.id));
 
