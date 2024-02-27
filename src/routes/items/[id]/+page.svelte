@@ -19,6 +19,7 @@
   import { page, navigating } from "$app/stores";
   import { getItem } from "$lib/api/item";
   import { natureRune } from "$lib/stores/alch";
+  import { settings } from "$lib/stores/settings";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
   import { writable, type Writable } from "svelte/store";
@@ -105,7 +106,11 @@
   <title>{data.item.name}</title>
 </svelte:head>
 
-<section class="flex-1 flex-col space-y-4 p-4 md:flex relative container">
+<section
+  class={cn("flex-1 flex-col space-y-4 p-4 md:flex relative", {
+    container: $settings.compact,
+  })}
+>
   <div class="flex items-center space-x-1 text-sm">
     <div class="overflow-hidden text-ellipsis whitespace-nowrap">
       <a href="/items">Items</a>

@@ -2,7 +2,8 @@
   import { DataTable } from "$lib/components/data-table";
   import { writable } from "svelte/store";
   import { createTableModel } from "./table-model";
-  import { poll } from "$lib/utils";
+  import { cn, poll } from "$lib/utils";
+  import { settings } from "$lib/stores/settings";
   import { headers } from "$lib/api/headers";
   import type { Item } from "$lib/db/schema";
 
@@ -44,7 +45,11 @@
   <title>Items</title>
 </svelte:head>
 
-<section class="flex-1 flex-col space-y-4 p-4 md:flex relative container">
+<section
+  class={cn("flex-1 flex-col space-y-4 p-4 md:flex relative", {
+    container: $settings.compact,
+  })}
+>
   <div class="flex items-center space-x-1 text-sm">
     <div class="overflow-hidden text-ellipsis whitespace-nowrap">
       <a href="/items">Items</a>

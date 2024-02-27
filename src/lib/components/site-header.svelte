@@ -2,6 +2,7 @@
   import { MainNav, MobileNav } from "$lib/components/nav";
   import ThemeToggle from "$lib/components/theme-toggle.svelte";
   import CommandMenu from "$lib/components/command-menu.svelte";
+  import SettingsMenu from "$lib/components/settings-menu.svelte";
 </script>
 
 <header
@@ -18,6 +19,7 @@
       </div>
       <nav class="flex items-center">
         <ThemeToggle />
+        <SettingsMenu />
       </nav>
     </div>
   </div>
