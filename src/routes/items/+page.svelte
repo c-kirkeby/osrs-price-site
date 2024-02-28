@@ -6,10 +6,16 @@
   import { settings } from "$lib/stores/settings";
   import { headers } from "$lib/api/headers";
   import type { Item } from "$lib/db/schema";
+  import { onMount } from "svelte";
+  import Loader2 from "lucide-svelte/icons/loader-2";
 
   export let data;
 
-  const itemsStore = writable(data.items);
+  const itemsStore = writable([] as Item[]);
+
+  onMount(async () => {
+    $itemsStore = await data.items;
+  });
 
   poll(async () => {
     const response: Partial<Item[]> = await (
@@ -56,5 +62,12 @@
     </div>
   </div>
   <h1 class="text-3xl font-bold tracking-tight">Items</h1>
-  <DataTable {tableModel} />
+  {#await data.items}
+    <div class="flex items-center text-sm text-muted-foreground justify-center">
+      <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+      Loading...
+    </div>
+  {:then}
+    <DataTable {tableModel} />
+  {/await}
 </section>

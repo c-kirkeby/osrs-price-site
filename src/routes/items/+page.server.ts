@@ -9,6 +9,6 @@ export async function load(params) {
   Promise.allSettled([syncUpstreamPrices(), syncUpstreamVolumes()]);
 
   return {
-    items: await fetchItems(),
+    items: fetchItems(),
   };
 }
