@@ -1,4 +1,4 @@
-import { writable } from "svelte/store";
+import { writable, type Writable } from "svelte/store";
 import { browser } from "$app/environment";
 
 export interface Settings {
@@ -6,7 +6,7 @@ export interface Settings {
 }
 
 function createSettings(initialSettings: Settings) {
-  const store = writable(initialSettings, () => {
+  const store: Writable<Settings> = writable(initialSettings, () => {
     const subscribe = store.subscribe((value) => {
       if (browser) {
         localStorage.setItem("settings", JSON.stringify(value));
@@ -19,8 +19,8 @@ function createSettings(initialSettings: Settings) {
 }
 
 const initialSettings = JSON.parse(
-  browser ? localStorage.getItem("settings") : "{}",
-);
+  browser ? localStorage.getItem("settings") ?? "{}" : "{}",
+) as Partial<Settings>;
 
 export const settings = createSettings({
   compact: true,
