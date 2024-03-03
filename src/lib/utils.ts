@@ -156,3 +156,17 @@ export function asyncDebounce<
       debounced(args);
     }) as ReturnType<F>;
 }
+
+export type OS = "MacOS" | "Windows" | "Linux" | "UNIX" | null;
+
+export function getUserOperatingSystem(): OS {
+  const userAgent = window.navigator.userAgent;
+
+  let os: OS = null;
+
+  if (userAgent.indexOf("Win") != -1) os = "Windows";
+  if (userAgent.indexOf("Mac") != -1) os = "MacOS";
+  if (userAgent.indexOf("X11") != -1) os = "UNIX";
+  if (userAgent.indexOf("Linux") != -1) os = "Linux";
+  return os;
+}

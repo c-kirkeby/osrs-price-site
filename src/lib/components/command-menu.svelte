@@ -3,9 +3,10 @@
   import * as Command from "$lib/components/ui/command";
   import type { Item } from "$lib/db/schema";
   import { searchHistory } from "$lib/stores/searchHistory";
-  import { asyncDebounce } from "$lib/utils";
+  import { asyncDebounce, getUserOperatingSystem } from "$lib/utils";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
+  import { browser } from "$app/environment";
   import { X, Sun, Moon, Laptop } from "lucide-svelte";
   import { resetMode, setMode } from "mode-watcher";
 
@@ -13,6 +14,7 @@
   let value = "";
   let items: Item[] = [];
   let loading = false;
+  const platform = browser && getUserOperatingSystem();
 
   async function handleInput() {
     if (value.length < 2) {
@@ -63,7 +65,9 @@
   <kbd
     class="pointer-events-none absolute right-2 top-2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-2 font-mono text-[10px] font-medium opacity-100 sm:flex"
   >
-    <span class="text-xs">Ctrl <span>K</span></span>
+    <span class="text-xs"
+      >{platform === "MacOS" ? "⌘" : "Ctrl"} <span>K</span></span
+    >
   </kbd>
 </Button>
 <Command.Dialog bind:open>
