@@ -1,9 +1,7 @@
 {
   "version": "0.2",
   "language": "en",
-  "dictionaries": [
-    "en-GB"
-  ],
+  "dictionaries": ["en-GB"],
   "words": [
     "alch",
     "clsx",
@@ -16,10 +14,8 @@
     "tailwindcss",
     "tsquery",
     "tsvector",
-    "unovis"
+    "unovis",
+    "layerchart"
   ],
-  "ignorePaths": [
-    "node_modules/**",
-    "dist/**"
-  ]
+  "ignorePaths": ["node_modules/**", "dist/**"]
 }
