@@ -9,12 +9,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-interface FlyAndScaleParams {
+type FlyAndScaleParams = {
   y?: number;
   x?: number;
   start?: number;
   duration?: number;
-}
+};
 
 export const flyAndScale = (
   node: Element,
