@@ -7,7 +7,7 @@
   import { headers } from "$lib/api/headers";
   import type { Item } from "$lib/db/schema";
   import { onMount } from "svelte";
-  import Loader2 from "lucide-svelte/icons/loader-2";
+  import { Loader2 } from "lucide-svelte";
 
   export let data;
 
