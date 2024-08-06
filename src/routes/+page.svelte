@@ -1,5 +1,4 @@
-<script>
-  import { ChevronRight } from "lucide-svelte";
+<script script="ts">
 </script>
 
 <svelte:head>
