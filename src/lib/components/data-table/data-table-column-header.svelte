@@ -1,4 +1,6 @@
-<script lang="ts">
+<script lang="ts" generics="TData, TValue">
+  import type { Column } from "@tanstack/svelte-table";
+
   import { cn } from "$lib/utils";
   import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
@@ -7,26 +9,14 @@
   let className: string | undefined | null = undefined;
 
   export { className as class };
-  export let props: {
-    sort: {
-      order?: "asc" | "desc";
-      toggle: (event: Event) => void;
-      clear: () => void;
-      disabled: boolean;
-    };
-  };
-
-  function handleSort(event: Event, order: "asc" | "desc") {
-    if (props.sort.order === order) {
-      return;
-    }
-    props.sort.toggle(event);
-  }
+  export let column: Column<TData, TValue>;
 </script>
 
-{#if !props.sort.disabled}
+{#if !column.getCanSort()}
+  <div class={className}><slot /></div>
+{:else}
   <div class={cn("flex items-center", className)}>
-    <DropdownMenu.Root positioning={{ placement: "bottom-start" }}>
+    <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild let:builder>
         <Button
           variant="ghost"
@@ -36,9 +26,9 @@
           <span class="capitalize">
             <slot />
           </span>
-          {#if props.sort.order === "asc"}
+          {#if column.getIsSorted().toString() === "asc"}
             <ArrowUp class="w-4 h-4 ml-2" />
-          {:else if props.sort.order === "desc"}
+          {:else if column.getIsSorted().toString() === "desc"}
             <ArrowDown class="w-4 h-4 ml-2" />
           {:else}
             <ChevronsUpDown class="w-4 h-4 ml-2" />
@@ -46,14 +36,14 @@
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.Item on:click={(event) => handleSort(event, "asc")}>
+        <DropdownMenu.Item on:click={() => column.toggleSorting(false)}>
           <ArrowUp class="w-4 h-4 mr-2" />
-          Asc</DropdownMenu.Item
-        >
-        <DropdownMenu.Item on:click={(event) => handleSort(event, "desc")}>
+          Asc
+        </DropdownMenu.Item>
+        <DropdownMenu.Item on:click={() => column.toggleSorting(true)}>
           <ArrowDown class="w-4 h-4 mr-2" />
-          Desc</DropdownMenu.Item
-        >
+          Desc
+        </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   </div>

@@ -1,61 +1,112 @@
-<script lang="ts" generics="T">
-  import type { AnyPlugins } from "svelte-headless-table/plugins";
-  import {
-    Render,
-    Subscribe,
-    type TableViewModel,
-  } from "svelte-headless-table";
+<script lang="ts" generics="TData, TValue">
+  import { writable } from "svelte/store";
+
   import * as Table from "$lib/components/ui/table";
   import * as DataTable from "$lib/components/data-table";
+  import type {
+    ColumnDef,
+    TableOptions,
+    VisibilityState,
+    OnChangeFn,
+  } from "@tanstack/svelte-table";
+  import {
+    createSvelteTable,
+    flexRender,
+    getCoreRowModel,
+    getSortedRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+  } from "@tanstack/svelte-table";
 
-  export let tableModel: TableViewModel<T, AnyPlugins>;
+  export let columns: ColumnDef<TData, TValue>[];
+  export let data: TData[];
 
-  const { headerRows, pageRows, tableAttrs, tableBodyAttrs } = tableModel;
+  let columnVisibility: VisibilityState = {};
+
+  const setColumnVisibility: OnChangeFn<VisibilityState> = (updater) => {
+    if (updater instanceof Function) {
+      columnVisibility = updater(columnVisibility);
+    } else {
+      columnVisibility = updater;
+    }
+    options.update((old) => ({
+      ...old,
+      state: {
+        ...old.state,
+        columnVisibility,
+      },
+    }));
+  };
+
+  const options = writable<TableOptions<TData>>({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    state: {
+      pagination: {
+        pageSize: 10,
+        pageIndex: 0,
+      },
+      columnVisibility,
+    },
+    enableGlobalFilter: true,
+  });
+
+  const table = createSvelteTable(options);
 </script>
 
 <div class="space-y-4">
-  <DataTable.Toolbar {tableModel} />
+  <DataTable.Toolbar {table} />
   <div class="rounded-md border">
-    <Table.Root {...$tableAttrs}>
+    <Table.Root>
       <Table.Header>
-        {#each $headerRows as headerRow}
-          <Subscribe rowAttrs={headerRow.attrs()}>
-            <Table.Row>
-              {#each headerRow.cells as cell (cell.id)}
-                <Subscribe
-                  attrs={cell.attrs()}
-                  let:attrs
-                  props={cell.props()}
-                  let:props
-                >
-                  <Table.Head class="p-2" {...attrs}>
-                    <!-- @ts-expect-error fix this type issue - props seems to be generic -->
-                    <DataTable.ColumnHeader {props}>
-                      <Render of={cell.render()} />
-                    </DataTable.ColumnHeader>
-                  </Table.Head>
-                </Subscribe>
-              {/each}
-            </Table.Row>
-          </Subscribe>
+        {#each $table.getHeaderGroups() as headerGroup}
+          <Table.Row>
+            {#each headerGroup.headers as header}
+              {#if !header.isPlaceholder}
+                <Table.Head>
+                  <DataTable.ColumnHeader column={header.column}>
+                    <svelte:component
+                      this={flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    />
+                  </DataTable.ColumnHeader>
+                </Table.Head>
+              {/if}
+            {/each}
+          </Table.Row>
         {/each}
       </Table.Header>
-      <Table.Body {...$tableBodyAttrs}>
-        {#each $pageRows as row (row.id)}
-          <Subscribe rowAttrs={row.attrs()} let:rowAttrs>
-            <Table.Row {...rowAttrs}>
-              {#each row.cells as cell}
-                <Subscribe attrs={cell.attrs()} let:attrs>
-                  <Table.Cell class="p-2 min-w-[40px]" {...attrs}>
-                    <Render of={cell.render()} />
-                  </Table.Cell>
-                </Subscribe>
+      <Table.Body>
+        {#if $table.getRowModel().rows.length}
+          {#each $table.getRowModel().rows as row}
+            <Table.Row>
+              {#each row.getVisibleCells() as cell}
+                <Table.Cell>
+                  <svelte:component
+                    this={flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext(),
+                    )}
+                  />
+                </Table.Cell>
               {/each}
             </Table.Row>
-          </Subscribe>
-        {/each}
+          {/each}
+        {:else}
+          <Table.Row>
+            <Table.Cell colspan={columns.length} class="h-24 text-center">
+              No results.
+            </Table.Cell>
+          </Table.Row>
+        {/if}
       </Table.Body>
     </Table.Root>
   </div>
-  <DataTable.Pagination {tableModel} />
 </div>

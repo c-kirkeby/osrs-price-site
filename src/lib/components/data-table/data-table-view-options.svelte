@@ -1,24 +1,12 @@
-<script lang="ts" generics="T">
+<script lang="ts" generics="TData">
+  import type { Readable } from "svelte/store";
+
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Button } from "$lib/components/ui/button";
-  import type { AnyPlugins } from "svelte-headless-table/plugins";
-  import type { TableViewModel } from "svelte-headless-table";
   import { SlidersHorizontalIcon } from "lucide-svelte";
+  import type { Table } from "@tanstack/svelte-table";
 
-  export let tableModel: TableViewModel<T, AnyPlugins>;
-  const { pluginStates, flatColumns } = tableModel;
-  const { hiddenColumnIds } = pluginStates.hide;
-
-  const ids = flatColumns.map((column) => column.id);
-
-  let hideForId = Object.fromEntries(
-    ids.map((id) =>
-      !$hiddenColumnIds.includes(id) ? [id, true] : [id, false],
-    ),
-  );
-  $: $hiddenColumnIds = Object.entries(hideForId)
-    .filter(([, hide]) => !hide)
-    .map(([id]) => id);
+  export let table: Readable<Table<TData>>;
 </script>
 
 <DropdownMenu.Root>
@@ -34,9 +22,14 @@
   </DropdownMenu.Trigger>
   <DropdownMenu.Content>
     <DropdownMenu.Label>Toggle columns</DropdownMenu.Label>
-    {#each flatColumns as column}
-      <DropdownMenu.CheckboxItem bind:checked={hideForId[column.id]}>
-        {column.header}
+    {#each $table
+      .getAllColumns()
+      .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide()) as column}
+      <DropdownMenu.CheckboxItem
+        checked={column.getIsVisible()}
+        on:click={() => column.toggleVisibility()}
+      >
+        {column.columnDef.header}
       </DropdownMenu.CheckboxItem>
     {/each}
   </DropdownMenu.Content>
