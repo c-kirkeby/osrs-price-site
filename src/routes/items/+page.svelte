@@ -1,7 +1,7 @@
 <script lang="ts">
   import { DataTable } from "$lib/components/data-table";
-  import { writable } from "svelte/store";
-  import { createTableModel } from "./table-model";
+  import { itemsStore } from "$lib/stores/items";
+  import { columns } from "./columns";
   import { cn, poll } from "$lib/utils";
   import { settings } from "$lib/stores/settings";
   import { headers } from "$lib/api/headers";
@@ -10,8 +10,6 @@
   import { Loader2 } from "lucide-svelte";
 
   export let data;
-
-  const itemsStore = writable([] as Item[]);
 
   onMount(async () => {
     $itemsStore = await data.items;
@@ -43,8 +41,6 @@
       ),
     );
   }, 60_000);
-
-  const tableModel = createTableModel(itemsStore);
 </script>
 
 <svelte:head>
@@ -67,7 +63,7 @@
       <Loader2 class="mr-2 h-4 w-4 animate-spin" />
       Loading...
     </div>
-  {:then}
-    <DataTable {tableModel} />
+  {:then items}
+    <DataTable {columns} data={items} />
   {/await}
 </section>
