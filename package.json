@@ -66,6 +66,7 @@
     "svelte-headless-table": "^0.18.2",
     "tailwind-merge": "^2.5.2",
     "tailwind-variants": "^0.2.1",
-    "typescript-eslint": "^8.1.0"
+    "typescript-eslint": "^8.1.0",
+    "svelte-ux": "^0.74.3"
   }
 }
