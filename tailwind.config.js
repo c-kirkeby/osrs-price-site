@@ -51,6 +51,12 @@ const config = {
           DEFAULT: "hsl(var(--card) / <alpha-value>)",
           foreground: "hsl(var(--card-foreground) / <alpha-value>)",
         },
+        surface: {
+          content: "hsl(var(--muted-foreground) / <alpha-value>)",
+          100: "hsl(var(--background) / <alpha-value>)",
+          200: "hsl(var(---muted) / <alpha-value>)",
+          300: "hsl(var(--background) / <alpha-value>)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

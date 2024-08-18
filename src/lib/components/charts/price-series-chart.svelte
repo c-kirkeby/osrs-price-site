@@ -65,22 +65,8 @@
         let:rScale
       >
         <Svg>
-          <Axis
-            placement="left"
-            format={formatPrice}
-            rule={{ class: "hsl(var(--chart-1))" }}
-            labelProps={{
-              class: "fill-foreground",
-            }}
-            grid={{ class: "stroke-border/50" }}
-          />
-          <Axis
-            placement="bottom"
-            format={formatTimestamp}
-            labelProps={{
-              class: "fill-foreground",
-            }}
-          />
+          <Axis placement="left" format={formatPrice} tickLength={0} />
+          <Axis placement="bottom" format={formatTimestamp} tickLength={0} />
           <Spline
             data={avgHighPriceSeries}
             y={avgHighPriceAccessor}
