@@ -65,7 +65,7 @@
         let:rScale
       >
         <Svg>
-          <Axis placement="left" format={formatPrice} tickLength={0} />
+          <Axis placement="left" format={formatPrice} tickLength={0} grid />
           <Axis placement="bottom" format={formatTimestamp} tickLength={0} />
           <Spline
             data={avgHighPriceSeries}
@@ -81,8 +81,19 @@
             points={{
               tweened: false,
               spring: false,
-              r: 0.5,
+              r: 1,
+              class: "fill-[hsl(var(--chart-1))] stroke-[hsl(var(--chart-1))]",
             }}
+            y={avgHighPriceAccessor}
+          ></Highlight>
+          <Highlight
+            points={{
+              tweened: false,
+              spring: false,
+              r: 1,
+              class: "fill-[hsl(var(--chart-5))] stroke-[hsl(var(--chart-5))]",
+            }}
+            y={avgLowPriceAccessor}
           ></Highlight>
         </Svg>
         <Tooltip
