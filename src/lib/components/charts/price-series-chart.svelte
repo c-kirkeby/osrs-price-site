@@ -1,8 +1,17 @@
 <script lang="ts">
   import type { TimeSeries } from "$lib/types/time-series";
-  import { Chart, Svg, Axis, Spline, Tooltip, Highlight } from "layerchart";
-  import { formatDistanceToNowStrict, formatRelative } from "date-fns";
+  import {
+    Chart,
+    Svg,
+    Axis,
+    Spline,
+    Tooltip,
+    TooltipItem,
+    Highlight,
+  } from "layerchart";
+  import { formatDistanceToNowStrict, formatRelative, format } from "date-fns";
   import { scaleOrdinal, scaleTime } from "d3-scale";
+  import { flatGroup } from "d3-array";
   import capitalize from "lodash/capitalize";
   import { getCompactNumberFormatter } from "$lib/utils";
 
@@ -11,143 +20,116 @@
   export let data: TimeSeries[];
 
   const chartColours = {
-    highPrice: "hsl(var(--chart-1))",
-    lowPrice: "hsl(var(--chart-5))",
+    high: "hsl(var(--chart-1))",
+    low: "hsl(var(--chart-5))",
   };
 
-  $: avgHighPriceSeries = data.filter((d) => d.avgHighPrice !== null);
-  $: avgLowPriceSeries = data.filter((d) => d.avgLowPrice !== null);
-  $: yDomain = [Math.min(...avgLowPriceSeries.map(avgLowPriceAccessor)), null];
+  $: flatData = data.flatMap((d) => [
+    {
+      date: new Date(d.timestamp * 1000),
+      value: d.avgHighPrice,
+      type: "high",
+    },
+    {
+      date: new Date(d.timestamp * 1000),
+      value: d.avgLowPrice,
+      type: "low",
+    },
+  ]);
+  $: yDomain = [
+    Math.min(...flatData.filter((d) => d.value !== null).map((d) => d.value)),
+    null,
+  ];
 
-  function avgHighPriceAccessor(d: TimeSeries) {
-    return d.avgHighPrice;
-  }
-
-  function avgLowPriceAccessor(d: TimeSeries) {
-    return d.avgLowPrice;
-  }
-
-  function formatTimestamp(d: TimeSeries["timestamp"]) {
-    return formatDistanceToNowStrict(new Date(d * 1000), {
-      addSuffix: true,
-    });
-  }
-
-  function formatPrice(
-    d: TimeSeries["avgHighPrice"] | TimeSeries["avgLowPrice"],
-  ) {
-    return compactNumberFormatter.format(d);
-  }
+  $: dataByType = flatGroup(flatData, (data) => data.type);
 </script>
 
 {#if data.length > 0}
-  <div class="pb-4">
-    <div class="h-[250px]">
-      <Chart
-        {data}
-        x="timestamp"
-        y="avgHighPrice"
-        xScale={scaleTime()}
-        {yDomain}
-        yNice
-        rDomain={Object.keys(chartColours)}
-        rRange={Object.values(chartColours)}
-        rScale={scaleOrdinal()}
-        padding={{
-          top: 5,
-          right: 10,
-          left: 10,
-          bottom: 0,
+  <div class="h-[250px] pb-4">
+    <Chart
+      data={flatData}
+      x="date"
+      xScale={scaleTime()}
+      y="value"
+      {yDomain}
+      yNice
+      r="type"
+      rScale={scaleOrdinal()}
+      rDomain={Object.keys(chartColours)}
+      rRange={Object.values(chartColours)}
+      padding={{
+        top: 5,
+        right: 10,
+        left: 10,
+        bottom: 0,
+      }}
+      tooltip={{
+        mode: "voronoi",
+      }}
+      let:rScale
+    >
+      <Svg>
+        <Axis
+          placement="left"
+          format={(data) => compactNumberFormatter.format(data)}
+          tickLength={0}
+          grid
+        />
+        <Axis
+          placement="bottom"
+          format={(date) =>
+            formatDistanceToNowStrict(date, {
+              addSuffix: true,
+            })}
+          tickLength={0}
+        />
+        {#each dataByType as [type, data]}
+          {@const colour = rScale(type)}
+          <Spline {data} class={`stroke-2 stroke-${colour}`} stroke={colour} />
+          <Highlight
+            y={(d) => d.value}
+            points={{
+              spring: false,
+              r: 4,
+              class: `fill-${colour} stroke-${colour}`,
+            }}
+          />
+        {/each}
+      </Svg>
+
+      <Tooltip
+        let:data
+        classes={{
+          container:
+            "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 text-xs shadow-xl",
+          content: "grid gap-1.5",
         }}
-        tooltip={{
-          mode: "voronoi",
-        }}
-        let:rScale
       >
-        <Svg>
-          <Axis placement="left" format={formatPrice} tickLength={0} grid />
-          <Axis placement="bottom" format={formatTimestamp} tickLength={0} />
-          <Spline
-            data={avgHighPriceSeries}
-            y={avgHighPriceAccessor}
-            class="stroke-2 stroke-[hsl(var(--chart-1))]"
-          />
-          <Spline
-            data={avgLowPriceSeries}
-            y={avgLowPriceAccessor}
-            class="stroke-2 stroke-[hsl(var(--chart-5))]"
-          />
-          <Highlight
-            points={{
-              tweened: false,
-              spring: false,
-              r: 1,
-              class: "fill-[hsl(var(--chart-1))] stroke-[hsl(var(--chart-1))]",
-            }}
-            y={avgHighPriceAccessor}
-          ></Highlight>
-          <Highlight
-            points={{
-              tweened: false,
-              spring: false,
-              r: 1,
-              class: "fill-[hsl(var(--chart-5))] stroke-[hsl(var(--chart-5))]",
-            }}
-            y={avgLowPriceAccessor}
-          ></Highlight>
-        </Svg>
-        <Tooltip
-          let:data
-          classes={{
-            container:
-              "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 text-xs shadow-xl",
-            content: "grid gap-1.5",
-          }}
-        >
-          <div slot="header" let:data>
-            {capitalize(
-              formatRelative(data.timestamp * 1000, new Date()).slice(),
-            )}
-          </div>
-          <div class="grid gap-1.5">
-            {#if data.avgHighPrice}
+        <div slot="header" let:data>
+          {capitalize(formatRelative(data.date, new Date()).slice())}
+        </div>
+        <div class="grid gap-1.5">
+          {#each dataByType as [type]}
+            {@const colour = rScale(type)}
+            <div
+              class="flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground"
+            >
               <div
-                class="flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground"
-              >
-                <div
-                  class="shrink-0 rounded-[2px] border-[hsl(var(--chart-1))] bg-[hsl(var(--chart-1))] w-2.5 h-2.5"
-                ></div>
-                <div class="flex flex-1 justify-between leading-none">
-                  <span class="text-muted-foreground">High Price</span>
-                </div>
-                <span
-                  class="font-mono font-medium tabular-nums text-foreground"
+                class={`shrink-0 rounded-[2px] border-[${colour}] bg-[${colour}] w-2.5 h-2.5`}
+              ></div>
+              <div class="flex flex-1 justify-between leading-none">
+                <span class="text-muted-foreground">
+                  {capitalize(type)} Price</span
                 >
-                  {data.avgHighPrice.toLocaleString()}
-                </span>
               </div>
-            {/if}
-            {#if data.avgLowPrice}
-              <div
-                class="flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground"
-              >
-                <div
-                  class="shrink-0 rounded-[2px] border-[hsl(var(--chart-5))] bg-[hsl(var(--chart-5))] w-2.5 h-2.5"
-                ></div>
-                <div class="flex flex-1 justify-between leading-none">
-                  <span class="text-muted-foreground">Low Price</span>
-                </div>
-                <span
-                  class="font-mono font-medium tabular-nums text-foreground"
-                >
-                  {data.avgLowPrice.toLocaleString()}
-                </span>
-              </div>
-            {/if}
-          </div></Tooltip
-        >
-      </Chart>
-    </div>
+              <span class="font-mono font-medium tabular-nums text-foreground">
+                {data.value.toLocaleString()}
+              </span>
+            </div>
+          {/each}
+        </div></Tooltip
+      >
+    </Chart>
   </div>
 {:else}
   <div class="h-[250px] flex items-center text-xl justify-center">No data</div>
