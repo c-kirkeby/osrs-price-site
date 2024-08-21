@@ -1,15 +1,7 @@
 <script lang="ts">
   import type { TimeSeries } from "$lib/types/time-series";
-  import {
-    Chart,
-    Svg,
-    Axis,
-    Spline,
-    Tooltip,
-    TooltipItem,
-    Highlight,
-  } from "layerchart";
-  import { formatDistanceToNowStrict, formatRelative, format } from "date-fns";
+  import { Chart, Svg, Axis, Spline, Tooltip, Highlight } from "layerchart";
+  import { formatDistanceToNowStrict, formatRelative } from "date-fns";
   import { scaleOrdinal, scaleTime } from "d3-scale";
   import { flatGroup } from "d3-array";
   import capitalize from "lodash/capitalize";
@@ -24,18 +16,20 @@
     low: "hsl(var(--chart-5))",
   };
 
-  $: flatData = data.flatMap((d) => [
-    {
-      date: new Date(d.timestamp * 1000),
-      value: d.avgHighPrice,
-      type: "high",
-    },
-    {
-      date: new Date(d.timestamp * 1000),
-      value: d.avgLowPrice,
-      type: "low",
-    },
-  ]);
+  $: flatData = data.flatMap((d) =>
+    [
+      {
+        date: new Date(d.timestamp * 1000),
+        value: d.avgHighPrice,
+        type: "high",
+      },
+      {
+        date: new Date(d.timestamp * 1000),
+        value: d.avgLowPrice,
+        type: "low",
+      },
+    ].filter((d) => d.value !== null),
+  );
   $: yDomain = [
     Math.min(...flatData.filter((d) => d.value !== null).map((d) => d.value)),
     null,
@@ -85,13 +79,13 @@
         />
         {#each dataByType as [type, data]}
           {@const colour = rScale(type)}
-          <Spline {data} class={`stroke-2 stroke-${colour}`} stroke={colour} />
+          <Spline {data} class="stroke-2" stroke={colour} />
           <Highlight
             y={(d) => d.value}
             points={{
               spring: false,
               r: 4,
-              class: `fill-${colour} stroke-${colour}`,
+              class: `fill-[${colour}] stroke-[${colour}]`,
             }}
           />
         {/each}
@@ -101,7 +95,7 @@
         let:data
         classes={{
           container:
-            "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 text-xs shadow-xl",
+            "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py text-xs shadow-xl",
           content: "grid gap-1.5",
         }}
       >
@@ -127,8 +121,8 @@
               </span>
             </div>
           {/each}
-        </div></Tooltip
-      >
+        </div>
+      </Tooltip>
     </Chart>
   </div>
 {:else}
