@@ -15,6 +15,7 @@
 {#if !column.getCanSort()}
   <div class={className}><slot /></div>
 {:else}
+  {@const isSorted = column.getIsSorted()}
   <div class={cn("flex items-center", className)}>
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild let:builder>
@@ -26,9 +27,9 @@
           <span class="capitalize">
             <slot />
           </span>
-          {#if column.getIsSorted().toString() === "asc"}
+          {#if isSorted === "asc"}
             <ArrowUp class="w-4 h-4 ml-2" />
-          {:else if column.getIsSorted().toString() === "desc"}
+          {:else if isSorted === "desc"}
             <ArrowDown class="w-4 h-4 ml-2" />
           {:else}
             <ChevronsUpDown class="w-4 h-4 ml-2" />

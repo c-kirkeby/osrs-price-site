@@ -45,7 +45,7 @@
   "type": "module",
   "dependencies": {
     "@eslint/js": "^9.9.0",
-    "@tanstack/svelte-table": "^8.20.1",
+    "@tanstack/svelte-table": "^8.20.5",
     "@types/lodash": "^4.17.7",
     "@unovis/svelte": "^1.4.4",
     "@unovis/ts": "^1.4.4",

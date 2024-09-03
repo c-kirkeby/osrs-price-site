@@ -2,14 +2,22 @@ import DataTableImage from "$lib/components/data-table/data-table-image.svelte";
 import type { Item } from "$lib/db/schema";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
 import { calculateRoi, calculateTax, cn } from "$lib/utils";
-import DataTableSpan from "$lib/components/data-table/data-table-span.svelte";
+import DataTableCell from "$lib/components/data-table/data-table-cell.svelte";
 import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import { LucideStar } from "lucide-svelte";
+import { DataTableLink } from "$lib/components/data-table";
 
-const formatter = new Intl.NumberFormat();
+let formatter: Intl.NumberFormat | undefined;
+
+if (!formatter && typeof navigator !== "undefined") {
+  formatter = new Intl.NumberFormat(navigator.language, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+}
 
 const formatNumberCell = (value: number | null) =>
-  value ? formatter.format(value) : "Unknown";
+  value ? formatter?.format(value) : "Unknown";
 
 const formatBooleanCell = (value: boolean | null) =>
   value === true ? "Yes" : value === false ? "No" : "Unknown";
@@ -37,7 +45,7 @@ const styleDateCell = (value: Date | null) => {
 
 const styleNonGradedNumberCell = (value: number | null) => {
   if (!value) {
-    return "";
+    return "text-slate-500";
   }
 
   let className;
@@ -48,6 +56,14 @@ const styleNonGradedNumberCell = (value: number | null) => {
     className = "text-red-500";
   }
   return cn(className, "text-right");
+};
+
+const calculateMargin = (
+  buyPrice: number,
+  sellPrice: number,
+  id: number,
+): number => {
+  return Math.round(buyPrice - sellPrice - calculateTax(buyPrice, id));
 };
 
 const columnHelper = createColumnHelper<Item>();
@@ -71,7 +87,11 @@ export const columns = [
     enableColumnFilter: false,
   }),
   columnHelper.accessor("name", {
-    cell: (info) => info.getValue(),
+    cell: (info) =>
+      renderComponent(DataTableLink, {
+        value: info.getValue(),
+        href: `/items/${info.row.original.id}`,
+      }),
     header: "Name",
   }),
   columnHelper.accessor("is_members", {
@@ -106,11 +126,14 @@ export const columns = [
     header: "Buy Price",
   }),
   columnHelper.accessor("buy_price_timestamp", {
-    cell: (info) =>
-      formatDistanceToNowStrict(info.getValue(), {
-        addSuffix: true,
-      }),
     header: "Last Bought",
+    cell: (info) =>
+      renderComponent(DataTableCell, {
+        value: formatDistanceToNowStrict(info.getValue() ?? "", {
+          addSuffix: true,
+        }),
+        class: styleDateCell(info.getValue()),
+      }),
   }),
   columnHelper.accessor("sell_price", {
     cell: (info) => formatNumberCell(info.getValue()),
@@ -118,35 +141,62 @@ export const columns = [
   }),
   columnHelper.accessor("sell_price_timestamp", {
     cell: (info) =>
-      formatDistanceToNowStrict(info.getValue(), {
-        addSuffix: true,
+      renderComponent(DataTableCell, {
+        value: formatDistanceToNowStrict(info.getValue() ?? "", {
+          addSuffix: true,
+        }),
+        class: styleDateCell(info.getValue()),
       }),
     header: "Last Sold",
   }),
-  columnHelper.display({
+  columnHelper.accessor((row) => row, {
     id: "margin",
+    header: "Margin",
     cell: (info) => {
       if (!info.row.getValue("buy_price") || !info.row.getValue("sell_price")) {
         return "";
       }
 
-      const marginValue = Math.round(
-        info.row.getValue("buy_price") -
-        info.row.getValue("sell_price") -
-        calculateTax(info.row.getValue("buy_price"), info.row.getValue("id")),
+      const margin = calculateMargin(
+        info.row.getValue("buy_price"),
+        info.row.getValue("sell_price"),
+        info.row.getValue("id"),
       );
 
-      return renderComponent(DataTableSpan, {
-        class: styleNonGradedNumberCell(marginValue),
-        slot: formatNumberCell(marginValue),
+      return renderComponent(DataTableCell, {
+        class: styleNonGradedNumberCell(margin),
+        value: formatNumberCell(margin),
       });
+    },
+    sortingFn: (a, b) => {
+      if (
+        !a.original.buy_price ||
+        !a.original.sell_price ||
+        !b.original.buy_price ||
+        !b.original.sell_price
+      ) {
+        return 0;
+      }
+
+      return (
+        calculateMargin(
+          a.original.buy_price,
+          a.original.sell_price,
+          a.original.id,
+        ) -
+        calculateMargin(
+          b.original.buy_price,
+          b.original.sell_price,
+          b.original.id,
+        )
+      );
     },
   }),
   columnHelper.accessor("volume", {
     cell: (info) => formatNumberCell(info.getValue()),
     header: "Volume (24h)",
   }),
-  columnHelper.display({
+  columnHelper.accessor((row) => row, {
     id: "volume_x_margin",
     cell: (info) => {
       if (
@@ -157,20 +207,43 @@ export const columns = [
         return formatNumberCell(
           Math.round(
             info.row.getValue("volume") *
-            (info.row.getValue("buy_price") -
-              info.row.getValue("sell_price") -
-              calculateTax(
-                info.row.getValue("buy_price"),
-                info.row.getValue("id"),
-              )),
+            calculateMargin(
+              info.row.getValue("buy_price"),
+              info.row.getValue("sell_price"),
+              info.row.getValue("id"),
+            ),
           ),
         );
       }
-      return "";
+      return "Unknown";
     },
     header: "Volume x Margin",
+    sortingFn: (a, b) => {
+      if (
+        !a.original.buy_price ||
+        !a.original.sell_price ||
+        !a.original.volume ||
+        !b.original.buy_price ||
+        !b.original.sell_price ||
+        !b.original.volume
+      ) {
+        return 0;
+      }
+      const aMargin = calculateMargin(
+        a.original.buy_price,
+        a.original.sell_price,
+        a.original.id,
+      );
+      const bMargin = calculateMargin(
+        b.original.buy_price,
+        b.original.sell_price,
+        b.original.id,
+      );
+
+      return a.original.volume * aMargin - b.original.volume * bMargin;
+    },
   }),
-  columnHelper.display({
+  columnHelper.accessor((row) => row, {
     id: "tax",
     cell: (info) => {
       if (info.row.getValue("sell_price")) {
@@ -183,9 +256,19 @@ export const columns = [
       }
       return "0";
     },
+    sortingFn: (a, b) => {
+      if (!a.original.sell_price || !b.original.sell_price) {
+        return 0;
+      }
+
+      return (
+        calculateTax(a.original.sell_price, a.original.id) -
+        calculateTax(b.original.sell_price, b.original.id)
+      );
+    },
     header: "Tax",
   }),
-  columnHelper.display({
+  columnHelper.accessor((row) => row, {
     id: "roi",
     cell: (info) => {
       if (!info.row.getValue("buy_price") || !info.row.getValue("sell_price")) {
@@ -194,15 +277,43 @@ export const columns = [
 
       const roiValue = calculateRoi(
         info.row.getValue("sell_price"),
-        info.row.getValue("buy_price") -
-        calculateTax(
+        calculateMargin(
           info.row.getValue("buy_price"),
+          info.row.getValue("sell_price"),
           info.row.getValue("id"),
-        ) -
-        info.row.getValue("sell_price"),
+        ),
       );
 
-      return formatNumberCell(roiValue).concat("%");
+      return formatNumberCell(roiValue)?.concat("%");
+    },
+    sortingFn: (a, b) => {
+      if (
+        !a.original.buy_price ||
+        !a.original.sell_price ||
+        !b.original.buy_price ||
+        !b.original.sell_price
+      ) {
+        return 0;
+      }
+
+      const aRoi = calculateRoi(
+        a.original.sell_price,
+        calculateMargin(
+          a.original.buy_price,
+          a.original.sell_price,
+          a.original.id,
+        ),
+      );
+      const bRoi = calculateRoi(
+        b.original.sell_price,
+        calculateMargin(
+          b.original.buy_price,
+          b.original.sell_price,
+          b.original.id,
+        ),
+      );
+
+      return aRoi - bRoi;
     },
     header: "ROI",
   }),
