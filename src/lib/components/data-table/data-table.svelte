@@ -68,7 +68,7 @@
           <Table.Row>
             {#each headerGroup.headers as header}
               {#if !header.isPlaceholder}
-                <Table.Head>
+                <Table.Head class="whitespace-nowrap">
                   <DataTable.ColumnHeader column={header.column}>
                     <svelte:component
                       this={flexRender(
@@ -88,7 +88,7 @@
           {#each $table.getRowModel().rows as row}
             <Table.Row>
               {#each row.getVisibleCells() as cell}
-                <Table.Cell>
+                <Table.Cell class="p-2 whitespace-nowrap">
                   <svelte:component
                     this={flexRender(
                       cell.column.columnDef.cell,
