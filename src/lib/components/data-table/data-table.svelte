@@ -46,11 +46,12 @@
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    state: {
+    initialState: {
       pagination: {
         pageSize: 10,
-        pageIndex: 0,
       },
+    },
+    state: {
       columnVisibility,
     },
     enableGlobalFilter: true,
@@ -109,4 +110,5 @@
       </Table.Body>
     </Table.Root>
   </div>
+  <DataTable.Pagination {table} />
 </div>

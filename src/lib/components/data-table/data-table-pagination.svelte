@@ -1,8 +1,8 @@
-<script lang="ts" generics="T">
+<script lang="ts" generics="TData">
+  import type { Readable } from "svelte/store";
   import Button from "$lib/components/ui/button/button.svelte";
   import * as Select from "$lib/components/ui/select";
-  import type { TableViewModel } from "svelte-headless-table";
-  import type { AnyPlugins } from "svelte-headless-table/plugins";
+  import type { Table } from "@tanstack/svelte-table";
   import {
     ChevronLeftIcon,
     ChevronRightIcon,
@@ -10,19 +10,16 @@
     ChevronsRightIcon,
   } from "lucide-svelte";
 
-  export let tableModel: TableViewModel<T, AnyPlugins>;
-
-  const { pluginStates, rows } = tableModel;
-
-  const { hasNextPage, hasPreviousPage, pageSize, pageCount, pageIndex } =
-    pluginStates.page;
+  export let table: Readable<Table<TData>>;
 </script>
 
 <div class="flex items-center justify-end px-2">
   <div class="flex items-center space-x-6 lg:space-x-8">
     <p class="text-sm font-medium">Rows per page</p>
     <Select.Root
-      onSelectedChange={(selected) => pageSize.set(Number(selected?.value))}
+      onSelectedChange={(selected) => {
+        $table.setPageSize(Number(selected?.value));
+      }}
       selected={{ value: 10, label: "10" }}
     >
       <Select.Trigger class="w-[180px]">
@@ -37,14 +34,15 @@
       </Select.Content>
     </Select.Root>
     <div class="w-[100px] items-center justify-center text-sm font-medium">
-      Page {$pageIndex + 1} of {$pageCount}
+      Page {$table.getState().pagination.pageIndex + 1} of
+      {$table.getPageCount()}
     </div>
     <div class="flex items-center space-x-2">
       <Button
         variant="outline"
         class="hidden h-8 w-8 p-0 lg:flex"
-        on:click={() => ($pageIndex = 0)}
-        disabled={!$hasPreviousPage}
+        on:click={() => $table.setPageIndex(0)}
+        disabled={!$table.getCanPreviousPage()}
       >
         <span class="sr-only">Go to first page</span>
         <ChevronsLeftIcon size={15} />
@@ -52,8 +50,8 @@
       <Button
         variant="outline"
         class="hidden h-8 w-8 p-0 lg:flex"
-        on:click={() => ($pageIndex = $pageIndex - 1)}
-        disabled={!$hasPreviousPage}
+        on:click={() => $table.previousPage()}
+        disabled={!$table.getCanPreviousPage()}
       >
         <span class="sr-only">Go to previous page</span>
         <ChevronLeftIcon size={15} />
@@ -61,8 +59,8 @@
       <Button
         variant="outline"
         class="hidden h-8 w-8 p-0 lg:flex"
-        on:click={() => ($pageIndex = $pageIndex + 1)}
-        disabled={!$hasNextPage}
+        on:click={() => $table.nextPage()}
+        disabled={!$table.getCanNextPage()}
       >
         <span class="sr-only">Go to next page</span>
         <ChevronRightIcon size={15} />
@@ -70,8 +68,7 @@
       <Button
         variant="outline"
         class="hidden h-8 w-8 p-0 lg:flex"
-        on:click={() => ($pageIndex = Math.ceil($rows.length / $pageSize) - 1)}
-        disabled={!$hasNextPage}
+        on:click={() => $table.setPageIndex($table.getPageCount() - 1)}
       >
         <span class="sr-only">Go to last page</span>
         <ChevronsRightIcon size={15} />
