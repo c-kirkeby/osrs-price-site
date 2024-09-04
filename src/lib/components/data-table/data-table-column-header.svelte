@@ -2,7 +2,12 @@
   import type { Column } from "@tanstack/svelte-table";
 
   import { cn } from "$lib/utils";
-  import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-svelte";
+  import {
+    ArrowDown,
+    ArrowUp,
+    ChevronsUpDown,
+    EyeOffIcon,
+  } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Button } from "$lib/components/ui/button";
 
@@ -44,6 +49,11 @@
         <DropdownMenu.Item on:click={() => column.toggleSorting(true)}>
           <ArrowDown class="w-4 h-4 mr-2" />
           Desc
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item on:click={() => column.toggleVisibility(false)}>
+          <EyeOffIcon class="w-4 h-4 mr-2" />
+          Hide
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
