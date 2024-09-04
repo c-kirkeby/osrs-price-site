@@ -16,8 +16,12 @@ if (!formatter && typeof navigator !== "undefined") {
   });
 }
 
-const formatNumberCell = (value: number | null) =>
-  value ? formatter?.format(value) : "-";
+const formatNumberCell = (value: number | null): string | null | undefined =>
+  value !== null && value !== undefined ? formatter?.format(value) : null;
+
+const getPrefix = (value: number): string => {
+  return value > 0 ? "+" : "";
+};
 
 const styleDateCell = (value: Date | null) => {
   if (!value) {
@@ -37,7 +41,7 @@ const styleDateCell = (value: Date | null) => {
   } else if (time > Date.now() - 2 * 60 * 60 * 1000) {
     className = "text-green-100";
   }
-  return cn(className, "text-right");
+  return className;
 };
 
 const styleNonGradedNumberCell = (value: number | null) => {
@@ -138,10 +142,7 @@ export const columns = [
     cell: (info) =>
       renderComponent(DataTableCell, {
         value: formatNumberCell(info.getValue()) ?? "-",
-        class: cn(
-          styleNonGradedNumberCell(info.getValue()),
-          "flex justify-end",
-        ),
+        class: cn("flex justify-end"),
       }),
     header: "Buy Price",
   }),
@@ -169,10 +170,7 @@ export const columns = [
     cell: (info) =>
       renderComponent(DataTableCell, {
         value: formatNumberCell(info.getValue()) ?? "-",
-        class: cn(
-          styleNonGradedNumberCell(info.getValue()),
-          "flex justify-end",
-        ),
+        class: "flex justify-end",
       }),
     header: "Sell Price",
   }),
@@ -215,7 +213,7 @@ export const columns = [
 
       return renderComponent(DataTableCell, {
         class: cn(styleNonGradedNumberCell(margin), "flex justify-end"),
-        value: formatNumberCell(margin) ?? "-",
+        value: getPrefix(margin) + formatNumberCell(margin) || "-",
       });
     },
     sortingFn: (a, b) => {
@@ -268,7 +266,9 @@ export const columns = [
           );
       }
       return renderComponent(DataTableCell, {
-        value: formatNumberCell(Math.round(grossMargin)) ?? "-",
+        value:
+          getPrefix(grossMargin) + formatNumberCell(Math.round(grossMargin)) ||
+          "-",
         class: cn(styleNonGradedNumberCell(grossMargin), "flex justify-end"),
       });
     },
@@ -344,7 +344,8 @@ export const columns = [
       );
 
       return renderComponent(DataTableCell, {
-        value: formatNumberCell(roiValue)?.concat("%") ?? "-",
+        value:
+          getPrefix(roiValue) + formatNumberCell(roiValue)?.concat("%") || "-",
         class: cn(styleNonGradedNumberCell(roiValue), "flex justify-end"),
       });
     },
