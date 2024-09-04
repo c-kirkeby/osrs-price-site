@@ -17,7 +17,7 @@ if (!formatter && typeof navigator !== "undefined") {
 }
 
 const formatNumberCell = (value: number | null) =>
-  value ? formatter?.format(value) : "Unknown";
+  value ? formatter?.format(value) : "-";
 
 const styleDateCell = (value: Date | null) => {
   if (!value) {
@@ -52,7 +52,7 @@ const styleNonGradedNumberCell = (value: number | null) => {
   } else if (value < 0) {
     className = "text-red-500";
   }
-  return cn(className, "text-right");
+  return className;
 };
 
 const calculateMargin = (
@@ -79,14 +79,14 @@ export const columns = [
         alt: info.getValue(),
         class: "object-contain size-5 mx-auto w-[40px]",
       }),
-    header: "Icon",
+    header: "",
     enableSorting: false,
     enableColumnFilter: false,
   }),
   columnHelper.accessor("name", {
     cell: (info) =>
       renderComponent(DataTableLink, {
-        value: info.getValue(),
+        value: info.getValue() ?? "",
         href: `/items/${info.row.original.id}`,
       }),
     header: "Name",
@@ -103,23 +103,46 @@ export const columns = [
     enableSorting: false,
   }),
   columnHelper.accessor("alch_low", {
-    cell: (info) => formatNumberCell(info.getValue()),
+    cell: (info) =>
+      renderComponent(DataTableCell, {
+        value: formatNumberCell(info.getValue()) ?? "-",
+        class: "flex justify-end",
+      }),
     header: "Alch Low",
   }),
   columnHelper.accessor("alch_high", {
-    cell: (info) => formatNumberCell(info.getValue()),
+    cell: (info) =>
+      renderComponent(DataTableCell, {
+        value: formatNumberCell(info.getValue()) ?? "-",
+        class: "flex justify-end",
+      }),
     header: "Alch High",
   }),
   columnHelper.accessor("buy_limit", {
-    cell: (info) => formatNumberCell(info.getValue()),
+    cell: (info) =>
+      renderComponent(DataTableCell, {
+        value: formatNumberCell(info.getValue()) ?? "-",
+        class: "flex justify-end",
+      }),
     header: "Limit",
   }),
   columnHelper.accessor("value", {
-    cell: (info) => formatNumberCell(info.getValue()),
+    cell: (info) =>
+      renderComponent(DataTableCell, {
+        value: formatNumberCell(info.getValue()) ?? "-",
+        class: "flex justify-end",
+      }),
     header: "Value",
   }),
   columnHelper.accessor("buy_price", {
-    cell: (info) => formatNumberCell(info.getValue()),
+    cell: (info) =>
+      renderComponent(DataTableCell, {
+        value: formatNumberCell(info.getValue()) ?? "-",
+        class: cn(
+          styleNonGradedNumberCell(info.getValue()),
+          "flex justify-end",
+        ),
+      }),
     header: "Buy Price",
   }),
   columnHelper.accessor("buy_price_timestamp", {
@@ -143,7 +166,14 @@ export const columns = [
     },
   }),
   columnHelper.accessor("sell_price", {
-    cell: (info) => formatNumberCell(info.getValue()),
+    cell: (info) =>
+      renderComponent(DataTableCell, {
+        value: formatNumberCell(info.getValue()) ?? "-",
+        class: cn(
+          styleNonGradedNumberCell(info.getValue()),
+          "flex justify-end",
+        ),
+      }),
     header: "Sell Price",
   }),
   columnHelper.accessor("sell_price_timestamp", {
@@ -174,7 +204,7 @@ export const columns = [
     header: "Margin",
     cell: (info) => {
       if (!info.row.getValue("buy_price") || !info.row.getValue("sell_price")) {
-        return "";
+        return "-";
       }
 
       const margin = calculateMargin(
@@ -184,8 +214,8 @@ export const columns = [
       );
 
       return renderComponent(DataTableCell, {
-        class: styleNonGradedNumberCell(margin),
-        value: formatNumberCell(margin),
+        class: cn(styleNonGradedNumberCell(margin), "flex justify-end"),
+        value: formatNumberCell(margin) ?? "-",
       });
     },
     sortingFn: (a, b) => {
@@ -213,7 +243,11 @@ export const columns = [
     },
   }),
   columnHelper.accessor("volume", {
-    cell: (info) => formatNumberCell(info.getValue()),
+    cell: (info) =>
+      renderComponent(DataTableCell, {
+        value: formatNumberCell(info.getValue()) ?? "-",
+        class: "flex justify-end",
+      }),
     header: "Volume (24h)",
   }),
   columnHelper.accessor((row) => row, {
@@ -224,20 +258,34 @@ export const columns = [
         info.row.getValue("sell_price") &&
         info.row.getValue("volume")
       ) {
-        return formatNumberCell(
-          Math.round(
-            info.row.getValue("volume") *
-            calculateMargin(
-              info.row.getValue("buy_price"),
-              info.row.getValue("sell_price"),
-              info.row.getValue("id"),
+        return renderComponent(DataTableCell, {
+          value:
+            formatNumberCell(
+              Math.round(
+                info.row.getValue("volume") *
+                calculateMargin(
+                  info.row.getValue("buy_price"),
+                  info.row.getValue("sell_price"),
+                  info.row.getValue("id"),
+                ),
+              ),
+            ) ?? "-",
+          class: cn(
+            styleNonGradedNumberCell(
+              info.row.getValue("volume") *
+              calculateMargin(
+                info.row.getValue("buy_price"),
+                info.row.getValue("sell_price"),
+                info.row.getValue("id"),
+              ),
             ),
+            "flex justify-end",
           ),
-        );
+        });
       }
-      return "Unknown";
+      return "-";
     },
-    header: "Volume x Margin",
+    header: "Gross Profit",
     sortingFn: (a, b) => {
       if (
         !a.original.buy_price ||
@@ -267,12 +315,16 @@ export const columns = [
     id: "tax",
     cell: (info) => {
       if (info.row.getValue("sell_price")) {
-        return formatNumberCell(
-          calculateTax(
-            info.row.getValue("sell_price"),
-            info.row.getValue("id"),
-          ),
-        );
+        return renderComponent(DataTableCell, {
+          value:
+            formatNumberCell(
+              calculateTax(
+                info.row.getValue("sell_price"),
+                info.row.getValue("id"),
+              ),
+            ) ?? "0",
+          class: "flex justify-end",
+        });
       }
       return "0";
     },
@@ -304,7 +356,10 @@ export const columns = [
         ),
       );
 
-      return formatNumberCell(roiValue)?.concat("%");
+      return renderComponent(DataTableCell, {
+        value: formatNumberCell(roiValue)?.concat("%") ?? "-",
+        class: cn(styleNonGradedNumberCell(roiValue), "flex justify-end"),
+      });
     },
     sortingFn: (a, b) => {
       if (

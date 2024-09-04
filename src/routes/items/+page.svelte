@@ -7,6 +7,7 @@
   import type { Item } from "$lib/db/schema";
   import { onMount } from "svelte";
   import { Loader2 } from "lucide-svelte";
+  import type { InitialTableState } from "@tanstack/svelte-table";
 
   export let data;
   let items: Item[] = [];
@@ -41,6 +42,26 @@
       ),
     );
   }, 60_000);
+
+  let columnVisibility = {
+    id: false,
+    value: false,
+    is_members: false,
+    alch_low: false,
+    alch_high: false,
+  };
+
+  let initialState: InitialTableState = {
+    pagination: {
+      pageSize: 10,
+    },
+    sorting: [
+      {
+        id: "volume_x_margin",
+        desc: true,
+      },
+    ],
+  };
 </script>
 
 <svelte:head>
@@ -64,6 +85,6 @@
       Loading...
     </div>
   {:then}
-    <DataTable {columns} data={items} />
+    <DataTable {columns} data={items} {columnVisibility} {initialState} />
   {/await}
 </section>
