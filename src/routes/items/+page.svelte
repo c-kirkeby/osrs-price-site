@@ -10,6 +10,7 @@
   import type { InitialTableState } from "@tanstack/svelte-table";
 
   export let data;
+
   let items: Item[] = [];
 
   onMount(async () => {
