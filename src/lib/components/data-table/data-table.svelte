@@ -1,5 +1,5 @@
 <script lang="ts" generics="TData, TValue">
-  import { writable, type Writable } from "svelte/store";
+  import { writable } from "svelte/store";
 
   import * as Table from "$lib/components/ui/table";
   import * as DataTable from "$lib/components/data-table";
@@ -8,6 +8,7 @@
     TableOptions,
     VisibilityState,
     OnChangeFn,
+    InitialTableState,
   } from "@tanstack/svelte-table";
   import {
     createSvelteTable,
@@ -21,7 +22,12 @@
   export let columns: ColumnDef<TData, TValue>[];
   export let data: TData[];
 
-  let columnVisibility: VisibilityState = {};
+  export let columnVisibility: VisibilityState = {};
+  export let initialState: InitialTableState = {
+    pagination: {
+      pageSize: 10,
+    },
+  };
 
   const setColumnVisibility: OnChangeFn<VisibilityState> = (updater) => {
     if (updater instanceof Function) {
@@ -46,11 +52,7 @@
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
+    initialState,
     state: {
       columnVisibility,
     },
