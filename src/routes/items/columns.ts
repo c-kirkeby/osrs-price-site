@@ -19,9 +19,6 @@ if (!formatter && typeof navigator !== "undefined") {
 const formatNumberCell = (value: number | null) =>
   value ? formatter?.format(value) : "Unknown";
 
-const formatBooleanCell = (value: boolean | null) =>
-  value === true ? "Yes" : value === false ? "No" : "Unknown";
-
 const styleDateCell = (value: Date | null) => {
   if (!value) {
     return "";
@@ -134,6 +131,16 @@ export const columns = [
         }),
         class: styleDateCell(info.getValue()),
       }),
+    sortingFn: (a, b) => {
+      if (!a.original.buy_price_timestamp || !b.original.buy_price_timestamp) {
+        return 0;
+      }
+
+      return (
+        new Date(a.original.buy_price_timestamp).getTime() -
+        new Date(b.original.buy_price_timestamp).getTime()
+      );
+    },
   }),
   columnHelper.accessor("sell_price", {
     cell: (info) => formatNumberCell(info.getValue()),
@@ -148,6 +155,19 @@ export const columns = [
         class: styleDateCell(info.getValue()),
       }),
     header: "Last Sold",
+    sortingFn: (a, b) => {
+      if (
+        !a.original.sell_price_timestamp ||
+        !b.original.sell_price_timestamp
+      ) {
+        return 0;
+      }
+
+      return (
+        new Date(a.original.sell_price_timestamp).getTime() -
+        new Date(b.original.sell_price_timestamp).getTime()
+      );
+    },
   }),
   columnHelper.accessor((row) => row, {
     id: "margin",

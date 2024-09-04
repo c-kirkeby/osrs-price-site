@@ -1,6 +1,5 @@
 <script lang="ts">
   import { DataTable } from "$lib/components/data-table";
-  import { itemsStore } from "$lib/stores/items";
   import { columns } from "./columns";
   import { cn, poll } from "$lib/utils";
   import { settings } from "$lib/stores/settings";
@@ -10,9 +9,10 @@
   import { Loader2 } from "lucide-svelte";
 
   export let data;
+  let items: Item[] = [];
 
   onMount(async () => {
-    $itemsStore = await data.items;
+    items = await data.items;
   });
 
   poll(async () => {
@@ -34,7 +34,7 @@
         },
       )
     ).json();
-    $itemsStore = $itemsStore.map((item: Item) =>
+    items = items.map((item: Item) =>
       Object.assign(
         item,
         response.find((price) => price?.id === item.id),
@@ -63,7 +63,7 @@
       <Loader2 class="mr-2 h-4 w-4 animate-spin" />
       Loading...
     </div>
-  {:then items}
+  {:then}
     <DataTable {columns} data={items} />
   {/await}
 </section>

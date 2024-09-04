@@ -1,5 +1,5 @@
 <script lang="ts" generics="TData, TValue">
-  import { writable } from "svelte/store";
+  import { writable, type Writable } from "svelte/store";
 
   import * as Table from "$lib/components/ui/table";
   import * as DataTable from "$lib/components/data-table";
@@ -56,6 +56,15 @@
     },
     enableGlobalFilter: true,
   });
+
+  const rerender = () => {
+    options.update((options) => ({
+      ...options,
+      data,
+    }));
+  };
+
+  $: if (data) rerender();
 
   const table = createSvelteTable(options);
 </script>
