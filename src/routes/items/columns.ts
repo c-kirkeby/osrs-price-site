@@ -253,37 +253,24 @@ export const columns = [
   columnHelper.accessor((row) => row, {
     id: "volume_x_margin",
     cell: (info) => {
+      let grossMargin = 0;
       if (
         info.row.getValue("buy_price") &&
         info.row.getValue("sell_price") &&
         info.row.getValue("volume")
       ) {
-        return renderComponent(DataTableCell, {
-          value:
-            formatNumberCell(
-              Math.round(
-                info.row.getValue("volume") *
-                calculateMargin(
-                  info.row.getValue("buy_price"),
-                  info.row.getValue("sell_price"),
-                  info.row.getValue("id"),
-                ),
-              ),
-            ) ?? "-",
-          class: cn(
-            styleNonGradedNumberCell(
-              info.row.getValue("volume") *
-              calculateMargin(
-                info.row.getValue("buy_price"),
-                info.row.getValue("sell_price"),
-                info.row.getValue("id"),
-              ),
-            ),
-            "flex justify-end",
-          ),
-        });
+        grossMargin =
+          info.row.getValue("volume") *
+          calculateMargin(
+            info.row.getValue("buy_price"),
+            info.row.getValue("sell_price"),
+            info.row.getValue("id"),
+          );
       }
-      return "-";
+      return renderComponent(DataTableCell, {
+        value: formatNumberCell(Math.round(grossMargin)) ?? "-",
+        class: cn(styleNonGradedNumberCell(grossMargin), "flex justify-end"),
+      });
     },
     header: "Gross Profit",
     sortingFn: (a, b) => {
