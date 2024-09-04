@@ -1,6 +1,5 @@
 <script lang="ts" generics="TData">
   import type { Readable } from "svelte/store";
-
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Button } from "$lib/components/ui/button";
   import { SlidersHorizontalIcon } from "lucide-svelte";

@@ -1,11 +1,11 @@
 import DataTableImage from "$lib/components/data-table/data-table-image.svelte";
+import DataTableCell from "$lib/components/data-table/data-table-cell.svelte";
+import { DataTableLink } from "$lib/components/data-table";
 import type { Item } from "$lib/db/schema";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
 import { calculateRoi, calculateTax, cn } from "$lib/utils";
-import DataTableCell from "$lib/components/data-table/data-table-cell.svelte";
 import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import { LucideStar } from "lucide-svelte";
-import { DataTableLink } from "$lib/components/data-table";
 
 let formatter: Intl.NumberFormat | undefined;
 
@@ -69,7 +69,8 @@ const calculateMargin = (
 
 const columnHelper = createColumnHelper<Item>();
 
-export const columns = [
+// TODO: fix explicit `any`. ref: TanStack/table#4382
+export const columns: any[] = [
   columnHelper.accessor("id", {
     cell: (info) => info.getValue(),
     header: "ID",
