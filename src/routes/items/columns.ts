@@ -83,7 +83,7 @@ export const columns = [
         alt: info.getValue(),
         class: "object-contain size-5 mx-auto w-[40px]",
       }),
-    header: "",
+    header: "Icon",
     enableSorting: false,
     enableColumnFilter: false,
   }),
