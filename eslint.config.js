@@ -25,6 +25,9 @@ export default [
     languageOptions: {
       parserOptions: {
         parser: ts.parser,
+        svelteFeatures: {
+          experimentalGenerics: true,
+        },
       },
     },
   },
