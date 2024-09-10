@@ -20,7 +20,7 @@
   import { settings } from "$lib/stores/settings";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
-  import { itemsStore } from "$lib/stores/items";
+  import { currentItem } from "$lib/stores/current-item";
   import { getTimeSeries } from "$lib/api/time-series";
 
   const formatter = new Intl.NumberFormat();
@@ -31,7 +31,7 @@
 
   export let data;
 
-  $: item = $itemsStore.find((item) => `${item.id}` === $page.params.id);
+  $: item = $currentItem;
 
   let selected = {
     value: "5m",
