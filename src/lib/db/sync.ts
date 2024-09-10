@@ -58,8 +58,8 @@ export async function syncUpstreamItemMappings(): Promise<void> {
     });
     console.log(
       "Mappings updated at " +
-        new Date().toLocaleString("en-AU", { timeZone: "Australia/Brisbane" }) +
-        " AEST",
+      new Date().toLocaleString("en-AU", { timeZone: "Australia/Brisbane" }) +
+      " AEST",
     );
   } catch (error) {
     console.error("Could not update mappings from upstream");
@@ -99,9 +99,9 @@ export async function syncUpstreamPrices(id?: number): Promise<void> {
     });
     console.log(
       "Prices updated at " +
-        new Date().toLocaleString("en-AU", { timeZone: "Australia/Brisbane" }) +
-        " AEST for " +
-        (id ? `item id ${id}` : "all items"),
+      new Date().toLocaleString("en-AU", { timeZone: "Australia/Brisbane" }) +
+      " AEST for " +
+      (id ? `item id ${id}` : "all items"),
     );
   } catch (error) {
     console.error("Could not update prices from upstream");
@@ -133,8 +133,8 @@ export async function syncUpstreamVolumes(): Promise<void> {
     });
     console.log(
       "Volumes updated at " +
-        new Date().toLocaleString("en-AU", { timeZone: "Australia/Brisbane" }) +
-        " AEST",
+      new Date().toLocaleString("en-AU", { timeZone: "Australia/Brisbane" }) +
+      " AEST",
     );
   } catch (error) {
     console.error("Could not update volumes from upstream");

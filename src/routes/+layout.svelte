@@ -1,30 +1,51 @@
 <script lang="ts">
   import { ModeWatcher } from "mode-watcher";
-  import { poll } from "$lib/utils";
   import "../app.postcss";
-  import { getItem } from "$lib/api/item";
-  import { natureRune, natureRuneItemId } from "$lib/stores/alch";
   import SiteHeader from "$lib/components/site-header.svelte";
+  import { itemsStore } from "$lib/stores/items";
+  import {
+    fetchPrices,
+    fetchVolumes,
+    type Mapping,
+    type Prices,
+    type Volumes,
+  } from "$lib/api/items";
+  import { onMount } from "svelte";
+  import type { Item } from "$lib/types/item";
 
   export let data;
 
-  $natureRune = data.natureRunePrice;
+  onMount(async () => {
+    let mappings: Mapping[];
+    let prices: Prices;
+    let volumes: Volumes;
 
-  poll(async () => {
-    try {
-      const response = await getItem(natureRuneItemId, [
-        "id",
-        "buy_price",
-        "buy_price_timestamp",
-        "last_updated",
-      ]);
-      if (response) {
-        $natureRune = response;
-      }
-    } catch (error) {
-      console.error("Failed to fetch nature rune price", error);
-    }
-  }, 30_000);
+    [mappings, prices, volumes] = await Promise.all([
+      data.streamed.mappings,
+      data.streamed.prices,
+      data.streamed.volumes,
+    ]);
+    $itemsStore = mappings.map((mapping) => {
+      return {
+        ...mapping,
+        ...prices[mapping.id],
+        volume: volumes[mapping.id],
+      } satisfies Item;
+    });
+
+    const interval = setInterval(async () => {
+      [prices, volumes] = await Promise.all([fetchPrices(), fetchVolumes()]);
+
+      $itemsStore = $itemsStore.map((item) => {
+        return {
+          ...item,
+          ...prices[item.id],
+        };
+      });
+
+      return () => clearInterval(interval);
+    }, 60_000);
+  });
 </script>
 
 <ModeWatcher />

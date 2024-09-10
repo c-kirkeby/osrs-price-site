@@ -1,4 +1,4 @@
-import type { Item } from "$lib/db/schema";
+import type { Item } from "$lib/types/item";
 import { writable, type Writable } from "svelte/store";
 import { browser } from "$app/environment";
 
@@ -35,7 +35,7 @@ function createSearchHistory(initialItems: Partial<Item>[]) {
 }
 
 const initialHistory = JSON.parse(
-  browser ? localStorage.getItem("history") ?? "[]" : "[]",
+  browser ? (localStorage.getItem("history") ?? "[]") : "[]",
 );
 
 export const searchHistory = createSearchHistory(initialHistory);
