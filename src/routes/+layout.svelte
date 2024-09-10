@@ -15,11 +15,33 @@
 
   export let data;
 
-  onMount(async () => {
-    let mappings: Mapping[];
-    let prices: Prices;
-    let volumes: Volumes;
+  let mappings: Mapping[];
+  let prices: Prices;
+  let volumes: Volumes;
 
+  let intervalId: ReturnType<typeof setInterval> | undefined;
+  let interval = () => {
+    return setInterval(async () => {
+      [prices, volumes] = await Promise.all([fetchPrices(), fetchVolumes()]);
+      $itemsStore = $itemsStore.map((item) => {
+        return {
+          ...item,
+          ...prices[item.id],
+        };
+      });
+    }, 60_000);
+  };
+
+  function handleVisibilityChange() {
+    if (document.hidden) {
+      clearInterval(intervalId);
+      intervalId = undefined;
+    } else {
+      intervalId = intervalId || interval();
+    }
+  }
+
+  onMount(async () => {
     [mappings, prices, volumes] = await Promise.all([
       data.streamed.mappings,
       data.streamed.prices,
@@ -33,18 +55,12 @@
       } satisfies Item;
     });
 
-    const interval = setInterval(async () => {
-      [prices, volumes] = await Promise.all([fetchPrices(), fetchVolumes()]);
-
-      $itemsStore = $itemsStore.map((item) => {
-        return {
-          ...item,
-          ...prices[item.id],
-        };
-      });
-
-      return () => clearInterval(interval);
-    }, 60_000);
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange,
+      false,
+    );
+    handleVisibilityChange();
   });
 </script>
 
