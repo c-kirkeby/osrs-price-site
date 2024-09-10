@@ -1,37 +1,33 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import * as Command from "$lib/components/ui/command";
-  import type { Item } from "$lib/db/schema";
+  import type { Item } from "$lib/types/item";
   import { searchHistory } from "$lib/stores/searchHistory";
-  import { asyncDebounce, getUserOperatingSystem } from "$lib/utils";
+  import { getUserOperatingSystem } from "$lib/utils";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
   import { X, Sun, Moon, Laptop } from "lucide-svelte";
   import { resetMode, setMode } from "mode-watcher";
+  import { createItemsIndex, searchItemsIndex } from "$lib/search";
+  import { itemsStore } from "$lib/stores/items";
 
   let open = false;
   let value = "";
-  let items: Item[] = [];
-  let loading = false;
+  let results: Item[] = [];
+  let status: "loading" | "ready" = "loading";
   const platform = browser && getUserOperatingSystem();
 
-  async function handleInput() {
-    if (value.length < 2) {
-      items = [];
-      return;
-    }
-    if (loading !== true) {
-      loading = true;
+  $: if ($itemsStore.length > 0) {
+    createItemsIndex($itemsStore);
+    status = "ready";
+  }
 
-      items = await (
-        await fetch(
-          `/items?fields[items]=name&fields[items]=id&fields[items]=icon&filter[name]=${value}`,
-        )
-      ).json();
-
-      loading = false;
-    }
+  $: if (status === "ready") {
+    const search = async () => {
+      results = await searchItemsIndex(value);
+    };
+    search();
   }
 
   function runCommand(command: () => void) {
@@ -70,33 +66,29 @@
     >
   </kbd>
 </Button>
-<Command.Dialog bind:open>
-  <Command.Input
-    placeholder="Type a command or search"
-    on:input={asyncDebounce(handleInput, 300)}
-    bind:value
-  />
+<Command.Dialog bind:open shouldFilter={false}>
+  <Command.Input placeholder="Type a command or search" bind:value />
   <Command.List>
     <Command.Empty>No results found.</Command.Empty>
-    {#if items.length > 0}
+    {#if results.length > 0}
       <Command.Group heading="Items">
-        {#each items as item}
+        {#each results as result}
           <Command.Item
             onSelect={() =>
               runCommand(() => {
                 open = false;
-                searchHistory.add(item);
-                goto(`/items/${item.id}`);
+                searchHistory.add(result);
+                goto(`/items/${result.id}`);
               })}
           >
             <img
               src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(
-                item.icon?.replaceAll(" ", "_") ?? "",
+                result.icon?.replaceAll(" ", "_") ?? "",
               )}`}
-              alt={item.name}
+              alt={result.name}
               class="object-contain inline-block mr-2 h-4 w-4"
             />
-            {item.name}
+            {result.name}
           </Command.Item>
         {/each}
       </Command.Group>
@@ -124,7 +116,10 @@
               variant="ghost"
               size="sm"
               class="ml-auto h-5"
-              on:click={() => searchHistory.remove(item)}
+              on:click={(event) => {
+                event.stopPropagation();
+                searchHistory.remove(item);
+              }}
             >
               <X class="h-0.5" />
             </Button>

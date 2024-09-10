@@ -5,8 +5,11 @@ import { headers } from "./headers";
 export async function getTimeSeries(
   id: number | string,
   timeStep: TimeStep = "5m",
+  options: { fetcher: typeof fetch } = {
+    fetcher: fetch,
+  },
 ): Promise<{ data: TimeSeries[] }> {
-  const response = await fetch(
+  const response = await options.fetcher(
     `https://prices.runescape.wiki/api/v1/osrs/timeseries?id=${id}&timestep=${timeStep}`,
     { headers },
   );

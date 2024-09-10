@@ -10,19 +10,18 @@
   } from "lucide-svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { onMount } from "svelte";
   import { calculateTax, calculateRoi, cn } from "$lib/utils";
-  import type { TimeSeriesOption } from "$lib/types/time-series";
+  import type { TimeSeriesOption, TimeStep } from "$lib/types/time-series";
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
   import { page, navigating } from "$app/stores";
-  import { getItem } from "$lib/api/item";
-  import { natureRune } from "$lib/stores/alch";
+  import { alchPrice } from "$lib/stores/alch";
   import { settings } from "$lib/stores/settings";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
-  import { writable, type Writable } from "svelte/store";
+  import { itemsStore } from "$lib/stores/items";
+  import { getTimeSeries } from "$lib/api/time-series";
 
   const formatter = new Intl.NumberFormat();
   const compactFormatter = new Intl.NumberFormat("en-AU", {
@@ -32,78 +31,49 @@
 
   export let data;
 
-  let selected: Writable<TimeSeriesOption> = writable({
+  $: item = $itemsStore.find((item) => `${item.id}` === $page.params.id);
+
+  let selected = {
     value: "5m",
     label: "1 Day",
-  });
+  };
 
   $: if ($navigating) {
-    $selected = {
+    selected = {
       value: "5m",
       label: "1 Day",
     };
   }
 
-  $: tax = data.item.sell_price
-    ? calculateTax(data.item.sell_price, data.item.id)
-    : null;
+  $: tax = item?.low ? calculateTax(item.low, item.id) : null;
   $: profit =
-    data.item.sell_price && data.item.buy_price && typeof tax === "number"
-      ? Math.floor(data.item.buy_price - data.item.sell_price - tax)
+    item?.low && item.high && typeof tax === "number"
+      ? Math.floor(item.high - item.low - tax)
       : null;
   $: highAlchProfit =
-    data.item.alch_high && data.item.buy_price && $natureRune.buy_price
-      ? Math.floor(
-          data.item.alch_high - data.item.buy_price - $natureRune.buy_price,
-        )
+    item?.highalch && item.high && $alchPrice?.high
+      ? Math.floor(item.highalch - item.high - $alchPrice?.high)
       : null;
   $: lowAlchProfit =
-    data.item.alch_low && data.item.buy_price && $natureRune.buy_price
-      ? Math.floor(
-          data.item.alch_low - data.item.buy_price - $natureRune.buy_price,
-        )
+    item?.lowalch && item.high && $alchPrice?.high
+      ? Math.floor(item.lowalch - item.high - $alchPrice?.high)
       : null;
   $: potentialProfit =
-    profit && data.item.buy_limit
-      ? Math.floor(profit * data.item.buy_limit)
-      : null;
+    profit && item?.limit ? Math.floor(profit * item.limit) : null;
   $: returnOnInvestment =
-    data.item.sell_price && profit && tax
-      ? calculateRoi(data.item.sell_price, profit)
-      : null;
-
-  onMount(() => {
-    const priceInterval = setInterval(
-      () =>
-        getItem(data.item.id, [
-          "id",
-          "buy_price",
-          "buy_price_timestamp",
-          "sell_price",
-          "sell_price_timestamp",
-          "last_updated",
-        ]).then((response) => {
-          data.item = Object.assign(data.item, response);
-        }),
-      30_000,
-    );
-
-    return () => {
-      clearInterval(priceInterval);
-    };
-  });
+    item?.low && profit && tax ? calculateRoi(item.low, profit) : null;
 
   async function fetchHistory(interval: TimeSeriesOption) {
-    $selected = interval;
-    const response = await fetch(
-      `/items/${data.item.id}/time-series?timeStep=${interval.value}`,
+    selected = interval;
+    data.streamed.history = getTimeSeries(
+      $page.params.id,
+      selected.value as TimeStep,
     );
-    data.streamed.history = response.json();
   }
 </script>
 
 <svelte:head>
-  <title>{data.item.name}</title>
+  <title>{item?.name}</title>
 </svelte:head>
 
 <section
@@ -117,23 +87,23 @@
     </div>
     <ChevronRight class="h-4 w-4" />
     <div class="font-medium text-foreground">
-      <a href={`/items/${$page.params.id}`}>{data.item.name}</a>
+      <a href={`/items/${$page.params.id}`}>{item?.name}</a>
     </div>
   </div>
   <div class="flex items-center justify-between">
     <h1 class="text-3xl tracking-tight">
-      {#if data.item.icon}
+      {#if item?.icon}
         <img
           src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(
-            data.item.icon.replaceAll(" ", "_"),
+            item.icon.replaceAll(" ", "_"),
           )}`}
-          alt={data.item.name}
+          alt={item.name}
           class="object-contain inline-block mr-2"
         />
       {/if}
-      <span class="font-bold">{data.item.name}</span>
+      <span class="font-bold">{item?.name}</span>
       <span class="text-muted-foreground text-sm ml-2">
-        (ID: {data.item.id})
+        (ID: {item?.id})
       </span>
     </h1>
     <Button
@@ -157,35 +127,32 @@
       <Card.Content>
         <p>
           <span class="text-2xl font-bold">
-            {#if data.item.buy_price}
-              {formatter.format(data.item.buy_price)}
+            {#if item?.high}
+              {formatter.format(item.high)}
             {:else}
               Unknown
             {/if}
           </span>
-          {#if data.item.buy_limit}
+          {#if item?.limit}
             <span class="text-sm text-muted-foreground"
-              >(limit: {formatter.format(data.item.buy_limit)})</span
+              >(limit: {formatter.format(item.limit)})</span
             >
           {/if}
         </p>
-        {#if data.item.buy_price_timestamp}
+        {#if item?.highTime}
           <Tooltip.Root>
             <Tooltip.Trigger>
               <p class="text-xs text-muted-foreground">
-                {formatDistanceToNowStrict(
-                  new Date(data.item.buy_price_timestamp),
-                  {
-                    addSuffix: true,
-                  },
-                )}
+                {formatDistanceToNowStrict(new Date(item.highTime * 1000), {
+                  addSuffix: true,
+                })}
                 <Info class="inline-block h-3 w-3" />
               </p>
             </Tooltip.Trigger>
             <Tooltip.Content>
               <span
                 >{format(
-                  new Date(data.item.buy_price_timestamp),
+                  new Date(item.highTime * 1000),
                   "yyyy-MM-dd HH:mm:ss",
                 )}</span
               >
@@ -203,29 +170,26 @@
       </Card.Header>
       <Card.Content>
         <div class="text-2xl font-bold">
-          {#if data.item.sell_price}
-            {formatter.format(data.item.sell_price)}
+          {#if item?.low}
+            {formatter.format(item.low)}
           {:else}
             Unknown
           {/if}
         </div>
-        {#if data.item.sell_price_timestamp}
+        {#if item?.lowTime}
           <Tooltip.Root>
             <Tooltip.Trigger>
               <p class="text-xs text-muted-foreground">
-                {formatDistanceToNowStrict(
-                  new Date(data.item.sell_price_timestamp),
-                  {
-                    addSuffix: true,
-                  },
-                )}
+                {formatDistanceToNowStrict(new Date(item.lowTime * 1000), {
+                  addSuffix: true,
+                })}
                 <Info class="inline-block h-3 w-3" />
               </p>
             </Tooltip.Trigger>
             <Tooltip.Content>
               <span
                 >{format(
-                  new Date(data.item.sell_price_timestamp),
+                  new Date(item.lowTime * 1000),
                   "yyyy-MM-dd HH:mm:ss",
                 )}</span
               >
@@ -267,12 +231,10 @@
               {/if}
             </p>
           </Tooltip.Trigger>
-          {#if data.item.buy_price && data.item.sell_price && typeof tax === "number"}
+          {#if item?.high && item.low && typeof tax === "number"}
             <Tooltip.Content>
               <span
-                >{formatter.format(data.item.buy_price)} - {formatter.format(
-                  data.item.sell_price,
-                )} -
+                >{formatter.format(item.high)} - {formatter.format(item.low)} -
                 {formatter.format(tax)} (tax)</span
               >
             </Tooltip.Content>
@@ -311,9 +273,9 @@
                     {formatter.format(highAlchProfit)}
                   {/if}
                 </span>
-                {#if data.item.alch_high}
+                {#if item?.highalch}
                   <span class=" text-sm text-muted-foreground"
-                    >(high alch: {formatter.format(data.item.alch_high)})</span
+                    >(high alch: {formatter.format(item.highalch)})</span
                   >
                 {/if}
                 <Info class="inline-block h-4 w-4" />
@@ -322,33 +284,33 @@
           {:else}
             <div class="text-2xl font-bold">Unknown</div>
           {/if}
-          {#if data.item.alch_high && data.item.buy_price && $natureRune.buy_price}
+          {#if item?.highalch && item.high && $alchPrice?.high}
             <Tooltip.Content>
               <span>
-                {formatter.format(data.item.alch_high)} - {formatter.format(
-                  data.item.buy_price,
-                )} - {formatter.format($natureRune.buy_price)} (nature rune)
+                {formatter.format(item.highalch)} - {formatter.format(
+                  item.high,
+                )} - {formatter.format($alchPrice.high)} (nature rune)
               </span>
             </Tooltip.Content>
           {/if}
         </Tooltip.Root>
-        {#if lowAlchProfit && data.item.alch_low}
+        {#if lowAlchProfit && item?.lowalch}
           <p>
             <Tooltip.Root>
               <Tooltip.Trigger>
                 <span class="text-xs text-muted-foreground">
                   {formatter.format(lowAlchProfit)} (low alch: {formatter.format(
-                    data.item.alch_low,
+                    item.lowalch,
                   )})
                   <Info class="inline-block h-3 w-3" />
                 </span>
               </Tooltip.Trigger>
-              {#if data.item.buy_price && $natureRune.buy_price}
+              {#if item.high && $alchPrice?.high && item.highalch && $alchPrice.low}
                 <Tooltip.Content>
                   <span>
-                    {formatter.format(data.item.alch_low)} - {formatter.format(
-                      data.item.buy_price,
-                    )} - {formatter.format($natureRune.buy_price)} (nature rune)
+                    {formatter.format(item?.highalch)} - {formatter.format(
+                      item?.high,
+                    )} - {formatter.format($alchPrice?.low)} (nature rune)
                   </span>
                 </Tooltip.Content>
               {/if}
@@ -363,10 +325,7 @@
       class="flex flex-row items-center justify-between space-y-0 pb-2"
     >
       <Card.Title class="text-base font-normal">Item History</Card.Title>
-      <TimeStepDropdown
-        bind:selected={$selected}
-        onSelectedChange={fetchHistory}
-      />
+      <TimeStepDropdown bind:selected onSelectedChange={fetchHistory} />
     </Card.Header>
     <Card.Content class="h-[248px] w-full flex justify-center items-center">
       {#await data.streamed.history}
