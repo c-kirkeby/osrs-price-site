@@ -72,7 +72,7 @@
     <Command.Empty>No results found.</Command.Empty>
     {#if results.length > 0}
       <Command.Group heading="Items">
-        {#each results as result}
+        {#each results.slice(0, 5) as result}
           <Command.Item
             onSelect={() =>
               runCommand(() => {
