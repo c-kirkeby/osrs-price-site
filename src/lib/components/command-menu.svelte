@@ -2,7 +2,7 @@
   import { Button } from "$lib/components/ui/button";
   import * as Command from "$lib/components/ui/command";
   import type { Item } from "$lib/types/item";
-  import { searchHistory } from "$lib/stores/searchHistory";
+  import { searchHistory } from "$lib/stores/search-history";
   import { getUserOperatingSystem } from "$lib/utils";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
