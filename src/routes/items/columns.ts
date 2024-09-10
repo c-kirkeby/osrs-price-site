@@ -1,7 +1,7 @@
 import DataTableImage from "$lib/components/data-table/data-table-image.svelte";
 import DataTableCell from "$lib/components/data-table/data-table-cell.svelte";
 import { DataTableLink } from "$lib/components/data-table";
-import type { Item } from "$lib/db/schema";
+import type { Item } from "$lib/types/item";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
 import { calculateRoi, calculateTax, cn } from "$lib/utils";
 import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
@@ -16,7 +16,9 @@ if (!formatter && typeof navigator !== "undefined") {
   });
 }
 
-const formatNumberCell = (value: number | null): string | null | undefined =>
+const formatNumberCell = (
+  value: number | null | undefined,
+): string | null | undefined =>
   value !== null && value !== undefined ? formatter?.format(value) : null;
 
 const getPrefix = (value: number): string => {
@@ -96,7 +98,7 @@ export const columns: any[] = [
       }),
     header: "Name",
   }),
-  columnHelper.accessor("is_members", {
+  columnHelper.accessor("members", {
     cell: (info) =>
       renderComponent(LucideStar, {
         class: cn("size-5 stroke-1", {
@@ -107,28 +109,31 @@ export const columns: any[] = [
     header: "Members",
     enableSorting: false,
   }),
-  columnHelper.accessor("alch_low", {
+  columnHelper.accessor("lowalch", {
     cell: (info) =>
       renderComponent(DataTableCell, {
         value: formatNumberCell(info.getValue()) ?? "-",
         class: "flex justify-end",
       }),
+    sortUndefined: "last",
     header: "Alch Low",
   }),
-  columnHelper.accessor("alch_high", {
+  columnHelper.accessor("highalch", {
     cell: (info) =>
       renderComponent(DataTableCell, {
         value: formatNumberCell(info.getValue()) ?? "-",
         class: "flex justify-end",
       }),
+    sortUndefined: "last",
     header: "Alch High",
   }),
-  columnHelper.accessor("buy_limit", {
+  columnHelper.accessor("limit", {
     cell: (info) =>
       renderComponent(DataTableCell, {
-        value: formatNumberCell(info.getValue()) ?? "-",
+        value: formatNumberCell(info.getValue()) ?? "Unknown",
         class: "flex justify-end",
       }),
+    sortUndefined: "last",
     header: "Limit",
   }),
   columnHelper.accessor("value", {
@@ -137,78 +142,82 @@ export const columns: any[] = [
         value: formatNumberCell(info.getValue()) ?? "-",
         class: "flex justify-end",
       }),
+    sortUndefined: "last",
     header: "Value",
   }),
-  columnHelper.accessor("buy_price", {
+  columnHelper.accessor("high", {
     cell: (info) =>
       renderComponent(DataTableCell, {
         value: formatNumberCell(info.getValue()) ?? "-",
         class: cn("flex justify-end"),
       }),
+    sortUndefined: "last",
     header: "Buy Price",
   }),
-  columnHelper.accessor("buy_price_timestamp", {
+  columnHelper.accessor("highTime", {
     header: "Last Bought",
-    cell: (info) =>
-      renderComponent(DataTableCell, {
-        value: formatDistanceToNowStrict(info.getValue() ?? "", {
-          addSuffix: true,
-        }),
-        class: styleDateCell(info.getValue()),
-      }),
-    sortingFn: (a, b) => {
-      if (!a.original.buy_price_timestamp || !b.original.buy_price_timestamp) {
-        return 0;
+    cell: (info) => {
+      const value = info.getValue();
+      if (!value) {
+        return "-";
       }
 
-      return (
-        new Date(a.original.buy_price_timestamp).getTime() -
-        new Date(b.original.buy_price_timestamp).getTime()
-      );
+      return renderComponent(DataTableCell, {
+        value: formatDistanceToNowStrict(value * 1000, {
+          addSuffix: true,
+        }),
+        class: styleDateCell(new Date(value * 1000)),
+      });
+    },
+    sortUndefined: "last",
+    sortingFn: (a, b) => {
+      if (!a.original.highTime || !b.original.highTime) return 0;
+      if (a.original.highTime > b.original.highTime) return -1;
+      return 1;
     },
   }),
-  columnHelper.accessor("sell_price", {
+  columnHelper.accessor("low", {
     cell: (info) =>
       renderComponent(DataTableCell, {
         value: formatNumberCell(info.getValue()) ?? "-",
         class: "flex justify-end",
       }),
+    sortUndefined: "last",
     header: "Sell Price",
   }),
-  columnHelper.accessor("sell_price_timestamp", {
-    cell: (info) =>
-      renderComponent(DataTableCell, {
-        value: formatDistanceToNowStrict(info.getValue() ?? "", {
-          addSuffix: true,
-        }),
-        class: styleDateCell(info.getValue()),
-      }),
+  columnHelper.accessor("lowTime", {
     header: "Last Sold",
-    sortingFn: (a, b) => {
-      if (
-        !a.original.sell_price_timestamp ||
-        !b.original.sell_price_timestamp
-      ) {
-        return 0;
+    cell: (info) => {
+      const value = info.getValue();
+      if (!value) {
+        return "-";
       }
 
-      return (
-        new Date(a.original.sell_price_timestamp).getTime() -
-        new Date(b.original.sell_price_timestamp).getTime()
-      );
+      return renderComponent(DataTableCell, {
+        value: formatDistanceToNowStrict(value * 1000, {
+          addSuffix: true,
+        }),
+        class: styleDateCell(new Date(value * 1000)),
+      });
+    },
+    sortUndefined: "last",
+    sortingFn: (a, b) => {
+      if (!a.original.lowTime || !b.original.lowTime) return 0;
+      if (a.original.lowTime > b.original.lowTime) return -1;
+      return 1;
     },
   }),
   columnHelper.accessor((row) => row, {
     id: "margin",
     header: "Margin",
     cell: (info) => {
-      if (!info.row.getValue("buy_price") || !info.row.getValue("sell_price")) {
+      if (!info.row.getValue("high") || !info.row.getValue("low")) {
         return "-";
       }
 
       const margin = calculateMargin(
-        info.row.getValue("buy_price"),
-        info.row.getValue("sell_price"),
+        info.row.getValue("high"),
+        info.row.getValue("low"),
         info.row.getValue("id"),
       );
 
@@ -219,25 +228,17 @@ export const columns: any[] = [
     },
     sortingFn: (a, b) => {
       if (
-        !a.original.buy_price ||
-        !a.original.sell_price ||
-        !b.original.buy_price ||
-        !b.original.sell_price
+        !a.original.high ||
+        !a.original.low ||
+        !b.original.high ||
+        !b.original.low
       ) {
         return 0;
       }
 
       return (
-        calculateMargin(
-          a.original.buy_price,
-          a.original.sell_price,
-          a.original.id,
-        ) -
-        calculateMargin(
-          b.original.buy_price,
-          b.original.sell_price,
-          b.original.id,
-        )
+        calculateMargin(a.original.high, a.original.low, a.original.id) -
+        calculateMargin(b.original.high, b.original.low, b.original.id)
       );
     },
   }),
@@ -247,6 +248,7 @@ export const columns: any[] = [
         value: formatNumberCell(info.getValue()) ?? "-",
         class: "flex justify-end",
       }),
+    sortUndefined: "last",
     header: "Volume (24h)",
   }),
   columnHelper.accessor((row) => row, {
@@ -254,15 +256,15 @@ export const columns: any[] = [
     cell: (info) => {
       let grossMargin = 0;
       if (
-        info.row.getValue("buy_price") &&
-        info.row.getValue("sell_price") &&
+        info.row.getValue("high") &&
+        info.row.getValue("low") &&
         info.row.getValue("volume")
       ) {
         grossMargin =
           info.row.getValue("volume") *
           calculateMargin(
-            info.row.getValue("buy_price"),
-            info.row.getValue("sell_price"),
+            info.row.getValue("high"),
+            info.row.getValue("low"),
             info.row.getValue("id"),
           );
       }
@@ -276,23 +278,23 @@ export const columns: any[] = [
     header: "Gross Profit",
     sortingFn: (a, b) => {
       if (
-        !a.original.buy_price ||
-        !a.original.sell_price ||
+        !a.original.high ||
+        !a.original.low ||
         !a.original.volume ||
-        !b.original.buy_price ||
-        !b.original.sell_price ||
+        !b.original.high ||
+        !b.original.low ||
         !b.original.volume
       ) {
         return 0;
       }
       const aMargin = calculateMargin(
-        a.original.buy_price,
-        a.original.sell_price,
+        a.original.high,
+        a.original.low,
         a.original.id,
       );
       const bMargin = calculateMargin(
-        b.original.buy_price,
-        b.original.sell_price,
+        b.original.high,
+        b.original.low,
         b.original.id,
       );
 
@@ -302,14 +304,11 @@ export const columns: any[] = [
   columnHelper.accessor((row) => row, {
     id: "tax",
     cell: (info) => {
-      if (info.row.getValue("sell_price")) {
+      if (info.row.getValue("low")) {
         return renderComponent(DataTableCell, {
           value:
             formatNumberCell(
-              calculateTax(
-                info.row.getValue("sell_price"),
-                info.row.getValue("id"),
-              ),
+              calculateTax(info.row.getValue("low"), info.row.getValue("id")),
             ) ?? "0",
           class: "flex justify-end",
         });
@@ -317,13 +316,13 @@ export const columns: any[] = [
       return "0";
     },
     sortingFn: (a, b) => {
-      if (!a.original.sell_price || !b.original.sell_price) {
+      if (!a.original.low || !b.original.low) {
         return 0;
       }
 
       return (
-        calculateTax(a.original.sell_price, a.original.id) -
-        calculateTax(b.original.sell_price, b.original.id)
+        calculateTax(a.original.low, a.original.id) -
+        calculateTax(b.original.low, b.original.id)
       );
     },
     header: "Tax",
@@ -331,15 +330,15 @@ export const columns: any[] = [
   columnHelper.accessor((row) => row, {
     id: "roi",
     cell: (info) => {
-      if (!info.row.getValue("buy_price") || !info.row.getValue("sell_price")) {
+      if (!info.row.getValue("high") || !info.row.getValue("low")) {
         return "";
       }
 
       const roiValue = calculateRoi(
-        info.row.getValue("sell_price"),
+        info.row.getValue("low"),
         calculateMargin(
-          info.row.getValue("buy_price"),
-          info.row.getValue("sell_price"),
+          info.row.getValue("high"),
+          info.row.getValue("low"),
           info.row.getValue("id"),
         ),
       );
@@ -352,29 +351,21 @@ export const columns: any[] = [
     },
     sortingFn: (a, b) => {
       if (
-        !a.original.buy_price ||
-        !a.original.sell_price ||
-        !b.original.buy_price ||
-        !b.original.sell_price
+        !a.original.high ||
+        !a.original.low ||
+        !b.original.high ||
+        !b.original.low
       ) {
         return 0;
       }
 
       const aRoi = calculateRoi(
-        a.original.sell_price,
-        calculateMargin(
-          a.original.buy_price,
-          a.original.sell_price,
-          a.original.id,
-        ),
+        a.original.low,
+        calculateMargin(a.original.high, a.original.low, a.original.id),
       );
       const bRoi = calculateRoi(
-        b.original.sell_price,
-        calculateMargin(
-          b.original.buy_price,
-          b.original.sell_price,
-          b.original.id,
-        ),
+        b.original.low,
+        calculateMargin(b.original.high, b.original.low, b.original.id),
       );
 
       return aRoi - bRoi;

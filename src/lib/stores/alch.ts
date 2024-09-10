@@ -1,8 +1,9 @@
-import type { Item } from "$lib/db/schema";
-import { writable } from "svelte/store";
+import { derived } from "svelte/store";
+import { itemsStore } from "./items";
 
-export const natureRuneItemId = 561;
+const NATURE_RUNE_ID = 561;
 
-export const natureRune = writable(
-  {} as Pick<Item, "id" | "buy_price" | "buy_price_timestamp" | "last_updated">,
+export const alchPrice = derived(
+  itemsStore,
+  ($items) => $items.find((item) => item.id === NATURE_RUNE_ID) ?? null,
 );
