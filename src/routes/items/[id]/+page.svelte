@@ -3,17 +3,24 @@
     ChevronRight,
     ArrowDownCircle,
     ArrowUpCircle,
-    Coins,
     Info,
-    FlaskRound,
     Loader2,
+    ExternalLinkIcon,
   } from "lucide-svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { calculateTax, calculateRoi, cn } from "$lib/utils";
+  import {
+    calculateTax,
+    calculateRoi,
+    cn,
+    getNumberFormatter,
+    getSignedPrefix,
+    styleSignedNumberCell,
+  } from "$lib/utils";
   import type { TimeSeriesOption, TimeStep } from "$lib/types/time-series";
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
+  import Separator from "$lib/components/ui/separator/separator.svelte";
   import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
   import { page, navigating } from "$app/stores";
   import { alchPrice } from "$lib/stores/alch";
@@ -23,11 +30,7 @@
   import { currentItem } from "$lib/stores/current-item";
   import { getTimeSeries } from "$lib/api/time-series";
 
-  const formatter = new Intl.NumberFormat();
-  const compactFormatter = new Intl.NumberFormat("en-AU", {
-    notation: "compact",
-    compactDisplay: "short",
-  });
+  $: formatter = getNumberFormatter();
 
   export let data;
 
@@ -46,7 +49,7 @@
   $: tax = $currentItem?.low
     ? calculateTax($currentItem.low, $currentItem.id)
     : null;
-  $: profit =
+  $: margin =
     $currentItem?.low && $currentItem.high && typeof tax === "number"
       ? Math.floor($currentItem.high - $currentItem.low - tax)
       : null;
@@ -59,12 +62,12 @@
       ? Math.floor($currentItem.lowalch - $currentItem.high - $alchPrice?.high)
       : null;
   $: potentialProfit =
-    profit && $currentItem?.limit
-      ? Math.floor(profit * $currentItem.limit)
+    margin && $currentItem?.limit
+      ? Math.floor(margin * $currentItem.limit)
       : null;
   $: returnOnInvestment =
-    $currentItem?.low && profit && tax
-      ? calculateRoi($currentItem.low, profit)
+    $currentItem?.low && margin && tax
+      ? calculateRoi($currentItem.low, margin)
       : null;
 
   async function fetchHistory(interval: TimeSeriesOption) {
@@ -113,244 +116,251 @@
     <Button
       variant="outline"
       size="sm"
-      class="ml-auto hidden h-8 md:flex"
-      href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=$currentItem&id=${$page.params.id}`}
+      class="ml-auto hidden h-8 md:flex gap-1"
+      href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${$page.params.id}`}
       target="_blank"
     >
-      Wiki</Button
-    >
+      <ExternalLinkIcon class="size-3.5" />
+      Wiki
+    </Button>
   </div>
-  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-    <Card.Root>
-      <Card.Header
-        class="flex flex-row items-center justify-between space-y-0 pb-2"
+
+  <div
+    class="grid flex-1 items-start gap-4 sm:py-0 md:gap-4 lg:grid-cols-3 xl:grid-cols-3"
+  >
+    <div class="grid auto-rows-max items-start gap-4 md:gap-4 lg:col-span-2">
+      <div
+        class="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4"
       >
-        <Card.Title class="text-sm font-medium">Buy Price</Card.Title>
-        <ArrowDownCircle />
-      </Card.Header>
-      <Card.Content>
-        <p>
-          <span class="text-2xl font-bold">
-            {#if $currentItem?.high}
-              {formatter.format($currentItem.high)}
-            {:else}
-              Unknown
-            {/if}
-          </span>
-          {#if $currentItem?.limit}
-            <span class="text-sm text-muted-foreground"
-              >(limit: {formatter.format($currentItem.limit)})</span
-            >
-          {/if}
-        </p>
-        {#if $currentItem?.highTime}
-          <Tooltip.Root>
-            <Tooltip.Trigger>
-              <p class="text-xs text-muted-foreground">
-                {formatDistanceToNowStrict(
-                  new Date($currentItem.highTime * 1000),
-                  {
-                    addSuffix: true,
-                  },
-                )}
-                <Info class="inline-block h-3 w-3" />
-              </p>
-            </Tooltip.Trigger>
-            <Tooltip.Content>
-              <span
-                >{format(
-                  new Date($currentItem.highTime * 1000),
-                  "yyyy-MM-dd HH:mm:ss",
-                )}</span
-              >
-            </Tooltip.Content>
-          </Tooltip.Root>
-        {/if}
-      </Card.Content>
-    </Card.Root>
-    <Card.Root>
-      <Card.Header
-        class="flex flex-row items-center justify-between space-y-0 pb-2"
-      >
-        <Card.Title class="text-sm font-medium">Sell Price</Card.Title>
-        <ArrowUpCircle />
-      </Card.Header>
-      <Card.Content>
-        <div class="text-2xl font-bold">
-          {#if $currentItem?.low}
-            {formatter.format($currentItem.low)}
-          {:else}
-            Unknown
-          {/if}
-        </div>
-        {#if $currentItem?.lowTime}
-          <Tooltip.Root>
-            <Tooltip.Trigger>
-              <p class="text-xs text-muted-foreground">
-                {formatDistanceToNowStrict(
-                  new Date($currentItem.lowTime * 1000),
-                  {
-                    addSuffix: true,
-                  },
-                )}
-                <Info class="inline-block h-3 w-3" />
-              </p>
-            </Tooltip.Trigger>
-            <Tooltip.Content>
-              <span
-                >{format(
-                  new Date($currentItem.lowTime * 1000),
-                  "yyyy-MM-dd HH:mm:ss",
-                )}</span
-              >
-            </Tooltip.Content>
-          </Tooltip.Root>
-        {/if}
-      </Card.Content>
-    </Card.Root>
-    <Card.Root>
-      <Card.Header
-        class="flex flex-row items-center justify-between space-y-0 pb-2"
-      >
-        <Card.Title class="text-sm font-medium"
-          >Margin & Potential Profit</Card.Title
-        >
-        <Coins />
-      </Card.Header>
-      <Card.Content>
-        <Tooltip.Root>
-          <Tooltip.Trigger>
+        <Card.Root class="sm:col-span-2">
+          <Card.Header
+            class="flex flex-row items-center justify-between space-y-0 pb-2"
+          >
+            <Card.Title class="text-sm font-medium">Buy Price</Card.Title>
+            <ArrowDownCircle />
+          </Card.Header>
+          <Card.Content>
             <p>
-              {#if typeof profit === "number"}
-                <span
-                  class={cn("text-2xl font-bold", {
-                    "text-red-500": profit < 0,
-                    "text-green-500": profit > 0,
-                  })}
-                >
-                  {compactFormatter.format(profit)}
-                </span>
-                {#if returnOnInvestment}
-                  <span class=" text-sm text-muted-foreground"
-                    >(ROI: {formatter.format(returnOnInvestment)}%)</span
-                  >
+              <span class="text-2xl font-bold">
+                {#if $currentItem?.high}
+                  {formatter.format($currentItem.high)}
+                {:else}
+                  Unknown
                 {/if}
-                <Info class="inline-block h-4 w-4" />
+              </span>
+            </p>
+            {#if $currentItem?.highTime}
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <p class="text-xs text-muted-foreground">
+                    {formatDistanceToNowStrict(
+                      new Date($currentItem.highTime * 1000),
+                      {
+                        addSuffix: true,
+                      },
+                    )}
+                    <Info class="inline-block h-3 w-3" />
+                  </p>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <span
+                    >{format(
+                      new Date($currentItem.highTime * 1000),
+                      "yyyy-MM-dd HH:mm:ss",
+                    )}</span
+                  >
+                </Tooltip.Content>
+              </Tooltip.Root>
+            {/if}
+          </Card.Content>
+        </Card.Root>
+        <Card.Root class="sm:col-span-2">
+          <Card.Header
+            class="flex flex-row items-center justify-between space-y-0 pb-2"
+          >
+            <Card.Title class="text-sm font-medium">Sell Price</Card.Title>
+            <ArrowUpCircle />
+          </Card.Header>
+          <Card.Content>
+            <div class="text-2xl font-bold">
+              {#if $currentItem?.low}
+                {formatter.format($currentItem.low)}
               {:else}
                 Unknown
               {/if}
-            </p>
-          </Tooltip.Trigger>
-          {#if $currentItem?.high && $currentItem.low && typeof tax === "number"}
-            <Tooltip.Content>
-              <span
-                >{formatter.format($currentItem.high)} - {formatter.format(
-                  $currentItem.low,
-                )} -
-                {formatter.format(tax)} (tax)</span
-              >
-            </Tooltip.Content>
-          {/if}
-        </Tooltip.Root>
-        <p class="text-xs text-muted-foreground">
-          {#if typeof potentialProfit === "number"}
-            {formatter.format(potentialProfit)}
-          {:else}
-            Unknown
-          {/if}
-        </p>
-      </Card.Content>
-    </Card.Root>
-    <Card.Root>
-      <Card.Header
-        class="flex flex-row items-center justify-between space-y-0 pb-2"
-      >
-        <Card.Title class="text-sm font-medium">Alch Profit</Card.Title>
-        <FlaskRound />
-      </Card.Header>
-      <Card.Content>
-        <Tooltip.Root>
-          {#if highAlchProfit}
-            <Tooltip.Trigger>
-              <p>
-                <span
-                  class={cn("text-2xl font-bold", {
-                    "text-red-500": highAlchProfit < 0,
-                    "text-green-500": highAlchProfit > 0,
-                  })}
-                >
-                  {#if highAlchProfit > 1_000_000 || highAlchProfit < -1_000_000}
-                    {compactFormatter.format(highAlchProfit)}
+            </div>
+            {#if $currentItem?.lowTime}
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <p class="text-xs text-muted-foreground">
+                    {formatDistanceToNowStrict(
+                      new Date($currentItem.lowTime * 1000),
+                      {
+                        addSuffix: true,
+                      },
+                    )}
+                    <Info class="inline-block h-3 w-3" />
+                  </p>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <span
+                    >{format(
+                      new Date($currentItem.lowTime * 1000),
+                      "yyyy-MM-dd HH:mm:ss",
+                    )}</span
+                  >
+                </Tooltip.Content>
+              </Tooltip.Root>
+            {/if}
+          </Card.Content>
+        </Card.Root>
+      </div>
+      <Card.Root>
+        <Card.Header
+          class="flex flex-row items-center justify-between space-y-0 pb-2"
+        >
+          <Card.Title class="text-base font-normal">Item History</Card.Title>
+          <TimeStepDropdown bind:selected onSelectedChange={fetchHistory} />
+        </Card.Header>
+        <Card.Content class="h-[248px] w-full flex justify-center items-center">
+          {#await data.streamed.history}
+            <div class="text-muted-foreground flex items-center">
+              <Loader2 class="mr-2 h-4 w-4 animate-spin" />Loading...
+            </div>
+          {:then value}
+            <PriceSeriesChart data={value.data} />
+            <div></div>
+          {:catch error}
+            {error.message}
+          {/await}
+        </Card.Content>
+      </Card.Root>
+    </div>
+    <div>
+      <Card.Root class="overflow-hidden">
+        <Card.Content class="p-6 text-sm">
+          <div class="grid gap-3">
+            <div class="font-semibold">
+              {$currentItem?.name ?? "Item"} Details
+            </div>
+            <ul class="grid gap-3">
+              <li class="flex items-center justify-between">
+                <span class="text-muted-foreground">Margin</span>
+                {#if margin}
+                  <span class={styleSignedNumberCell(margin)}
+                    >{getSignedPrefix(margin)}{formatter.format(margin)}</span
+                  >
+                {:else}
+                  -
+                {/if}
+              </li>
+              <li class="flex items-center justify-between">
+                <span class="text-muted-foreground">Limit</span>
+                <span>
+                  {#if $currentItem?.limit}
+                    {formatter.format($currentItem.limit)}
                   {:else}
-                    {formatter.format(highAlchProfit)}
+                    -
+                  {/if}</span
+                >
+              </li>
+              <li class="flex items-center justify-between">
+                <span class="text-muted-foreground">Potential Profit</span>
+
+                <span class={styleSignedNumberCell(margin)}>
+                  {#if potentialProfit}
+                    {getSignedPrefix(potentialProfit)}{formatter.format(
+                      potentialProfit,
+                    )}
+                  {:else}
+                    -
+                  {/if}</span
+                >
+              </li>
+              <li class="flex items-center justify-between">
+                <span class="text-muted-foreground">ROI</span>
+                <span class={styleSignedNumberCell(margin)}>
+                  {#if returnOnInvestment}
+                    {getSignedPrefix(returnOnInvestment)}{formatter
+                      .format(returnOnInvestment)
+                      ?.concat("%")}
+                  {:else}
+                    -
                   {/if}
                 </span>
-                {#if $currentItem?.highalch}
-                  <span class=" text-sm text-muted-foreground"
-                    >(high alch: {formatter.format(
-                      $currentItem.highalch,
-                    )})</span
-                  >
+              </li>
+              <li class="flex items-center justify-between">
+                <span class="text-muted-foreground">Tax</span>
+                {#if tax}
+                  {formatter.format(tax)}
+                {:else}
+                  -
                 {/if}
-                <Info class="inline-block h-4 w-4" />
-              </p>
-            </Tooltip.Trigger>
-          {:else}
-            <div class="text-2xl font-bold">Unknown</div>
-          {/if}
-          {#if $currentItem?.highalch && $currentItem.high && $alchPrice?.high}
-            <Tooltip.Content>
-              <span>
-                {formatter.format($currentItem.highalch)} - {formatter.format(
-                  $currentItem.high,
-                )} - {formatter.format($alchPrice.high)} (nature rune)
-              </span>
-            </Tooltip.Content>
-          {/if}
-        </Tooltip.Root>
-        {#if lowAlchProfit && $currentItem?.lowalch}
-          <p>
-            <Tooltip.Root>
-              <Tooltip.Trigger>
-                <span class="text-xs text-muted-foreground">
-                  {formatter.format(lowAlchProfit)} (low alch: {formatter.format(
-                    $currentItem.lowalch,
-                  )})
-                  <Info class="inline-block h-3 w-3" />
+              </li>
+            </ul>
+            <Separator class="my-2" />
+            <ul class="grid gap-3">
+              <li class="flex items-center justify-between">
+                <span class="text-muted-foreground">High Alch Profit</span>
+                <span class={styleSignedNumberCell(highAlchProfit)}>
+                  {#if highAlchProfit}
+                    {getSignedPrefix(highAlchProfit)}{formatter.format(
+                      highAlchProfit,
+                    )}
+                  {:else}
+                    -
+                  {/if}
                 </span>
-              </Tooltip.Trigger>
-              {#if $currentItem.high && $alchPrice?.high && $currentItem.highalch && $alchPrice.low}
-                <Tooltip.Content>
-                  <span>
-                    {formatter.format($currentItem?.highalch)} - {formatter.format(
-                      $currentItem?.high,
-                    )} - {formatter.format($alchPrice?.low)} (nature rune)
-                  </span>
-                </Tooltip.Content>
-              {/if}
-            </Tooltip.Root>
-          </p>
-        {/if}
-      </Card.Content>
-    </Card.Root>
+              </li>
+              <li class="flex items-center justify-between">
+                <span class="text-muted-foreground">High Alch</span>
+                <span>
+                  {#if $currentItem?.highalch}
+                    {formatter.format($currentItem.highalch)}
+                  {:else}
+                    -
+                  {/if}
+                </span>
+              </li>
+              <li class="flex items-center justify-between">
+                <span class="text-muted-foreground">Low Alch Profit</span>
+                <span class={styleSignedNumberCell(lowAlchProfit)}>
+                  {#if lowAlchProfit}
+                    {getSignedPrefix(lowAlchProfit)}{formatter.format(
+                      lowAlchProfit,
+                    )}
+                  {:else}
+                    -
+                  {/if}
+                </span>
+              </li>
+              <li class="flex items-center justify-between">
+                <span class="text-muted-foreground">Low Alch</span>
+                <span>
+                  {#if $currentItem?.lowalch}
+                    {formatter.format($currentItem.lowalch)}
+                  {:else}
+                    -
+                  {/if}
+                </span>
+              </li>
+            </ul>
+            <Separator class="my-2" />
+            <ul class="grid gap-3">
+              <li class="flex items-center justify-between">
+                <span class="text-muted-foreground">Members</span>
+                <span>
+                  {#if typeof $currentItem?.members !== "undefined"}
+                    {$currentItem.members ? "Yes" : "No"}
+                  {:else}
+                    -
+                  {/if}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </Card.Content>
+      </Card.Root>
+    </div>
   </div>
-  <Card.Root>
-    <Card.Header
-      class="flex flex-row items-center justify-between space-y-0 pb-2"
-    >
-      <Card.Title class="text-base font-normal">Item History</Card.Title>
-      <TimeStepDropdown bind:selected onSelectedChange={fetchHistory} />
-    </Card.Header>
-    <Card.Content class="h-[248px] w-full flex justify-center items-center">
-      {#await data.streamed.history}
-        <div class="text-muted-foreground flex items-center">
-          <Loader2 class="mr-2 h-4 w-4 animate-spin" />Loading...
-        </div>
-      {:then value}
-        <PriceSeriesChart data={value.data} />
-      {:catch error}
-        {error.message}
-      {/await}
-    </Card.Content>
-  </Card.Root>
 </section>

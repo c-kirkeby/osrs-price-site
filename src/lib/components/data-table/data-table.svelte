@@ -1,4 +1,5 @@
 <script lang="ts" generics="TData, TValue">
+  import { onMount } from "svelte";
   import { writable } from "svelte/store";
 
   import * as Table from "$lib/components/ui/table";
@@ -67,6 +68,17 @@
   };
 
   $: if (data) rerender();
+
+  onMount(() => {
+    const interval = setInterval(() => {
+      // re-render the table every 5s in case the tab is backgrounded
+      rerender();
+    }, 5_000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  });
 
   const table = createSvelteTable(options);
 </script>

@@ -25,7 +25,7 @@
           volume: volumes[item.id],
         };
       });
-    }, 60_000);
+    }, 30_000);
   };
 
   function handleVisibilityChange() {
