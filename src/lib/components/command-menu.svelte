@@ -18,7 +18,7 @@
   let status: "loading" | "ready" = "loading";
   const platform = browser && getUserOperatingSystem();
 
-  $: if ($itemsStore.length > 0) {
+  $: if ($itemsStore?.length && $itemsStore.length > 0) {
     createItemsIndex($itemsStore);
     status = "ready";
   }

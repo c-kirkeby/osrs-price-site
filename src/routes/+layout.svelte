@@ -2,31 +2,27 @@
   import { ModeWatcher } from "mode-watcher";
   import "../app.postcss";
   import SiteHeader from "$lib/components/site-header.svelte";
-  import { itemsStore } from "$lib/stores/items";
-  import {
-    fetchPrices,
-    fetchVolumes,
-    type Mapping,
-    type Prices,
-    type Volumes,
-  } from "$lib/api/items";
   import { onMount } from "svelte";
-  import type { Item } from "$lib/types/item";
+  import { itemsStore } from "$lib/stores/items";
+  import { fetchPrices, fetchVolumes } from "$lib/api/items";
 
   export let data;
-
-  let mappings: Mapping[];
-  let prices: Prices;
-  let volumes: Volumes;
 
   let intervalId: ReturnType<typeof setInterval> | undefined;
   let interval = () => {
     return setInterval(async () => {
-      [prices, volumes] = await Promise.all([fetchPrices(), fetchVolumes()]);
+      let [prices, volumes] = await Promise.all([
+        fetchPrices(),
+        fetchVolumes(),
+      ]);
+      if (!$itemsStore) {
+        return;
+      }
       $itemsStore = $itemsStore.map((item) => {
         return {
           ...item,
           ...prices[item.id],
+          volume: volumes[item.id],
         };
       });
     }, 60_000);
@@ -42,19 +38,7 @@
   }
 
   onMount(async () => {
-    [mappings, prices, volumes] = await Promise.all([
-      data.streamed.mappings,
-      data.streamed.prices,
-      data.streamed.volumes,
-    ]);
-    $itemsStore = mappings.map((mapping) => {
-      return {
-        ...mapping,
-        ...prices[mapping.id],
-        volume: volumes[mapping.id],
-      } satisfies Item;
-    });
-
+    $itemsStore = await data.streamed.items;
     document.addEventListener(
       "visibilitychange",
       handleVisibilityChange,

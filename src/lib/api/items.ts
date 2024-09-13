@@ -1,3 +1,4 @@
+import type { Item } from "$lib/types/item";
 import { headers } from "./headers";
 
 export interface Mapping {
@@ -91,4 +92,19 @@ export async function fetchVolumes(fetcher = fetch): Promise<Volumes> {
       `Failed to fetch volumes: ${response.status} ${response.statusText}`,
     ),
   );
+}
+
+export async function getItems(fetcher = fetch): Promise<Item[]> {
+  const [mappings, prices, volumes] = await Promise.all([
+    fetchMappings(fetcher),
+    fetchPrices(fetcher),
+    fetchVolumes(fetcher),
+  ]);
+  return mappings.map((mapping) => {
+    return {
+      ...mapping,
+      ...prices[mapping.id],
+      volume: volumes[mapping.id],
+    } satisfies Item;
+  });
 }

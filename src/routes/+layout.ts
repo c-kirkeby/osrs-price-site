@@ -1,11 +1,11 @@
-import { fetchMappings, fetchPrices, fetchVolumes } from "$lib/api/items";
+import { getItems } from "$lib/api/items";
 
-export async function load({ fetch }) {
+export async function load({ fetch, depends }) {
+  depends("app:items");
+
   return {
     streamed: {
-      mappings: fetchMappings(fetch),
-      prices: fetchPrices(fetch),
-      volumes: fetchVolumes(fetch),
+      items: getItems(fetch),
     },
   };
 }
