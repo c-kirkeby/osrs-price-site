@@ -3,9 +3,9 @@
   import { columns } from "./columns";
   import { cn } from "$lib/utils";
   import { settings } from "$lib/stores/settings";
-  import { itemsStore } from "$lib/stores/items";
   import { Loader2 } from "lucide-svelte";
   import type { InitialTableState } from "@tanstack/svelte-table";
+  import { itemsStore } from "$lib/stores/items";
 
   let columnVisibility = {
     id: false,
@@ -43,12 +43,12 @@
     </div>
   </div>
   <h1 class="text-3xl font-bold tracking-tight">Items</h1>
-  {#if $itemsStore.length === 0}
+  {#if $itemsStore}
+    <DataTable {columns} data={$itemsStore} {columnVisibility} {initialState} />
+  {:else}
     <div class="flex items-center text-sm text-muted-foreground justify-center">
       <Loader2 class="mr-2 h-4 w-4 animate-spin" />
       Loading...
     </div>
-  {:else}
-    <DataTable {columns} data={$itemsStore} {columnVisibility} {initialState} />
   {/if}
 </section>

@@ -31,8 +31,6 @@
 
   export let data;
 
-  $: item = $currentItem;
-
   let selected = {
     value: "5m",
     label: "1 Day",
@@ -45,23 +43,29 @@
     };
   }
 
-  $: tax = item?.low ? calculateTax(item.low, item.id) : null;
+  $: tax = $currentItem?.low
+    ? calculateTax($currentItem.low, $currentItem.id)
+    : null;
   $: profit =
-    item?.low && item.high && typeof tax === "number"
-      ? Math.floor(item.high - item.low - tax)
+    $currentItem?.low && $currentItem.high && typeof tax === "number"
+      ? Math.floor($currentItem.high - $currentItem.low - tax)
       : null;
   $: highAlchProfit =
-    item?.highalch && item.high && $alchPrice?.high
-      ? Math.floor(item.highalch - item.high - $alchPrice?.high)
+    $currentItem?.highalch && $currentItem.high && $alchPrice?.high
+      ? Math.floor($currentItem.highalch - $currentItem.high - $alchPrice?.high)
       : null;
   $: lowAlchProfit =
-    item?.lowalch && item.high && $alchPrice?.high
-      ? Math.floor(item.lowalch - item.high - $alchPrice?.high)
+    $currentItem?.lowalch && $currentItem.high && $alchPrice?.high
+      ? Math.floor($currentItem.lowalch - $currentItem.high - $alchPrice?.high)
       : null;
   $: potentialProfit =
-    profit && item?.limit ? Math.floor(profit * item.limit) : null;
+    profit && $currentItem?.limit
+      ? Math.floor(profit * $currentItem.limit)
+      : null;
   $: returnOnInvestment =
-    item?.low && profit && tax ? calculateRoi(item.low, profit) : null;
+    $currentItem?.low && profit && tax
+      ? calculateRoi($currentItem.low, profit)
+      : null;
 
   async function fetchHistory(interval: TimeSeriesOption) {
     selected = interval;
@@ -73,7 +77,7 @@
 </script>
 
 <svelte:head>
-  <title>{item?.name}</title>
+  <title>{$currentItem?.name}</title>
 </svelte:head>
 
 <section
@@ -87,30 +91,30 @@
     </div>
     <ChevronRight class="h-4 w-4" />
     <div class="font-medium text-foreground">
-      <a href={`/items/${$page.params.id}`}>{item?.name}</a>
+      <a href={`/items/${$page.params.id}`}>{$currentItem?.name}</a>
     </div>
   </div>
   <div class="flex items-center justify-between">
     <h1 class="text-3xl tracking-tight">
-      {#if item?.icon}
+      {#if $currentItem?.icon}
         <img
           src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(
-            item.icon.replaceAll(" ", "_"),
+            $currentItem.icon.replaceAll(" ", "_"),
           )}`}
-          alt={item.name}
+          alt={$currentItem.name}
           class="object-contain inline-block mr-2"
         />
       {/if}
-      <span class="font-bold">{item?.name}</span>
+      <span class="font-bold">{$currentItem?.name}</span>
       <span class="text-muted-foreground text-sm ml-2">
-        (ID: {item?.id})
+        (ID: {$currentItem?.id})
       </span>
     </h1>
     <Button
       variant="outline"
       size="sm"
       class="ml-auto hidden h-8 md:flex"
-      href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${$page.params.id}`}
+      href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=$currentItem&id=${$page.params.id}`}
       target="_blank"
     >
       Wiki</Button
@@ -127,32 +131,35 @@
       <Card.Content>
         <p>
           <span class="text-2xl font-bold">
-            {#if item?.high}
-              {formatter.format(item.high)}
+            {#if $currentItem?.high}
+              {formatter.format($currentItem.high)}
             {:else}
               Unknown
             {/if}
           </span>
-          {#if item?.limit}
+          {#if $currentItem?.limit}
             <span class="text-sm text-muted-foreground"
-              >(limit: {formatter.format(item.limit)})</span
+              >(limit: {formatter.format($currentItem.limit)})</span
             >
           {/if}
         </p>
-        {#if item?.highTime}
+        {#if $currentItem?.highTime}
           <Tooltip.Root>
             <Tooltip.Trigger>
               <p class="text-xs text-muted-foreground">
-                {formatDistanceToNowStrict(new Date(item.highTime * 1000), {
-                  addSuffix: true,
-                })}
+                {formatDistanceToNowStrict(
+                  new Date($currentItem.highTime * 1000),
+                  {
+                    addSuffix: true,
+                  },
+                )}
                 <Info class="inline-block h-3 w-3" />
               </p>
             </Tooltip.Trigger>
             <Tooltip.Content>
               <span
                 >{format(
-                  new Date(item.highTime * 1000),
+                  new Date($currentItem.highTime * 1000),
                   "yyyy-MM-dd HH:mm:ss",
                 )}</span
               >
@@ -170,26 +177,29 @@
       </Card.Header>
       <Card.Content>
         <div class="text-2xl font-bold">
-          {#if item?.low}
-            {formatter.format(item.low)}
+          {#if $currentItem?.low}
+            {formatter.format($currentItem.low)}
           {:else}
             Unknown
           {/if}
         </div>
-        {#if item?.lowTime}
+        {#if $currentItem?.lowTime}
           <Tooltip.Root>
             <Tooltip.Trigger>
               <p class="text-xs text-muted-foreground">
-                {formatDistanceToNowStrict(new Date(item.lowTime * 1000), {
-                  addSuffix: true,
-                })}
+                {formatDistanceToNowStrict(
+                  new Date($currentItem.lowTime * 1000),
+                  {
+                    addSuffix: true,
+                  },
+                )}
                 <Info class="inline-block h-3 w-3" />
               </p>
             </Tooltip.Trigger>
             <Tooltip.Content>
               <span
                 >{format(
-                  new Date(item.lowTime * 1000),
+                  new Date($currentItem.lowTime * 1000),
                   "yyyy-MM-dd HH:mm:ss",
                 )}</span
               >
@@ -231,10 +241,12 @@
               {/if}
             </p>
           </Tooltip.Trigger>
-          {#if item?.high && item.low && typeof tax === "number"}
+          {#if $currentItem?.high && $currentItem.low && typeof tax === "number"}
             <Tooltip.Content>
               <span
-                >{formatter.format(item.high)} - {formatter.format(item.low)} -
+                >{formatter.format($currentItem.high)} - {formatter.format(
+                  $currentItem.low,
+                )} -
                 {formatter.format(tax)} (tax)</span
               >
             </Tooltip.Content>
@@ -273,9 +285,11 @@
                     {formatter.format(highAlchProfit)}
                   {/if}
                 </span>
-                {#if item?.highalch}
+                {#if $currentItem?.highalch}
                   <span class=" text-sm text-muted-foreground"
-                    >(high alch: {formatter.format(item.highalch)})</span
+                    >(high alch: {formatter.format(
+                      $currentItem.highalch,
+                    )})</span
                   >
                 {/if}
                 <Info class="inline-block h-4 w-4" />
@@ -284,32 +298,32 @@
           {:else}
             <div class="text-2xl font-bold">Unknown</div>
           {/if}
-          {#if item?.highalch && item.high && $alchPrice?.high}
+          {#if $currentItem?.highalch && $currentItem.high && $alchPrice?.high}
             <Tooltip.Content>
               <span>
-                {formatter.format(item.highalch)} - {formatter.format(
-                  item.high,
+                {formatter.format($currentItem.highalch)} - {formatter.format(
+                  $currentItem.high,
                 )} - {formatter.format($alchPrice.high)} (nature rune)
               </span>
             </Tooltip.Content>
           {/if}
         </Tooltip.Root>
-        {#if lowAlchProfit && item?.lowalch}
+        {#if lowAlchProfit && $currentItem?.lowalch}
           <p>
             <Tooltip.Root>
               <Tooltip.Trigger>
                 <span class="text-xs text-muted-foreground">
                   {formatter.format(lowAlchProfit)} (low alch: {formatter.format(
-                    item.lowalch,
+                    $currentItem.lowalch,
                   )})
                   <Info class="inline-block h-3 w-3" />
                 </span>
               </Tooltip.Trigger>
-              {#if item.high && $alchPrice?.high && item.highalch && $alchPrice.low}
+              {#if $currentItem.high && $alchPrice?.high && $currentItem.highalch && $alchPrice.low}
                 <Tooltip.Content>
                   <span>
-                    {formatter.format(item?.highalch)} - {formatter.format(
-                      item?.high,
+                    {formatter.format($currentItem?.highalch)} - {formatter.format(
+                      $currentItem?.high,
                     )} - {formatter.format($alchPrice?.low)} (nature rune)
                   </span>
                 </Tooltip.Content>
