@@ -5,6 +5,7 @@
   import { onMount } from "svelte";
   import { itemsStore } from "$lib/stores/items";
   import { fetchPrices, fetchVolumes } from "$lib/api/items";
+  import TailwindIndicator from "$lib/components/tailwind-indicator.svelte";
 
   export let data;
 
@@ -48,6 +49,7 @@
   });
 </script>
 
+<TailwindIndicator />
 <ModeWatcher />
 <div class="min-h-screen bg-background antialiased font-sans">
   <div class="relative flex min-h-screen flex-col">

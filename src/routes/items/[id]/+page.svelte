@@ -126,12 +126,10 @@
   </div>
 
   <div
-    class="grid flex-1 items-start gap-4 sm:py-0 md:gap-4 lg:grid-cols-3 xl:grid-cols-3"
+    class="grid flex-1 items-start gap-4 sm:py-0 md:grid-cols-3 xl:grid-cols-3"
   >
-    <div class="grid auto-rows-max items-start gap-4 md:gap-4 lg:col-span-2">
-      <div
-        class="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4"
-      >
+    <div class="grid auto-rows-max items-start gap-4 md:col-span-2">
+      <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
         <Card.Root class="sm:col-span-2">
           <Card.Header
             class="flex flex-row items-center justify-between space-y-0 pb-2"
