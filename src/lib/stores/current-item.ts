@@ -1,5 +1,6 @@
 import { derived } from "svelte/store";
 import { itemsStore } from "./items";
+import { page } from "$app/stores";
 
 export const currentItem = derived(
   [itemsStore, page],
