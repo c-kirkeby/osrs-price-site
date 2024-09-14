@@ -93,12 +93,12 @@
       <a href="/items">Items</a>
     </div>
     <ChevronRight class="h-4 w-4" />
-    <div class="font-medium text-foreground">
+    <div class="font-medium text-foreground truncate">
       <a href={`/items/${$page.params.id}`}>{$currentItem?.name}</a>
     </div>
   </div>
   <div class="flex items-center justify-between">
-    <h1 class="text-3xl tracking-tight">
+    <h1 class="md:text-3xl text-xl tracking-tight">
       {#if $currentItem?.icon}
         <img
           src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(
@@ -238,9 +238,7 @@
       <Card.Root class="overflow-hidden">
         <Card.Content class="p-6 text-sm">
           <div class="grid gap-3">
-            <div class="font-semibold">
-              {$currentItem?.name ?? "Item"} Details
-            </div>
+            <div class="font-semibold">Item Details</div>
             <ul class="grid gap-3">
               <li class="flex items-center justify-between">
                 <span class="text-muted-foreground">Margin</span>
