@@ -19,26 +19,26 @@ export async function getTimeSeries(
     case "5m":
     default:
       return {
-        data: data.filter(
+        data: data?.filter(
           (point) => point.timestamp >= subDays(new Date(), 1).getTime() / 1000,
         ),
       };
     case "1h":
       return {
-        data: data.filter(
+        data: data?.filter(
           (point) => point.timestamp >= subDays(new Date(), 7).getTime() / 1000,
         ),
       };
     case "6h":
       return {
-        data: data.filter(
+        data: data?.filter(
           (point) =>
             point.timestamp >= subDays(new Date(), 30).getTime() / 1000,
         ),
       };
     case "24h":
       return {
-        data: data.filter(
+        data: data?.filter(
           (point) =>
             point.timestamp >= subDays(new Date(), 365).getTime() / 1000,
         ),
