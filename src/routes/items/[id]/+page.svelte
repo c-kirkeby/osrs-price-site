@@ -6,6 +6,8 @@
     Info,
     Loader2,
     ExternalLinkIcon,
+    TrendingUp,
+    TrendingDown,
   } from "lucide-svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -16,8 +18,13 @@
     getNumberFormatter,
     getSignedPrefix,
     styleSignedNumberCell,
+    getCompactNumberFormatter,
   } from "$lib/utils";
-  import type { TimeSeriesOption, TimeStep } from "$lib/types/time-series";
+  import type {
+    TimeSeries,
+    TimeSeriesOption,
+    TimeStep,
+  } from "$lib/types/time-series";
   import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
@@ -29,8 +36,10 @@
   import { format } from "date-fns/format";
   import { currentItem } from "$lib/stores/current-item";
   import { getTimeSeries } from "$lib/api/time-series";
+  import { invalidate } from "$app/navigation";
 
   $: formatter = getNumberFormatter();
+  $: compactFormatter = getCompactNumberFormatter();
 
   export let data;
 
@@ -38,6 +47,8 @@
     value: "5m",
     label: "1 Day",
   };
+
+  let history: TimeSeries[] | undefined;
 
   $: if ($navigating) {
     selected = {
@@ -69,13 +80,41 @@
     $currentItem?.low && margin && tax
       ? calculateRoi($currentItem.low, margin)
       : null;
+  $: buyPriceChangePeriodStart =
+    history?.find((entry) => entry.avgHighPrice)?.avgHighPrice || 0;
+  $: buyPriceChangePeriodEnd =
+    history?.findLast((entry) => entry.avgHighPrice)?.avgHighPrice || 0;
+  $: buyPriceChange = buyPriceChangePeriodEnd - buyPriceChangePeriodStart;
+  $: buyPriceChangePercentage =
+    buyPriceChangePeriodStart > 0
+      ? (buyPriceChange / buyPriceChangePeriodStart) * 100
+      : 0;
+  $: sellPriceChangePeriodStart =
+    history?.find((entry) => entry.avgLowPrice)?.avgLowPrice || 0;
+  $: sellPriceChangePeriodEnd =
+    history?.findLast((entry) => entry.avgLowPrice)?.avgLowPrice || 0;
+  $: sellPriceChange = sellPriceChangePeriodEnd - sellPriceChangePeriodStart;
+  $: sellPriceChangePercentage =
+    sellPriceChangePeriodStart > 0
+      ? (sellPriceChange / sellPriceChangePeriodStart) * 100
+      : 0;
+
+  $: {
+    const fetchPrice = async () => {
+      history = await data.streamed.history.then((streamed) => streamed.data);
+    };
+    fetchPrice();
+  }
 
   async function fetchHistory(interval: TimeSeriesOption) {
     selected = interval;
-    data.streamed.history = getTimeSeries(
+    invalidate(`/items/${$page.params.id}`);
+    const timeSeries = getTimeSeries(
       $page.params.id,
       selected.value as TimeStep,
     );
+    data.streamed.history = timeSeries;
+    history = await timeSeries.then((series) => series.data);
   }
 </script>
 
@@ -92,7 +131,7 @@
     <div class="overflow-hidden text-ellipsis whitespace-nowrap">
       <a href="/items">Items</a>
     </div>
-    <ChevronRight class="h-4 w-4" />
+    <ChevronRight class="size-4" />
     <div class="font-medium text-foreground truncate">
       <a href={`/items/${$page.params.id}`}>{$currentItem?.name}</a>
     </div>
@@ -146,6 +185,22 @@
                   Unknown
                 {/if}
               </span>
+              {#if buyPriceChange !== 0}
+                <span
+                  class={cn("text-sm", styleSignedNumberCell(buyPriceChange))}
+                  >{getSignedPrefix(buyPriceChange)}{compactFormatter.format(
+                    buyPriceChange,
+                  )}
+                  {#if buyPriceChange > 0}
+                    <TrendingUp class="inline size-4" />
+                  {:else if buyPriceChange < 0}
+                    <TrendingDown class="inline size-4" />
+                  {/if}
+                  {formatter.format(
+                    buyPriceChangePercentage,
+                  )}{buyPriceChangePercentage !== 0 ? "%" : ""}</span
+                >
+              {/if}
             </p>
             {#if $currentItem?.highTime}
               <Tooltip.Root>
@@ -180,13 +235,31 @@
             <ArrowUpCircle />
           </Card.Header>
           <Card.Content>
-            <div class="text-2xl font-bold">
-              {#if $currentItem?.low}
-                {formatter.format($currentItem.low)}
-              {:else}
-                Unknown
+            <p>
+              <span class="text-2xl font-bold">
+                {#if $currentItem?.low}
+                  {formatter.format($currentItem.low)}
+                {:else}
+                  Unknown
+                {/if}
+              </span>
+              {#if sellPriceChange !== 0}
+                <span
+                  class={cn("text-sm", styleSignedNumberCell(sellPriceChange))}
+                  >{getSignedPrefix(sellPriceChange)}{compactFormatter.format(
+                    sellPriceChange,
+                  )}
+                  {#if sellPriceChange > 0}
+                    <TrendingUp class="inline size-4" />
+                  {:else if sellPriceChange < 0}
+                    <TrendingDown class="inline size-4" />
+                  {/if}
+                  {formatter.format(
+                    sellPriceChangePercentage,
+                  )}{sellPriceChangePercentage !== 0 ? "%" : ""}</span
+                >
               {/if}
-            </div>
+            </p>
             {#if $currentItem?.lowTime}
               <Tooltip.Root>
                 <Tooltip.Trigger>
@@ -223,11 +296,10 @@
         <Card.Content class="h-[248px] w-full flex justify-center items-center">
           {#await data.streamed.history}
             <div class="text-muted-foreground flex items-center">
-              <Loader2 class="mr-2 h-4 w-4 animate-spin" />Loading...
+              <Loader2 class="mr-2 size-4 animate-spin" />Loading...
             </div>
-          {:then value}
-            <PriceSeriesChart data={value.data} />
-            <div></div>
+          {:then { data }}
+            <PriceSeriesChart {data} />
           {:catch error}
             {error.message}
           {/await}
@@ -242,7 +314,7 @@
             <ul class="grid gap-3">
               <li class="flex items-center justify-between">
                 <span class="text-muted-foreground">Margin</span>
-                {#if margin}
+                {#if typeof margin !== "undefined" && margin !== null}
                   <span class={styleSignedNumberCell(margin)}
                     >{getSignedPrefix(margin)}{formatter.format(margin)}</span
                   >
