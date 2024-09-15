@@ -360,17 +360,24 @@
   </div>
   <Card.Root>
     <Card.Header
-      class="flex flex-row items-center justify-between space-y-0 pb-2"
+      class="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row"
     >
-      <Card.Title class="text-base font-normal">Item History</Card.Title>
+      <div class="grid flex-1 gap-1 text-center sm:text-left">
+        <Card.Title>Item History</Card.Title>
+        <Card.Description>
+          Showing the price history for the last {$selected.label.toLowerCase()}.
+        </Card.Description>
+      </div>
       <TimeStepDropdown
         bind:selected={$selected}
         onSelectedChange={fetchHistory}
       />
     </Card.Header>
-    <Card.Content class="h-[248px] w-full flex justify-center items-center">
+    <Card.Content class="px-2 pt-4 sm:px-6 sm:pt-6">
       {#await data.streamed.history}
-        <div class="text-muted-foreground flex items-center">
+        <div
+          class="text-muted-foreground flex items-center justify-center h-[250px]"
+        >
           <Loader2 class="mr-2 h-4 w-4 animate-spin" />Loading...
         </div>
       {:then value}
