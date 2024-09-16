@@ -5,6 +5,8 @@
   import { onMount } from "svelte";
   import { itemsStore } from "$lib/stores/items";
   import { fetchPrices, fetchVolumes } from "$lib/api/items";
+  import { isLoading } from "$lib/stores/loading";
+  import { config } from "$lib/config";
 
   export let data;
 
@@ -25,7 +27,7 @@
           volume: volumes[item.id],
         };
       });
-    }, 60_000);
+    }, config.pollMs);
   };
 
   function handleVisibilityChange() {
@@ -45,6 +47,7 @@
       false,
     );
     handleVisibilityChange();
+    $isLoading = false;
   });
 </script>
 
