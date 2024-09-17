@@ -324,16 +324,35 @@
             <div class="grid gap-3">
               <div class="font-semibold">Item Details</div>
               <ul class="grid gap-3">
-                <li class="flex items-center justify-between">
-                  <span class="text-muted-foreground">Margin</span>
-                  {#if typeof margin !== "undefined" && margin !== null}
-                    <span class={styleSignedNumberCell(margin)}
-                      >{getSignedPrefix(margin)}{formatter.format(margin)}</span
-                    >
-                  {:else}
-                    -
-                  {/if}
-                </li>
+                <Tooltip.Root>
+                  <li class="flex items-center justify-between">
+                    <Tooltip.Trigger>
+                      <span class="text-muted-foreground"
+                        >Margin
+                        <Info class="inline-block h-3 w-3" />
+                      </span>
+                    </Tooltip.Trigger>
+                    {#if typeof margin !== "undefined" && margin !== null}
+                      <span class={styleSignedNumberCell(margin)}
+                        >{getSignedPrefix(margin)}{formatter.format(
+                          margin,
+                        )}</span
+                      >
+                    {:else}
+                      -
+                    {/if}
+                  </li>
+                  <Tooltip.Content>
+                    {#if $currentItem?.high && $currentItem.low && typeof tax === "number"}
+                      <span
+                        >{formatter.format($currentItem.high)} - {formatter.format(
+                          $currentItem.low,
+                        )} -
+                        {formatter.format(tax)} (tax)</span
+                      >
+                    {/if}
+                  </Tooltip.Content>
+                </Tooltip.Root>
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground">Limit</span>
                   <span>
@@ -344,54 +363,117 @@
                     {/if}</span
                   >
                 </li>
-                <li class="flex items-center justify-between">
-                  <span class="text-muted-foreground">Potential Profit</span>
+                <Tooltip.Root>
+                  <li class="flex items-center justify-between">
+                    <Tooltip.Trigger>
+                      <span class="text-muted-foreground">
+                        Potential Profit
 
-                  <span class={styleSignedNumberCell(margin)}>
-                    {#if potentialProfit}
-                      {getSignedPrefix(potentialProfit)}{formatter.format(
-                        potentialProfit,
-                      )}
-                    {:else}
-                      -
-                    {/if}</span
-                  >
-                </li>
-                <li class="flex items-center justify-between">
-                  <span class="text-muted-foreground">ROI</span>
-                  <span class={styleSignedNumberCell(margin)}>
-                    {#if returnOnInvestment}
-                      {getSignedPrefix(returnOnInvestment)}{formatter
-                        .format(returnOnInvestment)
-                        ?.concat("%")}
+                        <Info class="inline-block size-3" />
+                      </span>
+                    </Tooltip.Trigger>
+
+                    <span class={styleSignedNumberCell(margin)}>
+                      {#if potentialProfit}
+                        {getSignedPrefix(potentialProfit)}{formatter.format(
+                          potentialProfit,
+                        )}
+                      {:else}
+                        -
+                      {/if}</span
+                    >
+                  </li>
+                  <Tooltip.Content>
+                    {#if margin && $currentItem?.limit}
+                      <span>
+                        {formatter.format(margin)} × {formatter.format(
+                          $currentItem.limit,
+                        )}
+                      </span>
+                    {/if}
+                  </Tooltip.Content>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <li class="flex items-center justify-between">
+                    <Tooltip.Trigger>
+                      <span class="text-muted-foreground"
+                        >ROI <Info class="inline-block h-3 w-3" /></span
+                      >
+                    </Tooltip.Trigger>
+                    <span class={styleSignedNumberCell(margin)}>
+                      {#if returnOnInvestment}
+                        {getSignedPrefix(returnOnInvestment)}{formatter
+                          .format(returnOnInvestment)
+                          ?.concat("%")}
+                      {:else}
+                        -
+                      {/if}
+                    </span>
+                  </li>
+                  <Tooltip.Content>
+                    {#if $currentItem?.low && margin && tax}
+                      <span>
+                        {formatter.format(margin)} / {formatter.format(
+                          $currentItem?.low,
+                        )} × 100
+                      </span>
+                    {/if}
+                  </Tooltip.Content>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <li class="flex items-center justify-between">
+                    <Tooltip.Trigger>
+                      <span class="text-muted-foreground"
+                        >Tax
+
+                        <Info class="inline-block size-3" />
+                      </span>
+                    </Tooltip.Trigger>
+                    {#if tax}
+                      {formatter.format(tax)}
                     {:else}
                       -
                     {/if}
-                  </span>
-                </li>
-                <li class="flex items-center justify-between">
-                  <span class="text-muted-foreground">Tax</span>
-                  {#if tax}
-                    {formatter.format(tax)}
-                  {:else}
-                    -
-                  {/if}
-                </li>
+                  </li>
+                  <Tooltip.Content>
+                    {#if $currentItem?.low}
+                      <span>
+                        1% of {formatter.format($currentItem.low)}
+                      </span>
+                    {/if}
+                  </Tooltip.Content>
+                </Tooltip.Root>
               </ul>
               <Separator class="my-2" />
               <ul class="grid gap-3">
-                <li class="flex items-center justify-between">
-                  <span class="text-muted-foreground">High Alch Profit</span>
-                  <span class={styleSignedNumberCell(highAlchProfit)}>
-                    {#if highAlchProfit}
-                      {getSignedPrefix(highAlchProfit)}{formatter.format(
-                        highAlchProfit,
-                      )}
-                    {:else}
-                      -
+                <Tooltip.Root>
+                  <li class="flex items-center justify-between">
+                    <Tooltip.Trigger>
+                      <span class="text-muted-foreground"
+                        >High Alch Profit
+                        <Info class="inline-block h-3 w-3" />
+                      </span>
+                    </Tooltip.Trigger>
+                    <span class={styleSignedNumberCell(highAlchProfit)}>
+                      {#if highAlchProfit}
+                        {getSignedPrefix(highAlchProfit)}{formatter.format(
+                          highAlchProfit,
+                        )}
+                      {:else}
+                        -
+                      {/if}
+                    </span>
+                  </li>
+                  <Tooltip.Content>
+                    {#if $currentItem?.highalch && $currentItem.high && $alchPrice?.high}
+                      <span>
+                        {formatter.format($currentItem.highalch)} - {formatter.format(
+                          $currentItem.high,
+                        )} - {formatter.format($alchPrice.high)} (alch price)
+                      </span>
                     {/if}
-                  </span>
-                </li>
+                  </Tooltip.Content>
+                </Tooltip.Root>
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground">High Alch</span>
                   <span>
@@ -402,18 +484,34 @@
                     {/if}
                   </span>
                 </li>
-                <li class="flex items-center justify-between">
-                  <span class="text-muted-foreground">Low Alch Profit</span>
-                  <span class={styleSignedNumberCell(lowAlchProfit)}>
-                    {#if lowAlchProfit}
-                      {getSignedPrefix(lowAlchProfit)}{formatter.format(
-                        lowAlchProfit,
-                      )}
-                    {:else}
-                      -
+                <Tooltip.Root>
+                  <li class="flex items-center justify-between">
+                    <Tooltip.Trigger>
+                      <span class="text-muted-foreground"
+                        >Low Alch Profit
+                        <Info class="inline-block h-3 w-3" />
+                      </span>
+                    </Tooltip.Trigger>
+                    <span class={styleSignedNumberCell(lowAlchProfit)}>
+                      {#if lowAlchProfit}
+                        {getSignedPrefix(lowAlchProfit)}{formatter.format(
+                          lowAlchProfit,
+                        )}
+                      {:else}
+                        -
+                      {/if}
+                    </span>
+                  </li>
+                  <Tooltip.Content>
+                    {#if $currentItem?.lowalch && $currentItem.high && $alchPrice?.high}
+                      <span>
+                        {formatter.format($currentItem.lowalch)} - {formatter.format(
+                          $currentItem.high,
+                        )} - {formatter.format($alchPrice.high)} (alch price)
+                      </span>
                     {/if}
-                  </span>
-                </li>
+                  </Tooltip.Content>
+                </Tooltip.Root>
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground">Low Alch</span>
                   <span>
