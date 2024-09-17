@@ -9,12 +9,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-type FlyAndScaleParams = {
+interface FlyAndScaleParams {
   y?: number;
   x?: number;
   start?: number;
   duration?: number;
-};
+}
 
 export const flyAndScale = (
   node: Element,
@@ -169,4 +169,85 @@ export function getUserOperatingSystem(): OS {
   if (userAgent.indexOf("X11") != -1) os = "UNIX";
   if (userAgent.indexOf("Linux") != -1) os = "Linux";
   return os;
+}
+
+export function styleDateCell(value: Date | null) {
+  if (!value) {
+    return "";
+  }
+
+  let className = "hsl(var(--foreground) / var(--tw-text-opacity))";
+
+  const time = new Date(value).getTime();
+
+  // 15 minutes
+  if (time > Date.now() - 15 * 60 * 1000) {
+    className = "text-green-500";
+    // 30 minutes
+  } else if (time > Date.now() - 60 * 60 * 1000) {
+    className = "text-green-300";
+  } else if (time > Date.now() - 2 * 60 * 60 * 1000) {
+    className = "text-green-100";
+  }
+  return className;
+}
+
+export function styleSignedNumberCell(value: number | null) {
+  if (!value) {
+    return "text-slate-500";
+  }
+
+  let className;
+
+  if (value > 0) {
+    className = "text-green-500";
+  } else if (value < 0) {
+    className = "text-red-500";
+  }
+  return className;
+}
+
+export function getNumberFormatter() {
+  let formatter = new Intl.NumberFormat();
+
+  if (typeof navigator !== "undefined") {
+    formatter = new Intl.NumberFormat(navigator.language, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  }
+  return formatter;
+}
+
+export function getCompactNumberFormatter() {
+  let formatter = new Intl.NumberFormat();
+
+  if (typeof navigator !== "undefined") {
+    formatter = new Intl.NumberFormat(navigator.language, {
+      notation: "compact",
+      compactDisplay: "short",
+    });
+  }
+  return formatter;
+}
+
+export function formatNumberCell(
+  value: number | null | undefined,
+): string | null | undefined {
+  const formatter = getNumberFormatter();
+  return value !== null && value !== undefined
+    ? formatter?.format(value)
+    : null;
+}
+
+export function getSignedPrefix(value: number): string {
+  return value > 0 ? "+" : "";
+}
+
+export function calculateMargin(
+  buyPrice: number,
+  sellPrice: number,
+  id: number,
+): number {
+  return Math.round(buyPrice - sellPrice - calculateTax(buyPrice, id));
 }
