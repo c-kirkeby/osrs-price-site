@@ -7,6 +7,7 @@
   import { fetchPrices, fetchVolumes } from "$lib/api/items";
   import { isLoading } from "$lib/stores/loading";
   import { config } from "$lib/config";
+  import TailwindIndicator from "$lib/components/tailwind-indicator.svelte";
 
   export let data;
 
@@ -51,6 +52,7 @@
   });
 </script>
 
+<TailwindIndicator />
 <ModeWatcher />
 <div class="min-h-screen bg-background antialiased font-sans">
   <div class="relative flex min-h-screen flex-col">
