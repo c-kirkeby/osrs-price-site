@@ -3,71 +3,18 @@ import DataTableCell from "$lib/components/data-table/data-table-cell.svelte";
 import { DataTableLink } from "$lib/components/data-table";
 import type { Item } from "$lib/types/item";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
-import { calculateRoi, calculateTax, cn } from "$lib/utils";
+import {
+  calculateMargin,
+  calculateRoi,
+  calculateTax,
+  cn,
+  formatNumberCell,
+  getSignedPrefix,
+  styleDateCell,
+  styleSignedNumberCell,
+} from "$lib/utils";
 import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import { LucideStar } from "lucide-svelte";
-
-let formatter: Intl.NumberFormat | undefined;
-
-if (!formatter && typeof navigator !== "undefined") {
-  formatter = new Intl.NumberFormat(navigator.language, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  });
-}
-
-const formatNumberCell = (
-  value: number | null | undefined,
-): string | null | undefined =>
-  value !== null && value !== undefined ? formatter?.format(value) : null;
-
-const getPrefix = (value: number): string => {
-  return value > 0 ? "+" : "";
-};
-
-const styleDateCell = (value: Date | null) => {
-  if (!value) {
-    return "";
-  }
-
-  let className = "hsl(var(--foreground) / var(--tw-text-opacity))";
-
-  const time = new Date(value).getTime();
-
-  // 15 minutes
-  if (time > Date.now() - 15 * 60 * 1000) {
-    className = "text-green-500";
-    // 30 minutes
-  } else if (time > Date.now() - 60 * 60 * 1000) {
-    className = "text-green-300";
-  } else if (time > Date.now() - 2 * 60 * 60 * 1000) {
-    className = "text-green-100";
-  }
-  return className;
-};
-
-const styleNonGradedNumberCell = (value: number | null) => {
-  if (!value) {
-    return "text-slate-500";
-  }
-
-  let className;
-
-  if (value > 0) {
-    className = "text-green-500";
-  } else if (value < 0) {
-    className = "text-red-500";
-  }
-  return className;
-};
-
-const calculateMargin = (
-  buyPrice: number,
-  sellPrice: number,
-  id: number,
-): number => {
-  return Math.round(buyPrice - sellPrice - calculateTax(buyPrice, id));
-};
 
 const columnHelper = createColumnHelper<Item>();
 
@@ -222,8 +169,8 @@ export const columns: any[] = [
       );
 
       return renderComponent(DataTableCell, {
-        class: cn(styleNonGradedNumberCell(margin), "flex justify-end"),
-        value: getPrefix(margin) + formatNumberCell(margin) || "-",
+        class: cn(styleSignedNumberCell(margin), "flex justify-end"),
+        value: getSignedPrefix(margin) + formatNumberCell(margin) || "-",
       });
     },
     sortingFn: (a, b) => {
@@ -270,9 +217,9 @@ export const columns: any[] = [
       }
       return renderComponent(DataTableCell, {
         value:
-          getPrefix(grossMargin) + formatNumberCell(Math.round(grossMargin)) ||
-          "-",
-        class: cn(styleNonGradedNumberCell(grossMargin), "flex justify-end"),
+          getSignedPrefix(grossMargin) +
+          formatNumberCell(Math.round(grossMargin)) || "-",
+        class: cn(styleSignedNumberCell(grossMargin), "flex justify-end"),
       });
     },
     header: "Gross Profit",
@@ -345,8 +292,9 @@ export const columns: any[] = [
 
       return renderComponent(DataTableCell, {
         value:
-          getPrefix(roiValue) + formatNumberCell(roiValue)?.concat("%") || "-",
-        class: cn(styleNonGradedNumberCell(roiValue), "flex justify-end"),
+          getSignedPrefix(roiValue) + formatNumberCell(roiValue)?.concat("%") ||
+          "-",
+        class: cn(styleSignedNumberCell(roiValue), "flex justify-end"),
       });
     },
     sortingFn: (a, b) => {
