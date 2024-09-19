@@ -40,8 +40,9 @@
     }
   }
 
-  onMount(async () => {
-    $itemsStore = await data.streamed.items;
+  $: $itemsStore = data.items;
+
+  onMount(() => {
     document.addEventListener(
       "visibilitychange",
       handleVisibilityChange,

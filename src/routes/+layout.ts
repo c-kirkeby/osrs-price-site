@@ -4,8 +4,6 @@ export async function load({ fetch, depends }) {
   depends("app:items");
 
   return {
-    streamed: {
-      items: getItems(fetch),
-    },
+    items: await getItems(fetch),
   };
 }
