@@ -81,8 +81,8 @@ export function poll(fn: () => void, milliseconds: number, lazy = true) {
  * @param itemId
  * @returns
  */
-export function calculateTax(sellPrice: number, itemId: number) {
-  if (isItemTaxExempt(itemId)) {
+export function calculateTax(sellPrice: number, itemId?: number) {
+  if (!itemId || isItemTaxExempt(itemId)) {
     return 0;
   }
 
@@ -102,6 +102,9 @@ export function calculateTax(sellPrice: number, itemId: number) {
  * @returns
  */
 export function calculateRoi(cost: number, profit: number) {
+  if (cost === 0) {
+    return 0;
+  }
   return (profit / cost) * 100;
 }
 
@@ -248,7 +251,7 @@ export function getSignedPrefix(value: number): string {
 export function calculateMargin(
   buyPrice: number,
   sellPrice: number,
-  id: number,
+  id?: number,
 ): number {
   return Math.round(buyPrice - sellPrice - calculateTax(buyPrice, id));
 }

@@ -2,6 +2,7 @@
   import { page } from "$app/stores";
   import { cn } from "$lib/utils";
   import { HandCoinsIcon } from "lucide-svelte";
+  import { config } from "$lib/config";
 </script>
 
 <div class="mr-4 hidden md:flex">
@@ -10,25 +11,18 @@
     <span class="hidden font-bold sm:inline-block">OSRS Price Site</span>
   </a>
   <nav class="flex items-center gap-6 text-sm">
-    <a
-      href="/"
-      class={cn(
-        "transition-colors hover:text-foreground/80",
-        $page.url.pathname === "/" ? "text-foreground" : "text-foreground/60",
-      )}
-    >
-      Home
-    </a>
-    <a
-      href="/items"
-      class={cn(
-        "transition-colors hover:text-foreground/80",
-        $page.url.pathname.startsWith("/items")
-          ? "text-foreground"
-          : "text-foreground/60",
-      )}
-    >
-      Items
-    </a>
+    {#each config.menu as { href, label }}
+      <a
+        {href}
+        class={cn(
+          "transition-colors hover:text-foreground/80",
+          $page.url.pathname === href
+            ? "text-foreground"
+            : "text-foreground/60",
+        )}
+      >
+        {label}
+      </a>
+    {/each}
   </nav>
 </div>

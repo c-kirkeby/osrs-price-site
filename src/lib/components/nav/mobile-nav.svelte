@@ -3,6 +3,7 @@
   import { Button } from "$lib/components/ui/button";
   import { MenuIcon, HandCoinsIcon } from "lucide-svelte";
   import { MobileLink } from "$lib/components/nav";
+  import { config } from "$lib/config";
 
   let open = false;
 </script>
@@ -26,10 +27,11 @@
     </MobileLink>
     <div class="my-4 h-[calc(100vh-8rem)] pb-10 pl-6 overflow-auto">
       <div class="flex flex-col space-y-3">
-        <MobileLink href="/" bind:open class="text-foreground">Home</MobileLink>
-        <MobileLink href="/items" bind:open class="text-foreground">
-          Items
-        </MobileLink>
+        {#each config.menu as { href, label }}
+          <MobileLink {href} bind:open class="text-foreground"
+            >{label}</MobileLink
+          >
+        {/each}
       </div>
     </div>
   </Sheet.Content>
