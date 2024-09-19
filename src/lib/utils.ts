@@ -226,6 +226,7 @@ export function getCompactNumberFormatter() {
     formatter = new Intl.NumberFormat(navigator.language, {
       notation: "compact",
       compactDisplay: "short",
+      maximumSignificantDigits: 4,
     });
   }
   return formatter;

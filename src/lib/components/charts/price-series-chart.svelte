@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { TimeSeries } from "$lib/types/time-series";
+  import { getCompactNumberFormatter, getNumberFormatter } from "$lib/utils";
   import {
     VisAxis,
     VisBulletLegend,
@@ -13,10 +14,8 @@
   import { formatDistanceToNowStrict, formatRelative } from "date-fns";
   import capitalize from "lodash/capitalize";
 
-  const formatter = new Intl.NumberFormat("en-AU", {
-    notation: "compact",
-    compactDisplay: "short",
-  });
+  $: numberFormatter = getNumberFormatter();
+  $: compactNumberFormatter = getCompactNumberFormatter();
 
   export let data: TimeSeries[];
 
@@ -40,7 +39,7 @@
       addSuffix: true,
     });
 
-  const YTickFormat = (tick: number) => formatter.format(tick);
+  const YTickFormat = (tick: number) => compactNumberFormatter.format(tick);
   const items = [
     {
       name: "Buy Price",
@@ -63,14 +62,14 @@
               <div class="flex flex-1 justify-between leading-none">
                 <span class="text-muted-foreground">Buy Price</span>
               </div>
-              <span class="font-mono font-medium tabular-nums text-foreground">${formatter.format(data.avgHighPrice)}</span>
+              <span class="font-mono font-medium tabular-nums text-foreground">${numberFormatter.format(data.avgHighPrice)}</span>
             </div>
             <div class="flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground">
               <div class="shrink-0 rounded-[2px] border-[var(--vis-color1)] bg-[var(--vis-color1)] w-2.5 h-2.5"></div>
               <div class="flex flex-1 justify-between leading-none">
                 <span class="text-muted-foreground">Sell Price</span>
               </div>
-              <span class="font-mono font-medium tabular-nums text-foreground">${formatter.format(data.avgLowPrice)}</span>
+              <span class="font-mono font-medium tabular-nums text-foreground">${numberFormatter.format(data.avgLowPrice)}</span>
             </div>
           </div>
         </div>
