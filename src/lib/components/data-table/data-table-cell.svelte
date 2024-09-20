@@ -1,8 +1,8 @@
-<script lang="ts">
+<script lang="ts" generics="T">
   import type { HTMLAttributes } from "svelte/elements";
 
   type $$Props = HTMLAttributes<HTMLSpanElement> & {
-    value: string;
+    value: T;
   };
 
   export let value;
@@ -11,6 +11,14 @@
   export { className as class };
 </script>
 
-<span class={className} {...$$restProps}>
-  {value}
-</span>
+{#if Array.isArray(value)}
+  {#each value as subRow}
+    <div class={className} {...$$restProps}>
+      {subRow}
+    </div>
+  {/each}
+{:else}
+  <span class={className} {...$$restProps}>
+    {value}
+  </span>
+{/if}

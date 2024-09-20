@@ -52,19 +52,21 @@ export const columns = [
         id: "materials",
         cell: (info) => {
           const recipe = info.getValue();
-          return recipe.inputs.map(
+          const value = recipe.inputs.map(
             (input) => input.quantity + " × " + input.name + "\n",
           );
+          return renderComponent(DataTableCell, { value });
         },
       }),
       columnHelper.accessor((row) => row, {
         id: "cost",
         cell: (info) => {
           const recipe = info.getValue();
-          return recipe.inputs.map(
+          const value = recipe.inputs.map(
             (input) =>
               input.quantity + " × " + formatNumberCell(input.high) + "\n",
           );
+          return renderComponent(DataTableCell, { value });
         },
       }),
     ],
@@ -76,20 +78,22 @@ export const columns = [
         id: "outcome",
         cell: (info) => {
           const recipe = info.getValue();
-          return recipe.outputs.map(
+          const value = recipe.outputs.map(
             (output) =>
               formatNumberCell(output.quantity) + " × " + output.name + "\n",
           );
+          return renderComponent(DataTableCell, { value });
         },
       }),
       columnHelper.accessor((row) => row, {
         id: "price",
         cell: (info) => {
           const recipe = info.getValue();
-          return recipe.outputs.map(
+          const value = recipe.outputs.map(
             (output) =>
               output.quantity + " × " + formatNumberCell(output.high) + "\n",
           );
+          return renderComponent(DataTableCell, { value });
         },
       }),
     ],
