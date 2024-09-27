@@ -7,10 +7,15 @@
   import { Loader2 } from "lucide-svelte";
   import { cn } from "$lib/utils";
   import { settings } from "$lib/stores/settings";
+  import { onMount } from "svelte";
+  import type { Recipe, Step } from "$lib/types/recipe";
 
   export let data;
 
-  function getItem(id: number) {
+  let recipes: Recipe[] = [];
+  let recipeItems = [];
+
+  function getItem(id: number, items: Item[] | null) {
     if (id === 995) {
       return {
         id: 995,
@@ -19,7 +24,19 @@
         low: 1,
       } as Pick<Item, "id" | "name" | "high" | "low">;
     }
-    return $itemsStore?.find((item) => item.id === id);
+    return items?.find((item) => item.id === id);
+  }
+
+  function stepsToItemSteps(
+    steps: Step[],
+    type: "input" | "output",
+    items: Item[] | null,
+  ) {
+    return steps.map((step) => ({
+      quantity: step.quantity,
+      type,
+      ...getItem(step.id, items),
+    }));
   }
 
   let initialState: InitialTableState = {
@@ -33,6 +50,22 @@
       },
     ],
   };
+
+  $: recipeItems = recipes
+    ?.filter((recipe) => recipe.inputs.length > 0 && recipe.outputs.length > 0)
+    .map((recipe) => {
+      const out = {
+        name: recipe.name,
+        children: stepsToItemSteps(recipe.inputs, "input", $itemsStore).concat(
+          stepsToItemSteps(recipe.outputs, "output", $itemsStore),
+        ),
+      };
+      return out;
+    });
+
+  onMount(async () => {
+    recipes = await data.streamed.recipes;
+  });
 </script>
 
 <svelte:head>
@@ -55,36 +88,9 @@
       <Loader2 class="mr-2 h-4 w-4 animate-spin" />
       Loading...
     </div>
-  {:then recipes}
-    {@const data = recipes
-      ?.filter(
-        (recipe) => recipe.inputs.length > 0 && recipe.outputs.length > 0,
-      )
-      .map((recipe) => {
-        return {
-          name: recipe.name,
-          inputs: recipe.inputs.map(({ id, quantity }) => {
-            const { high, low, name } = getItem(id);
-            return {
-              id,
-              quantity,
-              high,
-              low,
-              name,
-            };
-          }),
-          outputs: recipe.outputs.map(({ id, quantity }) => {
-            const { high, low, name } = getItem(id);
-            return {
-              id,
-              quantity,
-              high,
-              low,
-              name,
-            };
-          }),
-        };
-      })}
-    <DataTable {columns} {data} {initialState} />
+  {:then}
+    {#if recipeItems}
+      <DataTable {columns} data={recipeItems} {initialState} />
+    {/if}
   {/await}
 </section>

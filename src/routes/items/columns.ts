@@ -18,8 +18,7 @@ import { LucideStar } from "lucide-svelte";
 
 const columnHelper = createColumnHelper<Item>();
 
-// TODO: fix explicit `any`. ref: TanStack/table#4382
-export const columns: any[] = [
+export const columns = [
   columnHelper.accessor("id", {
     cell: (info) => info.getValue(),
     header: "ID",

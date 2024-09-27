@@ -1,4 +1,6 @@
-<script lang="ts" generics="TData, TValue">
+<script lang="ts" generics="TData extends { children: TData[] }, TValue">
+  import { cn } from "$lib/utils";
+
   import { writable } from "svelte/store";
 
   import * as Table from "$lib/components/ui/table";
@@ -17,6 +19,8 @@
     getSortedRowModel,
     getFilteredRowModel,
     getPaginationRowModel,
+    getExpandedRowModel,
+    getGroupedRowModel,
   } from "@tanstack/svelte-table";
 
   export let columns: ColumnDef<TData, TValue>[];
@@ -40,6 +44,7 @@
       state: {
         ...old.state,
         columnVisibility,
+        expanded: true,
       },
     }));
   };
@@ -51,7 +56,14 @@
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getGroupedRowModel: getGroupedRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand: (row) => row.children,
+    maxLeafRowFilterDepth: 0,
+    paginateExpandedRows: false,
+    getSubRows: (row) => row.children,
     onColumnVisibilityChange: setColumnVisibility,
+    autoResetExpanded: false,
     initialState,
     state: {
       columnVisibility,
@@ -98,7 +110,13 @@
       <Table.Body>
         {#if $table.getRowModel().rows.length}
           {#each $table.getRowModel().rows as row}
-            <Table.Row>
+            {@const onclick = row.getCanExpand()
+              ? row.getToggleExpandedHandler()
+              : null}
+            <Table.Row
+              on:click={onclick}
+              class={cn({ "cursor-pointer": row.getCanExpand() })}
+            >
               {#each row.getVisibleCells() as cell}
                 <Table.Cell class="p-2 whitespace-nowrap">
                   <svelte:component

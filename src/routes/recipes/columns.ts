@@ -4,123 +4,224 @@ import {
   cn,
   formatNumberCell,
   getSignedPrefix,
+  styleDateCell,
   styleSignedNumberCell,
 } from "$lib/utils";
 import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import DataTableCell from "$lib/components/data-table/data-table-cell.svelte";
+import type { ItemRecipe, StepItem } from "$lib/types/recipe";
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-svelte";
+import { DataTableLink } from "$lib/components/data-table";
+import { formatDistanceToNowStrict } from "date-fns";
 
-const columnHelper = createColumnHelper<{
-  name: string;
-  materials: string;
-  cost: number;
-  price: number;
-  outcome: string;
-  profit: number;
-}>();
+const columnHelper = createColumnHelper<ItemRecipe>();
 
-function calculateRecipeMargin(recipe) {
-  const cost = recipe.inputs.reduce(
-    (sum, input) => sum + input.quantity * input.high,
+function calculateRecipeMargin(recipe: ItemRecipe) {
+  const inputs = recipe.children?.filter((step) => step.type === "input") ?? [];
+  const buy = inputs.reduce(
+    (sum, input) => sum + input.quantity * (input.low ?? 0),
     0,
   );
-  const price = recipe.outputs.reduce(
-    (sum, output) =>
+  const outputs =
+    recipe.children?.filter((step) => step.type === "output") ?? [];
+  const sell = outputs.reduce(
+    (sum, step) =>
       sum +
-      output.quantity * output.low -
-      calculateTax(output.low, output.id) * output.quantity,
+      step.quantity * (step.high ?? 0) -
+      calculateTax((step.high ?? 0) * step.quantity, step.id),
     0,
   );
-  return price - cost;
+  return sell - buy;
 }
 
-function calculateRecipeTax(recipe) {
-  return recipe.outputs.reduce(
-    (sum, output) =>
-      sum + calculateTax(output.low, output.id) * output.quantity,
-    0,
-  );
+function calculateRecipeTax(recipe: ItemRecipe) {
+  return recipe.children
+    ?.filter((step) => step.type === "output")
+    .reduce(
+      (sum, step) =>
+        sum + calculateTax((step.high ?? 0) * step.quantity, step.id),
+      0,
+    );
 }
 
 export const columns = [
+  columnHelper.display({
+    id: "Expand",
+    cell: (props) => {
+      if (!props.row.getCanExpand()) {
+        return null;
+      }
+      const expandComponent = props.row.getIsExpanded()
+        ? ChevronDownIcon
+        : ChevronRightIcon;
+      return renderComponent(expandComponent, {
+        class: "size-5",
+      });
+    },
+  }),
   columnHelper.accessor("name", {
     header: "Name",
+    enableSorting: false,
+    cell: (info) => {
+      if ("children" in info.row.original) {
+        return info.getValue();
+      }
+
+      const value =
+        (info.row.original as StepItem).quantity +
+        " × " +
+        info.row.original.name;
+
+      return renderComponent(DataTableLink, {
+        value,
+        href: `/items/${info.row.original.id}`,
+      });
+    },
   }),
-  columnHelper.group({
-    header: "Inputs",
-    columns: [
-      columnHelper.accessor((row) => row, {
-        id: "materials",
-        cell: (info) => {
-          const recipe = info.getValue();
-          const value = recipe.inputs.map(
-            (input) => input.quantity + " × " + input.name + "\n",
-          );
-          return renderComponent(DataTableCell, { value });
-        },
-      }),
-      columnHelper.accessor((row) => row, {
-        id: "cost",
-        cell: (info) => {
-          const recipe = info.getValue();
-          const value = recipe.inputs.map(
-            (input) =>
-              input.quantity + " × " + formatNumberCell(input.high) + "\n",
-          );
-          return renderComponent(DataTableCell, { value });
-        },
-      }),
-    ],
+  columnHelper.accessor("highTime", {
+    header: "Last Bought",
+    cell: (info) => {
+      let value: number | undefined;
+      if (typeof info.row.original.children !== "undefined") {
+        value = Math.max(
+          ...info.row.original.children
+            .map((step) => step.highTime)
+            .filter((highTime) => typeof highTime === "number"),
+        );
+      } else {
+        value = info.getValue();
+      }
+
+      if (!value) {
+        return "-";
+      }
+
+      return renderComponent(DataTableCell, {
+        value: formatDistanceToNowStrict(value * 1000, {
+          addSuffix: true,
+        }),
+        class: styleDateCell(new Date(value * 1000)),
+      });
+    },
+    enableSorting: false,
   }),
-  columnHelper.group({
-    header: "Outputs",
-    columns: [
-      columnHelper.accessor((row) => row, {
-        id: "outcome",
-        cell: (info) => {
-          const recipe = info.getValue();
-          const value = recipe.outputs.map(
-            (output) =>
-              formatNumberCell(output.quantity) + " × " + output.name + "\n",
-          );
-          return renderComponent(DataTableCell, { value });
-        },
-      }),
-      columnHelper.accessor((row) => row, {
-        id: "price",
-        cell: (info) => {
-          const recipe = info.getValue();
-          const value = recipe.outputs.map(
-            (output) =>
-              output.quantity + " × " + formatNumberCell(output.high) + "\n",
-          );
-          return renderComponent(DataTableCell, { value });
-        },
-      }),
-    ],
+  columnHelper.accessor("lowTime", {
+    header: "Last Sold",
+    cell: (info) => {
+      let value: number;
+      if (typeof info.row.original.children !== "undefined") {
+        value = Math.max(
+          ...info.row.original.children
+            .map((step) => step.lowTime)
+            .filter((lowTime) => typeof lowTime === "number"),
+        );
+      } else {
+        value = info.getValue<number>();
+      }
+
+      if (!value) {
+        return "-";
+      }
+
+      return renderComponent(DataTableCell, {
+        value: formatDistanceToNowStrict(value * 1000, {
+          addSuffix: true,
+        }),
+        class: styleDateCell(new Date(value * 1000)),
+      });
+    },
+    enableSorting: false,
+  }),
+  columnHelper.accessor((row) => row, {
+    header: "Cost",
+    id: "cost",
+    cell: (info) => {
+      let value = 0;
+      if (!("children" in info.getValue())) {
+        value =
+          ((info.getValue() as StepItem).type === "input"
+            ? info.getValue().low
+            : 0) ?? 0;
+      } else {
+        value =
+          info
+            .getValue()
+            .children?.filter((step) => step.type === "input")
+            .reduce(
+              (sum, current) => sum + current.quantity * (current.low ?? 0),
+              0,
+            ) ?? 0;
+      }
+      return renderComponent(DataTableCell, {
+        class: cn(styleSignedNumberCell(-value), "flex justify-end"),
+        value: formatNumberCell(-value) || "-",
+      });
+    },
+    enableSorting: false,
+  }),
+  columnHelper.accessor((row) => row, {
+    header: "Price",
+    id: "price",
+    cell: (info) => {
+      let value = 0;
+      if (!("children" in info.getValue())) {
+        value =
+          ((info.getValue() as StepItem).type === "output"
+            ? info.getValue().high
+            : 0) ?? 0;
+      } else {
+        value =
+          info
+            .getValue()
+            .children?.filter((step) => step.type === "output")
+            .reduce((sum, current) => sum + (current.high ?? 0), 0) ?? 0;
+      }
+      return renderComponent(DataTableCell, {
+        class: cn(styleSignedNumberCell(value), "flex justify-end"),
+        value: formatNumberCell(value) || "-",
+      });
+    },
+    enableSorting: false,
   }),
   columnHelper.accessor((row) => row, {
     id: "tax",
-    header: "Gross Tax",
+    header: "Tax",
     cell: (info) => {
-      const recipe = info.getValue();
-      const tax = calculateRecipeTax(recipe);
+      let value: number | undefined = 0;
+      if (!("children" in info.getValue())) {
+        value =
+          (info.getValue() as StepItem).type === "output"
+            ? calculateTax(info.getValue().high ?? 0, info.getValue().id)
+            : 0;
+      } else {
+        value = calculateRecipeTax(info.getValue());
+      }
+
+      const negatedValue = value ? -value : null;
 
       return renderComponent(DataTableCell, {
-        class: cn("flex justify-end"),
-        value: formatNumberCell(tax) || "-",
+        class: cn(styleSignedNumberCell(negatedValue), "flex justify-end"),
+        value: formatNumberCell(negatedValue) || "-",
       });
     },
-    sortingFn: (a, b) => {
-      return calculateRecipeTax(a.original) - calculateRecipeTax(b.original);
-    },
+    enableSorting: false,
   }),
   columnHelper.accessor((row) => row, {
     id: "profit",
     header: "Profit",
     cell: (info) => {
-      const recipe = info.getValue();
-      const margin = calculateRecipeMargin(recipe);
-
+      let margin = 0;
+      if (!("children" in info.getValue())) {
+        let high = 0;
+        let low = 0;
+        if ((info.getValue() as StepItem).type === "input")
+          high = info.getValue().high ?? 0;
+        else if ((info.getValue() as StepItem).type === "output")
+          low = info.getValue().low ?? 0;
+        margin = calculateMargin(high ?? 0, low ?? 0, info.getValue().id);
+      } else {
+        margin = calculateRecipeMargin(info.getValue());
+      }
       return renderComponent(DataTableCell, {
         class: cn(styleSignedNumberCell(margin), "flex justify-end"),
         value: getSignedPrefix(margin) + formatNumberCell(margin) || "-",
