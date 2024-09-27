@@ -29,6 +29,9 @@ dependencies:
   d3-scale:
     specifier: ^4.0.2
     version: 4.0.2
+  d3-shape:
+    specifier: ^3.2.0
+    version: 3.2.0
   date-fns:
     specifier: ^3.6.0
     version: 3.6.0
@@ -42,8 +45,8 @@ dependencies:
     specifier: ^0.7.43
     version: 0.7.43
   layerchart:
-    specifier: ^0.44.0
-    version: 0.44.0(postcss-load-config@6.0.1)(postcss@8.4.45)(svelte@4.2.19)(typescript@5.5.4)
+    specifier: ^0.52.1
+    version: 0.52.1(svelte@4.2.19)(typescript@5.5.4)
   lodash:
     specifier: ^4.17.21
     version: 4.17.21
@@ -53,6 +56,9 @@ dependencies:
   mode-watcher:
     specifier: ^0.4.1
     version: 0.4.1(svelte@4.2.19)
+  nanoid:
+    specifier: ^5.0.7
+    version: 5.0.7
   pg:
     specifier: ^8.12.0
     version: 8.12.0
@@ -94,6 +100,9 @@ devDependencies:
   '@types/d3-scale':
     specifier: ^4.0.8
     version: 4.0.8
+  '@types/d3-shape':
+    specifier: ^3.1.6
+    version: 3.1.6
   '@typescript-eslint/eslint-plugin':
     specifier: ^8.1.0
     version: 8.4.0(@typescript-eslint/parser@8.4.0)(eslint@9.9.1)(typescript@5.5.4)
@@ -934,6 +943,51 @@ packages:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
+  /@layerstack/svelte-actions@0.0.4:
+    resolution: {integrity: sha512-tC6+KfqU0t/ugj222sPljb9qkmIpZljaXh2YVKKhsyHGmTS5FRSinr3GFOONOJbQxCQjA7XhIgcSGkFHypaJig==}
+    dependencies:
+      '@floating-ui/dom': 1.6.11
+      '@layerstack/utils': 0.0.4
+      d3-array: 3.2.4
+      d3-scale: 4.0.2
+      date-fns: 3.6.0
+      lodash-es: 4.17.21
+    dev: false
+
+  /@layerstack/svelte-stores@0.0.4:
+    resolution: {integrity: sha512-pO5N+5XtSlGn1a7BhNgQJj/KQQ6IEYZImlGZbIboKJ5nlnvHpSywwqJaUvzPP7yRNGQQEDje/mnIm0m1Rbxrwg==}
+    dependencies:
+      '@layerstack/utils': 0.0.4
+      d3-array: 3.2.4
+      date-fns: 3.6.0
+      immer: 10.1.1
+      lodash-es: 4.17.21
+      zod: 3.23.8
+    dev: false
+
+  /@layerstack/tailwind@0.0.6:
+    resolution: {integrity: sha512-gmBwg3JYddylrodNd6Y4cz0xT/3HVWKsu/QEi5u2fps7hCsYMuI/gr3sil/zDCeuUXm2OOxerWosRBYfX7YqWA==}
+    dependencies:
+      '@layerstack/utils': 0.0.4
+      clsx: 2.1.1
+      culori: 4.0.1
+      d3-array: 3.2.4
+      date-fns: 3.6.0
+      lodash-es: 4.17.21
+      tailwind-merge: 2.5.2
+      tailwindcss: 3.4.10
+    transitivePeerDependencies:
+      - ts-node
+    dev: false
+
+  /@layerstack/utils@0.0.4:
+    resolution: {integrity: sha512-EjN9SoJlOo9GAX0KMy+3D3Tpw63n46owHwmo1vK4niZFpQA0gdoDfwHTw6yVkxe71mcHDKKyV62Yc/buezWXwg==}
+    dependencies:
+      d3-array: 3.2.4
+      date-fns: 3.6.0
+      lodash-es: 4.17.21
+    dev: false
+
   /@mdi/js@7.4.47:
     resolution: {integrity: sha512-KPnNOtm5i2pMabqZxpUz7iQf+mfrYZyKCZ8QNz85czgEt7cuHcGorWfdzUMWYA0SD+a6Hn4FmJ+YhzzzjkTZrQ==}
     dev: false
@@ -1252,10 +1306,20 @@ packages:
     resolution: {integrity: sha512-Y2Jn2idRrLzUfAKV2LyRImR+y4oa2AntrgID95SHJxuMUrkNXmanDSed71sRNZysveJVt1hLLemQZIady0FpEg==}
     dev: true
 
+  /@types/d3-path@3.1.0:
+    resolution: {integrity: sha512-P2dlU/q51fkOc/Gfl3Ul9kicV7l+ra934qBFXCFhrZMOL6du1TM0pm1ThYvENukyOn5h9v+yMJ9Fn5JK4QozrQ==}
+    dev: true
+
   /@types/d3-scale@4.0.8:
     resolution: {integrity: sha512-gkK1VVTr5iNiYJ7vWDI+yUFFlszhNMtVeneJ6lUTKPjprsvLLI9/tgEGiXJOnlINJA8FyA88gfnQsHbybVZrYQ==}
     dependencies:
       '@types/d3-time': 3.0.3
+    dev: true
+
+  /@types/d3-shape@3.1.6:
+    resolution: {integrity: sha512-5KKk5aKGu2I+O6SONMYSNflgiP0WfZIQvVUMan50wHsLG1G94JlxEVnCpQARfTtzytuY0p/9PXXZb3I7giofIA==}
+    dependencies:
+      '@types/d3-path': 3.1.0
     dev: true
 
   /@types/d3-time@3.0.3:
@@ -2761,11 +2825,15 @@ packages:
       typescript: 5.5.4
     dev: false
 
-  /layerchart@0.44.0(postcss-load-config@6.0.1)(postcss@8.4.45)(svelte@4.2.19)(typescript@5.5.4):
-    resolution: {integrity: sha512-x5k2w3byuDm1pV5OPlmw1J2z4DTa5DrBDRlUv8xvH9tEsvJ/FSpr1EZBd9UUPimSU8uuU3Gm2wV9RSpjlISPJA==}
+  /layerchart@0.52.1(svelte@4.2.19)(typescript@5.5.4):
+    resolution: {integrity: sha512-f6W7iUoesvOBZA1xpox8eYx06iHONkLTGPPxVh0kcQJCykUNx8mUXxp5ATYALft5GA/s19G+bZv7jbMSaqpe9A==}
     peerDependencies:
       svelte: ^3.56.0 || ^4.0.0 || ^5.0.0-next.120
     dependencies:
+      '@layerstack/svelte-actions': 0.0.4
+      '@layerstack/svelte-stores': 0.0.4
+      '@layerstack/tailwind': 0.0.6
+      '@layerstack/utils': 0.0.4
       d3-array: 3.2.4
       d3-color: 3.1.0
       d3-delaunay: 6.0.4
@@ -2791,18 +2859,9 @@ packages:
       posthog-js: 1.165.0
       shapefile: 0.6.6
       svelte: 4.2.19
-      svelte-ux: 0.74.6(postcss-load-config@6.0.1)(postcss@8.4.45)(svelte@4.2.19)
       topojson-client: 3.1.0
     transitivePeerDependencies:
-      - '@babel/core'
-      - coffeescript
-      - less
-      - postcss
-      - postcss-load-config
-      - pug
-      - sass
-      - stylus
-      - sugarss
+      - ts-node
       - typescript
     dev: false
 
