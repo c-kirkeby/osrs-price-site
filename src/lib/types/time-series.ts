@@ -1,7 +1,7 @@
 export interface TimeSeries {
   timestamp: number;
-  avgHighPrice: number;
-  avgLowPrice: number;
+  avgHighPrice: number | null;
+  avgLowPrice: number | null;
   avgHighVolume: number;
   avgLowVolume: number;
 }
