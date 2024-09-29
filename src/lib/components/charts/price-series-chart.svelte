@@ -6,8 +6,9 @@
   import { min } from "d3-array";
   import ChartTooltip from "$lib/components/ui/charts/chart-tooltip.svelte";
   import capitalize from "lodash/capitalize";
-  import { getCompactNumberFormatter } from "$lib/utils";
+  import { getCompactNumberFormatter, getNumberFormatter } from "$lib/utils";
 
+  $: numberFormatter = getNumberFormatter();
   $: compactNumberFormatter = getCompactNumberFormatter();
 
   export let data: TimeSeries[];
@@ -114,8 +115,8 @@
             config={chartConfig}
             payload={{
               ...data,
-              avgHighPrice: new Intl.NumberFormat().format(data.avgHighPrice),
-              avgLowPrice: new Intl.NumberFormat().format(data.avgLowPrice),
+              avgHighPrice: numberFormatter.format(data.avgHighPrice),
+              avgLowPrice: numberFormatter.format(data.avgLowPrice),
             }}
             indicator="dot"
           />
