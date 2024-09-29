@@ -1,6 +1,5 @@
 import type { Icon } from "lucide-svelte";
 import type { ComponentType } from "svelte";
-import ChartContainer from "./chart-container.svelte";
 import ChartTooltip from "./chart-tooltip.svelte";
 
 export const THEMES = { light: "", dark: ".dark" } as const;
@@ -49,8 +48,6 @@ export function getPayloadConfigFromPayload(
 }
 
 export {
-  ChartContainer,
-  ChartContainer as Container,
   ChartTooltip,
   ChartTooltip as Tooltip,
 };
