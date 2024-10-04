@@ -68,7 +68,7 @@
     "pg": "^8.12.0",
     "postgres": "^3.4.4",
     "svelte-headless-table": "^0.18.2",
-    "svelte-ux": "^0.74.3",
+    "svelte-ux": "^0.74.9",
     "tailwind-merge": "^2.5.2",
     "tailwind-variants": "^0.2.1",
     "typescript-eslint": "^8.1.0"

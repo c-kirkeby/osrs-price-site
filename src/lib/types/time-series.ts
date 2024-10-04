@@ -2,8 +2,8 @@ export interface TimeSeries {
   timestamp: number;
   avgHighPrice: number | null;
   avgLowPrice: number | null;
-  avgHighVolume: number;
-  avgLowVolume: number;
+  highPriceVolume: number;
+  lowPriceVolume: number;
 }
 
 export type TimeStep = "5m" | "1h" | "6h" | "24h";
