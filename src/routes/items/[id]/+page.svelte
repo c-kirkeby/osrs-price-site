@@ -25,7 +25,7 @@
     TimeSeriesOption,
     TimeStep,
   } from "$lib/types/time-series";
-  import PriceSeriesChart from "$lib/components/charts/price-series-chart.svelte";
+  import PriceTimeSeriesChart from "$lib/components/charts/price-time-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
@@ -38,6 +38,7 @@
   import { getTimeSeries } from "$lib/api/time-series";
   import { isLoading } from "$lib/stores/loading";
   import { invalidate } from "$app/navigation";
+  import VolumeTimeSeriesChart from "$lib/components/charts/volume-time-series-chart.svelte";
 
   $: formatter = getNumberFormatter();
   $: compactFormatter = getCompactNumberFormatter();
@@ -311,7 +312,8 @@
                 <Loader2 class="mr-2 size-4 animate-spin" />Loading...
               </div>
             {:then { data }}
-              <PriceSeriesChart {data} />
+              <PriceTimeSeriesChart {data} />
+              <VolumeTimeSeriesChart {data} />
             {:catch error}
               {error.message}
             {/await}

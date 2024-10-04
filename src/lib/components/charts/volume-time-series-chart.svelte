@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { TimeSeries } from "$lib/types/time-series";
-  import { LineChart, Tooltip } from "layerchart";
+  import { BarChart, Tooltip } from "layerchart";
   import { formatDistanceToNowStrict, formatRelative } from "date-fns";
-  import { scaleTime } from "d3-scale";
-  import { min } from "d3-array";
+  import { scaleLinear, scaleTime, scaleUtc } from "d3-scale";
+  import { max, min } from "d3-array";
   import ChartTooltip from "$lib/components/ui/charts/chart-tooltip.svelte";
   import capitalize from "lodash/capitalize";
   import { getCompactNumberFormatter, getNumberFormatter } from "$lib/utils";
@@ -14,12 +14,12 @@
   export let data: TimeSeries[];
 
   const chartConfig = {
-    avgHighPrice: {
-      label: "Buy Price",
+    highPriceVolume: {
+      label: "Buy Volume",
       color: "hsl(var(--chart-1))",
     },
-    avgLowPrice: {
-      label: "Sell Price",
+    lowPriceVolume: {
+      label: "Sell Volume",
       color: "hsl(var(--chart-5))",
     },
   };
@@ -28,12 +28,12 @@
     [
       {
         date: new Date(d.timestamp * 1000),
-        value: d.avgHighPrice,
+        value: d.highPriceVolume,
         type: "high",
       },
       {
         date: new Date(d.timestamp * 1000),
-        value: d.avgLowPrice,
+        value: d.lowPriceVolume,
         type: "low",
       },
     ].filter((d) => d.value !== null),
@@ -42,54 +42,43 @@
   let processedData: TimeSeries[];
 
   $: {
-    let avgHighPrice: number | null = null;
-    let avgLowPrice: number | null = null;
+    let highPriceVolume: number | null = null;
+    let lowPriceVolume: number | null = null;
 
     processedData = data.map((d) => {
-      if (d.avgHighPrice !== null) {
-        avgHighPrice = d.avgHighPrice;
+      if (d.highPriceVolume !== null) {
+        highPriceVolume = d.highPriceVolume;
       }
-      if (d.avgLowPrice !== null) {
-        avgLowPrice = d.avgLowPrice;
+      if (d.lowPriceVolume !== null) {
+        lowPriceVolume = d.lowPriceVolume;
       }
       return {
         ...d,
-        avgLowPrice,
-        avgHighPrice,
+        lowPriceVolume,
+        highPriceVolume,
       } as TimeSeries;
     });
+    console.debug(processedData);
   }
 
-  $: yDomain = [min(flatData.map((d) => d.value)), null];
+  $: x = (x) => new Date(x.timestamp * 1000);
 </script>
 
 {#if data.length > 0}
   <div class="h-[250px] pb-4">
-    <LineChart
+    <BarChart
+      {x}
       data={processedData}
-      x={(x) => new Date(x.timestamp * 1000)}
-      xScale={scaleTime()}
-      {yDomain}
       padding={{
         top: 5,
         right: 10,
         left: 10,
         bottom: 0,
       }}
-      points={{
-        r: 2,
-        data,
-      }}
       props={{
         yAxis: {
-          format: (data) => compactNumberFormatter.format(data),
+          format: (data) => compactNumberFormatter.format(Math.abs(data)),
           tickLength: 0,
-        },
-        highlight: {
-          motion: false,
-          points: {
-            class: "stroke-none",
-          },
         },
         xAxis: {
           format: (date) =>
@@ -99,8 +88,15 @@
         },
       }}
       series={[
-        { key: "avgHighPrice", color: chartConfig.avgHighPrice.color },
-        { key: "avgLowPrice", color: chartConfig.avgLowPrice.color },
+        {
+          key: "highPriceVolume",
+          color: chartConfig.highPriceVolume.color,
+        },
+        {
+          key: "lowPriceVolume",
+          color: chartConfig.lowPriceVolume.color,
+          value: (d) => -d.lowPriceVolume,
+        },
       ]}
     >
       <svelte:fragment slot="tooltip">
@@ -115,14 +111,14 @@
             config={chartConfig}
             payload={{
               ...data,
-              avgHighPrice: numberFormatter.format(data.avgHighPrice),
-              avgLowPrice: numberFormatter.format(data.avgLowPrice),
+              highPriceVolume: numberFormatter.format(data.highPriceVolume),
+              lowPriceVolume: numberFormatter.format(data.lowPriceVolume),
             }}
             indicator="dot"
           />
         </Tooltip.Root>
       </svelte:fragment>
-    </LineChart>
+    </BarChart>
   </div>
 {:else}
   <div class="h-[250px] flex items-center text-xl justify-center">No data</div>
