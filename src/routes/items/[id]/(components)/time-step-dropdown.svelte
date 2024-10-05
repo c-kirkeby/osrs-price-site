@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Select from "$lib/components/ui/select";
 
-  const timeSteps = [
+  export let options = [
     { value: "5m", label: "Last day" },
     { value: "1h", label: "Last 7 days" },
     { value: "6h", label: "Last 30 days" },
@@ -18,7 +18,7 @@
   </Select.Trigger>
   <Select.Content class="rounded-xl">
     <Select.Group>
-      {#each timeSteps as { value, label }}
+      {#each options as { value, label }}
         <Select.Item {value} {label}>{label}</Select.Item>
       {/each}
     </Select.Group>

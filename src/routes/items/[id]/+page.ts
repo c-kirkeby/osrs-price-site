@@ -2,14 +2,18 @@ import { getTimeSeries } from "$lib/api/time-series";
 
 type TimeStep = "5m" | "1h" | "6h" | "24h";
 
-export async function load({ params, fetch }) {
-  const timeStep: TimeStep = "5m";
+export async function load({ params, fetch, url }) {
+  const timeStepParam = url.searchParams.get("time_step");
+  const allowedTimeSteps: TimeStep[] = ["5m", "1h", "6h", "24h"];
+  const timeStep: TimeStep = allowedTimeSteps.includes(
+    timeStepParam as TimeStep,
+  )
+    ? (timeStepParam as TimeStep)
+    : "5m";
 
   return {
-    streamed: {
-      history: getTimeSeries(params.id, timeStep, {
-        fetcher: fetch,
-      }),
-    },
+    history: await getTimeSeries(params.id, timeStep, {
+      fetcher: fetch,
+    }),
   };
 }

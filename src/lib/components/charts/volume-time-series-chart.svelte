@@ -27,7 +27,7 @@
 </script>
 
 {#if data.length > 0}
-  <div class="h-[250px] pb-4">
+  <div class="h-[150px] pb-4">
     <BarChart
       {x}
       {data}
@@ -92,6 +92,4 @@
       </svelte:fragment>
     </BarChart>
   </div>
-{:else}
-  <div class="h-[250px] flex items-center text-xl justify-center">No data</div>
 {/if}

@@ -20,24 +20,19 @@
     getSignedPrefix,
     styleSignedNumberCell,
   } from "$lib/utils";
-  import type {
-    TimeSeries,
-    TimeSeriesOption,
-    TimeStep,
-  } from "$lib/types/time-series";
+  import type { TimeSeriesOption } from "$lib/types/time-series";
   import PriceTimeSeriesChart from "$lib/components/charts/price-time-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
-  import { page, navigating } from "$app/stores";
+  import { page } from "$app/stores";
   import { alchPrice } from "$lib/stores/alch";
   import { settings } from "$lib/stores/settings";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
   import { currentItem } from "$lib/stores/current-item";
-  import { getTimeSeries } from "$lib/api/time-series";
   import { isLoading } from "$lib/stores/loading";
-  import { invalidate } from "$app/navigation";
+  import { goto } from "$app/navigation";
   import VolumeTimeSeriesChart from "$lib/components/charts/volume-time-series-chart.svelte";
 
   $: formatter = getNumberFormatter();
@@ -45,19 +40,21 @@
 
   export let data;
 
-  let selected = {
+  let options = [
+    { value: "5m", label: "Last day" },
+    { value: "1h", label: "Last 7 days" },
+    { value: "6h", label: "Last 30 days" },
+    { value: "24h", label: "Last 12 months" },
+  ];
+
+  $: selected = options.find(
+    (option) => option.value === $page.url.searchParams.get("time_step"),
+  ) ?? {
     value: "5m",
-    label: "1 Day",
+    label: "Last day",
   };
 
-  let history: TimeSeries[] | undefined;
-
-  $: if ($navigating) {
-    selected = {
-      value: "5m",
-      label: "1 Day",
-    };
-  }
+  $: history = data.history.data;
 
   $: tax = $currentItem?.low
     ? calculateTax($currentItem.low, $currentItem.id)
@@ -101,22 +98,9 @@
       ? (sellPriceChange / sellPriceChangePeriodStart) * 100
       : 0;
 
-  $: {
-    const fetchPrice = async () => {
-      history = await data.streamed.history.then((streamed) => streamed.data);
-    };
-    fetchPrice();
-  }
-
   async function fetchHistory(interval: TimeSeriesOption) {
     selected = interval;
-    invalidate(`/items/${$page.params.id}`);
-    const timeSeries = getTimeSeries(
-      $page.params.id,
-      selected.value as TimeStep,
-    );
-    data.streamed.history = timeSeries;
-    history = await timeSeries.then((series) => series.data);
+    goto(`/items/${$page.params.id}?time_step=${interval.value}`);
   }
 </script>
 
@@ -305,18 +289,21 @@
             <TimeStepDropdown bind:selected onSelectedChange={fetchHistory} />
           </Card.Header>
           <Card.Content class="px-2 pt-4 sm:px-6 sm:pt-6">
-            {#await data.streamed.history}
+            {#if history.length === 0}
               <div
-                class="text-muted-foreground flex items-center justify-center h-[250px]"
+                class=" h-[400px] flex flex-col items-center justify-center gap-1 text-center"
               >
-                <Loader2 class="mr-2 size-4 animate-spin" />Loading...
+                <h3 class="text-2xl font-bold tracking-tight">
+                  No data for the selected period
+                </h3>
+                <p class="text-sm text-muted-foreground">
+                  Try selecting a different period.
+                </p>
               </div>
-            {:then { data }}
-              <PriceTimeSeriesChart {data} />
-              <VolumeTimeSeriesChart {data} />
-            {:catch error}
-              {error.message}
-            {/await}
+            {:else}
+              <PriceTimeSeriesChart data={history} />
+              <VolumeTimeSeriesChart data={history} />
+            {/if}
           </Card.Content>
         </Card.Root>
       </div>

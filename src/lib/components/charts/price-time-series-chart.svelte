@@ -126,6 +126,4 @@
       </svelte:fragment>
     </LineChart>
   </div>
-{:else}
-  <div class="h-[250px] flex items-center text-xl justify-center">No data</div>
 {/if}
