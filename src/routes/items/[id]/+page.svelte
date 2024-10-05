@@ -4,7 +4,6 @@
     ArrowDownCircle,
     ArrowUpCircle,
     Info,
-    Loader2,
     ExternalLinkIcon,
     TrendingUp,
     TrendingDown,

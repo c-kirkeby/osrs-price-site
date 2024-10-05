@@ -60,7 +60,7 @@
     });
   }
 
-  $: x = (x) => new Date(x.timestamp * 1000);
+  $: x = (x: TimeSeries) => new Date(x.timestamp * 1000);
   $: yDomain = [min(flatData.map((d) => d.value)), null];
 </script>
 
