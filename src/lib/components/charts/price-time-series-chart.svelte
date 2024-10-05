@@ -97,6 +97,7 @@
             formatDistanceToNowStrict(date, {
               addSuffix: true,
             }),
+          tickLength: 0,
         },
       }}
       series={[
