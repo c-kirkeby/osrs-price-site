@@ -2,8 +2,7 @@
   import type { TimeSeries } from "$lib/types/time-series";
   import { BarChart, Tooltip } from "layerchart";
   import { formatDistanceToNowStrict, formatRelative } from "date-fns";
-  import { scaleLinear, scaleTime, scaleUtc } from "d3-scale";
-  import { max, min } from "d3-array";
+  import { scaleTime } from "d3-scale";
   import ChartTooltip from "$lib/components/ui/charts/chart-tooltip.svelte";
   import capitalize from "lodash/capitalize";
   import { getCompactNumberFormatter, getNumberFormatter } from "$lib/utils";
@@ -24,43 +23,6 @@
     },
   };
 
-  $: flatData = data.flatMap((d) =>
-    [
-      {
-        date: new Date(d.timestamp * 1000),
-        value: d.highPriceVolume,
-        type: "high",
-      },
-      {
-        date: new Date(d.timestamp * 1000),
-        value: d.lowPriceVolume,
-        type: "low",
-      },
-    ].filter((d) => d.value !== null),
-  );
-
-  let processedData: TimeSeries[];
-
-  $: {
-    let highPriceVolume: number | null = null;
-    let lowPriceVolume: number | null = null;
-
-    processedData = data.map((d) => {
-      if (d.highPriceVolume !== null) {
-        highPriceVolume = d.highPriceVolume;
-      }
-      if (d.lowPriceVolume !== null) {
-        lowPriceVolume = d.lowPriceVolume;
-      }
-      return {
-        ...d,
-        lowPriceVolume,
-        highPriceVolume,
-      } as TimeSeries;
-    });
-    console.debug(processedData);
-  }
-
   $: x = (x) => new Date(x.timestamp * 1000);
 </script>
 
@@ -68,7 +30,7 @@
   <div class="h-[250px] pb-4">
     <BarChart
       {x}
-      data={processedData}
+      {data}
       padding={{
         top: 5,
         right: 10,
@@ -85,17 +47,27 @@
             formatDistanceToNowStrict(date, {
               addSuffix: true,
             }),
+          tickLength: 0,
+          ticks: (scale) => scaleTime(scale.domain(), scale.range()).ticks(),
         },
       }}
       series={[
         {
           key: "highPriceVolume",
           color: chartConfig.highPriceVolume.color,
+          props: {
+            strokeWidth: 0,
+            radius: 0,
+          },
         },
         {
           key: "lowPriceVolume",
           color: chartConfig.lowPriceVolume.color,
           value: (d) => -d.lowPriceVolume,
+          props: {
+            strokeWidth: 0,
+            radius: 0,
+          },
         },
       ]}
     >
