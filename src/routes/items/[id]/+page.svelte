@@ -56,6 +56,11 @@
 
   $: history = data.history.data;
 
+  $: totalVolume = data.history.data.reduce(
+    (sum, tick) => (sum += tick.lowPriceVolume + tick.highPriceVolume),
+    0,
+  );
+
   $: tax = $currentItem?.low
     ? calculateTax($currentItem.low, $currentItem.id)
     : null;
@@ -506,6 +511,21 @@
                   <span>
                     {#if $currentItem?.lowalch}
                       {formatter.format($currentItem.lowalch)}
+                    {:else}
+                      -
+                    {/if}
+                  </span>
+                </li>
+              </ul>
+              <Separator class="my-2" />
+              <ul class="grid gap-3">
+                <li class="flex items-center justify-between">
+                  <span class="text-muted-foreground"
+                    >Volume ({selected.label})</span
+                  >
+                  <span>
+                    {#if typeof totalVolume !== "undefined"}
+                      {formatter.format(totalVolume)}
                     {:else}
                       -
                     {/if}
