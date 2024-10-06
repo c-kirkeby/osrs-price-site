@@ -212,13 +212,15 @@ export const columns = [
     cell: (info) => {
       let margin = 0;
       if (!("children" in info.getValue())) {
-        let high = 0;
-        let low = 0;
-        if ((info.getValue() as StepItem).type === "input")
-          high = info.getValue().high ?? 0;
-        else if ((info.getValue() as StepItem).type === "output")
-          low = info.getValue().low ?? 0;
-        margin = calculateMargin(high ?? 0, low ?? 0, info.getValue().id);
+        const high = info.getValue().high ?? 0;
+        const low = info.getValue().low ?? 0;
+        const tax = calculateTax(high, info.getValue().id);
+
+        if ((info.getValue() as StepItem).type === "input") {
+          margin = -low;
+        } else if ((info.getValue() as StepItem).type === "output") {
+          margin = high - tax;
+        }
       } else {
         margin = calculateRecipeMargin(info.getValue());
       }
