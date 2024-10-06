@@ -7,12 +7,11 @@
   import { Loader2 } from "lucide-svelte";
   import { cn } from "$lib/utils";
   import { settings } from "$lib/stores/settings";
-  import { onMount } from "svelte";
-  import type { Recipe, Step } from "$lib/types/recipe";
+  import type { Step } from "$lib/types/recipe";
 
   export let data;
 
-  let recipes: Recipe[] = [];
+  let recipes = data.recipes;
   let recipeItems = [];
 
   function getItem(id: number, items: Item[] | null) {
@@ -62,10 +61,6 @@
       };
       return out;
     });
-
-  onMount(async () => {
-    recipes = await data.streamed.recipes;
-  });
 </script>
 
 <svelte:head>
@@ -83,14 +78,12 @@
     </div>
   </div>
   <h1 class="text-3xl font-bold tracking-tight">Recipes</h1>
-  {#await data.streamed.recipes}
+  {#if recipeItems}
+    <DataTable {columns} data={recipeItems} {initialState} />
+  {:else}
     <div class="flex items-center text-sm text-muted-foreground justify-center">
       <Loader2 class="mr-2 h-4 w-4 animate-spin" />
       Loading...
     </div>
-  {:then}
-    {#if recipeItems}
-      <DataTable {columns} data={recipeItems} {initialState} />
-    {/if}
-  {/await}
+  {/if}
 </section>

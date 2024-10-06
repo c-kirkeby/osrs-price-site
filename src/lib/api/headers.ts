@@ -1,3 +1,3 @@
 export const headers = {
-  "User-Agent": "github.com/c-kirkeby/osrs-price-site",
+  "User-Agent": import.meta.env.USER_AGENT as string | undefined,
 };
