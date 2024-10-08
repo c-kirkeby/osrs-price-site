@@ -1,7 +1,7 @@
 import DataTableImage from "$lib/components/data-table/data-table-image.svelte";
 import DataTableCell from "$lib/components/data-table/data-table-cell.svelte";
 import { DataTableLink } from "$lib/components/data-table";
-import type { Item } from "$lib/types/item";
+import type { FavouriteItem } from "$lib/types/item";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
 import {
   calculateMargin,
@@ -15,8 +15,12 @@ import {
 } from "$lib/utils";
 import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import { LucideStar } from "lucide-svelte";
+import { get } from "svelte/store";
+import DataTableButtonCell from "$lib/components/data-table/data-table-button-cell.svelte";
+import { favouriteItemsStore } from "$lib/stores/favourite-items";
+import { favouritesStore } from "$lib/stores/favourites";
 
-const columnHelper = createColumnHelper<Item>();
+const columnHelper = createColumnHelper<FavouriteItem>();
 
 export const columns = [
   columnHelper.accessor("id", {
@@ -32,6 +36,9 @@ export const columns = [
         alt: info.getValue(),
         class: "object-contain size-5 mx-auto w-[40px]",
       }),
+    meta: {
+      hideHeader: true,
+    },
     header: "Icon",
     enableSorting: false,
     enableColumnFilter: false,
@@ -318,5 +325,34 @@ export const columns = [
       return aRoi - bRoi;
     },
     header: "ROI",
+  }),
+  columnHelper.accessor("is_favourite", {
+    cell: (info) => {
+      const favouriteItems = get(favouriteItemsStore);
+      const favourites = get(favouritesStore);
+      let isFavourite = false;
+      let item: FavouriteItem | undefined;
+      if (favouriteItems) {
+        item = favouriteItems.find((item) => info.row.original.id === item.id);
+        isFavourite = item?.is_favourite ?? false;
+      }
+      return renderComponent(DataTableButtonCell, {
+        class: cn({ "fill-primary": info.getValue() }),
+        onclick: (_event) => {
+          if (!isFavourite) {
+            favouritesStore.set([...(favourites || []), item?.id]);
+          } else {
+            favouritesStore.set(
+              favourites?.filter((favourite) => favourite !== item?.id) ?? [],
+            );
+          }
+        },
+      });
+    },
+    header: "Favourite",
+    meta: {
+      hideHeader: true,
+    },
+    enableSorting: false,
   }),
 ];

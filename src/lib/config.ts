@@ -10,6 +10,10 @@ export const config = {
       label: "Items",
     },
     {
+      href: "/favourites",
+      label: "Favourites",
+    },
+    {
       href: "/recipes",
       label: "Recipes",
     },

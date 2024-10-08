@@ -61,10 +61,12 @@
       };
       return out;
     });
+
+  let title = "Recipes";
 </script>
 
 <svelte:head>
-  <title>Recipes</title>
+  <title>{title}</title>
 </svelte:head>
 
 <section
@@ -74,7 +76,7 @@
 >
   <div class="flex items-center space-x-1 text-sm">
     <div class="overflow-hidden text-ellipsis whitespace-nowrap">
-      <a href="/">Recipes</a>
+      <a href="/">{title}</a>
     </div>
   </div>
   <h1 class="text-3xl font-bold tracking-tight">Recipes</h1>

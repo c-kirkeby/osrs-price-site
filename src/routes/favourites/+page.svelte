@@ -25,9 +25,15 @@
         desc: true,
       },
     ],
+    columnFilters: [
+      {
+        id: "is_favourite",
+        value: true,
+      },
+    ],
   };
 
-  let title = "Items";
+  let title = "Favourites";
 </script>
 
 <svelte:head>
@@ -44,14 +50,25 @@
       <a href="/items">{title}</a>
     </div>
   </div>
-  <h1 class="text-3xl font-bold tracking-tight">Items</h1>
-  {#if $favouriteItemsStore}
+  <h1 class="text-3xl font-bold tracking-tight">Favourites</h1>
+  {#if $favouriteItemsStore?.length ?? 0 > 0}
     <DataTable
       {columns}
       data={$favouriteItemsStore}
       {columnVisibility}
       {initialState}
     />
+  {:else if $favouriteItemsStore}
+    <div
+      class="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm"
+    >
+      <div class="flex flex-col items-center gap-1 text-center">
+        <h3 class="text-2xl font-bold tracking-tight">You have no products</h3>
+        <p class="text-sm text-muted-foreground">
+          You can start selling as soon as you add a product.
+        </p>
+      </div>
+    </div>
   {:else}
     <div class="flex items-center text-sm text-muted-foreground justify-center">
       <Loader2 class="mr-2 h-4 w-4 animate-spin" />

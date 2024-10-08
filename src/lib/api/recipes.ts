@@ -5,9 +5,11 @@ export async function getRecipes(
     fetcher: fetch,
   },
 ): Promise<Recipe[]> {
-  const endpoint = import.meta.env.VITE_RECIPES_ENDPOINT as string | undefined;
+  const endpoint = import.meta.env.VITE_APP_RECIPES_ENDPOINT as
+    | string
+    | undefined;
   if (!endpoint) {
-    throw Error("`VITE_RECIPES_ENDPOINT` environment variable not set.");
+    throw Error("`VITE_APP_RECIPES_ENDPOINT` environment variable not set.");
   }
   const response = await options.fetcher(endpoint);
   const data: Recipe[] = await response.json();

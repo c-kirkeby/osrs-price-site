@@ -18,7 +18,12 @@
 </script>
 
 {#if !column.getCanSort()}
-  <div class={className}><slot /></div>
+  <div class={className}>
+    <!-- svelte-ignore -->
+    {#if !column.columnDef.meta?.hideHeader}
+      <slot />
+    {/if}
+  </div>
 {:else}
   {@const isSorted = column.getIsSorted()}
   <div class={cn("flex items-center", className)}>

@@ -31,8 +31,10 @@
   import { format } from "date-fns/format";
   import { currentItem } from "$lib/stores/current-item";
   import { isLoading } from "$lib/stores/loading";
-  import { goto } from "$app/navigation";
+  import { goto, invalidate } from "$app/navigation";
   import VolumeTimeSeriesChart from "$lib/components/charts/volume-time-series-chart.svelte";
+  import { onMount } from "svelte";
+  import { config } from "$lib/config";
 
   $: formatter = getNumberFormatter();
   $: compactFormatter = getCompactNumberFormatter();
@@ -52,6 +54,31 @@
     value: "5m",
     label: "Last day",
   };
+
+  let intervalId: ReturnType<typeof setInterval> | undefined;
+  let interval = () => {
+    return setInterval(async () => {
+      invalidate("items:history");
+    }, config.pollMs);
+  };
+
+  function handleVisibilityChange() {
+    if (document.hidden) {
+      clearInterval(intervalId);
+      intervalId = undefined;
+    } else {
+      intervalId = intervalId || interval();
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange,
+      false,
+    );
+    handleVisibilityChange();
+  });
 
   $: history = data.history.data;
 
@@ -102,9 +129,9 @@
       ? (sellPriceChange / sellPriceChangePeriodStart) * 100
       : 0;
 
-  async function fetchHistory(interval: TimeSeriesOption) {
-    selected = interval;
-    goto(`/items/${$page.params.id}?time_step=${interval.value}`);
+  async function fetchHistory(option: TimeSeriesOption) {
+    selected = option;
+    goto(`/items/${$page.params.id}?time_step=${option.value}`);
   }
 </script>
 
