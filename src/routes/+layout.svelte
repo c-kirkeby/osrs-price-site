@@ -59,9 +59,7 @@
   <div class="relative flex min-h-screen flex-col">
     <div class="relative flex min-h-screen flex-col bg-background">
       <SiteHeader />
-      <div class="flex-1">
-        <slot />
-      </div>
+      <slot />
     </div>
   </div>
 </div>

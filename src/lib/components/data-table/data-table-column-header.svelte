@@ -19,7 +19,6 @@
 
 {#if !column.getCanSort()}
   <div class={className}>
-    <!-- svelte-ignore -->
     {#if !column.columnDef.meta?.hideHeader}
       <slot />
     {/if}
