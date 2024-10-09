@@ -7,6 +7,7 @@
     ExternalLinkIcon,
     TrendingUp,
     TrendingDown,
+    HeartIcon,
   } from "lucide-svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -35,9 +36,12 @@
   import VolumeTimeSeriesChart from "$lib/components/charts/volume-time-series-chart.svelte";
   import { onMount } from "svelte";
   import { config } from "$lib/config";
+  import { favouritesStore } from "$lib/stores/favourites";
 
   $: formatter = getNumberFormatter();
   $: compactFormatter = getCompactNumberFormatter();
+  $: isFavouriteItem =
+    ($currentItem && $favouritesStore?.includes($currentItem.id)) || false;
 
   export let data;
 
@@ -170,16 +174,46 @@
           (ID: {$currentItem?.id})
         </span>
       </h1>
-      <Button
-        variant="outline"
-        size="sm"
-        class="ml-auto hidden h-8 md:flex gap-1"
-        href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${$page.params.id}`}
-        target="_blank"
-      >
-        <ExternalLinkIcon class="size-3.5" />
-        Wiki
-      </Button>
+      <div class="flex gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          class="ml-auto hidden h-8 w-8 md:flex gap-1"
+          target="_blank"
+          on:click={() => {
+            const id = $currentItem?.id;
+            if (!isFavouriteItem && id) {
+              $favouritesStore = [...($favouritesStore || []), id];
+            } else {
+              $favouritesStore =
+                $favouritesStore?.filter(
+                  (favourite) => favourite !== $currentItem?.id,
+                ) ?? [];
+            }
+          }}
+        >
+          <HeartIcon
+            class={cn("size-4", { "fill-primary": isFavouriteItem })}
+          />
+          <span class="sr-only">
+            {#if isFavouriteItem}
+              Remove from favourites
+            {:else}
+              Add to favourites
+            {/if}
+          </span>
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          class="ml-auto hidden h-8 md:flex gap-1"
+          href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${$page.params.id}`}
+          target="_blank"
+        >
+          <ExternalLinkIcon class="size-3.5" />
+          Wiki
+        </Button>
+      </div>
     </div>
 
     <div
