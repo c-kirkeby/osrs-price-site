@@ -339,8 +339,8 @@ export const columns = [
       return renderComponent(DataTableButtonCell, {
         class: cn({ "fill-primary": info.getValue() }),
         onclick: (_event) => {
-          if (!isFavourite) {
-            favouritesStore.set([...(favourites || []), item?.id]);
+          if (!isFavourite && item?.id) {
+            favouritesStore.set([...(favourites || []), item.id]);
           } else {
             favouritesStore.set(
               favourites?.filter((favourite) => favourite !== item?.id) ?? [],
