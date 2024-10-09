@@ -149,15 +149,6 @@
       container: $settings.compact,
     })}
   >
-    <div class="flex items-center space-x-1 text-sm">
-      <div class="overflow-hidden text-ellipsis whitespace-nowrap">
-        <a href="/items">Items</a>
-      </div>
-      <ChevronRight class="size-4" />
-      <div class="font-medium text-foreground truncate">
-        <a href={`/items/${$page.params.id}`}>{$currentItem?.name}</a>
-      </div>
-    </div>
     <div class="flex items-center justify-between">
       <h1 class="md:text-3xl text-xl tracking-tight">
         {#if $currentItem?.icon}

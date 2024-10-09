@@ -39,11 +39,6 @@
     container: $settings.compact,
   })}
 >
-  <div class="flex items-center space-x-1 text-sm">
-    <div class="overflow-hidden text-ellipsis whitespace-nowrap">
-      <a href="/items">{title}</a>
-    </div>
-  </div>
   <h1 class="text-3xl font-bold tracking-tight">Items</h1>
   {#if $favouriteItemsStore}
     <DataTable
