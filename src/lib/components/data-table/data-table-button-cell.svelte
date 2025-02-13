@@ -9,16 +9,21 @@
     onclick: ButtonEventHandler<MouseEvent>;
   };
 
-  let className: $$Props["class"] = undefined;
-  export { className as class };
+  
 
-  export let onclick;
+  interface Props {
+    class?: $$Props["class"];
+    onclick: any;
+    [key: string]: any
+  }
+
+  let { class: className = undefined, onclick, ...rest }: Props = $props();
 </script>
 
 <Button
   variant="ghost"
   class="flex h-5 w-5 p-0"
-  {...$$restProps}
+  {...rest}
   on:click={onclick}
   on:keydown
 >

@@ -1,15 +1,15 @@
 <script lang="ts">
   import * as Select from "$lib/components/ui/select";
 
-  export let options = [
+  let { options = [
     { value: "5m", label: "Last day" },
     { value: "1h", label: "Last 7 days" },
     { value: "6h", label: "Last 30 days" },
     { value: "24h", label: "Last 12 months" },
-  ];
+  ], ...rest } = $props();
 </script>
 
-<Select.Root {...$$restProps}>
+<Select.Root {...rest}>
   <Select.Trigger
     class="w-[160px] rounded-lg sm:ml-auto"
     aria-label="Select an interval"

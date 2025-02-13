@@ -7,10 +7,14 @@
   import capitalize from "lodash/capitalize";
   import { getCompactNumberFormatter, getNumberFormatter } from "$lib/utils";
 
-  $: numberFormatter = getNumberFormatter();
-  $: compactNumberFormatter = getCompactNumberFormatter();
+  let numberFormatter = $derived(getNumberFormatter());
+  let compactNumberFormatter = $derived(getCompactNumberFormatter());
 
-  export let data: TimeSeries[];
+  interface Props {
+    data: TimeSeries[];
+  }
+
+  let { data }: Props = $props();
 
   const chartConfig = {
     highPriceVolume: {
@@ -23,7 +27,7 @@
     },
   };
 
-  $: x = (x) => new Date(x.timestamp * 1000);
+  let x = $derived((x) => new Date(x.timestamp * 1000));
 </script>
 
 {#if data.length > 0}
@@ -71,25 +75,29 @@
         },
       ]}
     >
-      <svelte:fragment slot="tooltip">
-        <Tooltip.Root let:data variant="none">
-          <ChartTooltip
-            tooltipLabel={capitalize(
-              formatRelative(
-                new Date(data.timestamp * 1000),
-                new Date(),
-              ).slice(),
-            )}
-            config={chartConfig}
-            payload={{
-              ...data,
-              highPriceVolume: numberFormatter.format(data.highPriceVolume),
-              lowPriceVolume: numberFormatter.format(data.lowPriceVolume),
-            }}
-            indicator="dot"
-          />
-        </Tooltip.Root>
-      </svelte:fragment>
+      {#snippet tooltip()}
+          
+          <Tooltip.Root  variant="none">
+            {#snippet children({ data })}
+                    <ChartTooltip
+                tooltipLabel={capitalize(
+                  formatRelative(
+                    new Date(data.timestamp * 1000),
+                    new Date(),
+                  ).slice(),
+                )}
+                config={chartConfig}
+                payload={{
+                  ...data,
+                  highPriceVolume: numberFormatter.format(data.highPriceVolume),
+                  lowPriceVolume: numberFormatter.format(data.lowPriceVolume),
+                }}
+                indicator="dot"
+              />
+                              {/snippet}
+                </Tooltip.Root>
+        
+          {/snippet}
     </BarChart>
   </div>
 {/if}

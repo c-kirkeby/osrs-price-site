@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
+  import { buttonVariants } from "$lib/components/ui/button";
   import { Switch } from "$lib/components/ui/switch";
   import { Label } from "$lib/components/ui/label";
   import * as Popover from "$lib/components/ui/popover";
@@ -7,12 +7,10 @@
   import { SettingsIcon } from "lucide-svelte";
 </script>
 
-<Popover.Root portal={null}>
-  <Popover.Trigger asChild let:builder>
-    <Button builders={[builder]} variant="ghost" size="icon">
-      <span class="sr-only">Settings</span>
-      <SettingsIcon class="h-4 w-4" />
-    </Button>
+<Popover.Root>
+  <Popover.Trigger class={buttonVariants({ variant: "ghost" })}>
+    <span class="sr-only">Settings</span>
+    <SettingsIcon class="h-6 w-6" />
   </Popover.Trigger>
   <Popover.Content class="grid gap-6">
     <div class="flex items-center justify-between space-x-2">

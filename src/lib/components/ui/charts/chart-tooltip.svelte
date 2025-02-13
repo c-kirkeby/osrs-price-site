@@ -11,16 +11,29 @@
     hideIndicator?: boolean;
     nestLabel?: boolean;
   };
-  export let payload: $$Props["payload"];
-  export let config: $$Props["config"];
-  export let tooltipLabel: $$Props["tooltipLabel"] = undefined;
-  export let hideLabel: $$Props["hideLabel"] = false;
-  export let indicator: $$Props["indicator"] = "dot";
-  export let hideIndicator: $$Props["hideIndicator"] = false;
-  export let nestLabel: $$Props["nestLabel"] = false;
-  let className: $$Props["class"] = undefined;
-  export { className as class };
-  $: itemConfig = getPayloadConfigFromPayload(config, payload);
+  interface Props {
+    payload: $$Props["payload"];
+    config: $$Props["config"];
+    tooltipLabel?: $$Props["tooltipLabel"];
+    hideLabel?: $$Props["hideLabel"];
+    indicator?: $$Props["indicator"];
+    hideIndicator?: $$Props["hideIndicator"];
+    nestLabel?: $$Props["nestLabel"];
+    class?: $$Props["class"];
+  }
+
+  let {
+    payload,
+    config,
+    tooltipLabel = undefined,
+    hideLabel = false,
+    indicator = "dot",
+    hideIndicator = false,
+    nestLabel = false,
+    class: className = undefined
+  }: Props = $props();
+  
+  let itemConfig = $derived(getPayloadConfigFromPayload(config, payload));
 </script>
 
 {#if itemConfig}
@@ -42,7 +55,7 @@
           )}
         >
           {#if item?.icon}
-            <svelte:component this={item.icon} />
+            <item.icon />
           {:else if !hideIndicator}
             <div
               class={cn(
@@ -56,7 +69,7 @@
                 },
               )}
               style="--color-bg: {item?.color}; --color-border: {item?.color};"
-            />
+></div>
           {/if}
           <div
             class={cn(

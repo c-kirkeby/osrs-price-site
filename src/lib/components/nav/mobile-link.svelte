@@ -2,11 +2,23 @@
   import { page } from "$app/stores";
   import { cn } from "$lib/utils";
 
-  export let href: string;
-  export let open: boolean;
 
-  let className: string | undefined | null = undefined;
-  export { className as class };
+  interface Props {
+    href: string;
+    open: boolean;
+    class?: string | undefined | null;
+    children?: import('svelte').Snippet;
+    [key: string]: any
+  }
+
+  let {
+    href,
+    open = $bindable(),
+    class: className = undefined,
+    children,
+    ...rest
+  }: Props = $props();
+  
 </script>
 
 <a
@@ -15,8 +27,8 @@
     $page.url.pathname === href ? "text-foreground" : "text-foreground/60",
     className,
   )}
-  on:click={() => (open = false)}
-  {...$$restProps}
+  onclick={() => (open = false)}
+  {...rest}
 >
-  <slot />
+  {@render children?.()}
 </a>
