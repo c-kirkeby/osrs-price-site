@@ -1,23 +1,18 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { Button } from "$lib/components/ui/button";
   import * as Command from "$lib/components/ui/command";
   import type { Item } from "$lib/types/item";
   import { searchHistory } from "$lib/stores/search-history";
   import { getUserOperatingSystem } from "$lib/utils";
-  import { onMount } from "svelte";
+  import { type ComponentProps } from "svelte";
   import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
   import { X, Sun, Moon, Laptop } from "lucide-svelte";
   import { resetMode, setMode } from "mode-watcher";
   import { createItemsIndex, searchItemsIndex } from "$lib/search";
   import { itemsStore } from "$lib/stores/items";
-  interface Props {
-    [key: string]: any
-  }
 
-  let { ...rest }: Props = $props();
+  let restProps: ComponentProps<typeof Button> = $props();
 
   let open = $state(false);
   let value = $state("");
@@ -25,14 +20,14 @@
   let status: "loading" | "ready" = $state("loading");
   const platform = browser && getUserOperatingSystem();
 
-  run(() => {
+  $effect(() => {
     if ($itemsStore?.length && $itemsStore.length > 0) {
       createItemsIndex($itemsStore);
       status = "ready";
     }
   });
 
-  run(() => {
+  $effect(() => {
     if (status === "ready") {
       const search = async () => {
         results = await searchItemsIndex(value);
@@ -46,26 +41,21 @@
     command();
   }
 
-  onMount(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        open = !open;
-      }
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      open = true;
     }
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  });
+  }
 </script>
+
+<svelte:document onkeydown={handleKeydown} />
 
 <Button
   variant="outline"
   class="relative w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64"
-  on:click={() => (open = true)}
-  {...rest}
+  onclick={() => (open = true)}
+  {...restProps}
 >
   <span class="hidden lg:inline-flex"> Search items </span>
   <span class="inline-flex lg:hidden">Search</span>
