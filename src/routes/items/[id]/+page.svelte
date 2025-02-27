@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import {
-    ChevronRight,
     ArrowDownCircle,
     ArrowUpCircle,
     Info,
@@ -22,12 +19,12 @@
     getSignedPrefix,
     styleSignedNumberCell,
   } from "$lib/utils";
-  import type { TimeSeriesOption } from "$lib/types/time-series";
+  import type { TimeStep } from "$lib/types/time-series";
   import PriceTimeSeriesChart from "$lib/components/charts/price-time-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
-  import { page } from "$app/stores";
+  import { page } from "$app/state";
   import { alchPrice } from "$lib/stores/alch";
   import { settings } from "$lib/stores/settings";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
@@ -36,32 +33,30 @@
   import { isLoading } from "$lib/stores/loading";
   import { goto, invalidate } from "$app/navigation";
   import VolumeTimeSeriesChart from "$lib/components/charts/volume-time-series-chart.svelte";
-  import { onMount } from "svelte";
   import { config } from "$lib/config";
   import { favouritesStore } from "$lib/stores/favourites";
 
   let formatter = $derived(getNumberFormatter());
   let compactFormatter = $derived(getCompactNumberFormatter());
-  let isFavouriteItem =
-    $derived(($currentItem && $favouritesStore?.includes($currentItem.id)) || false);
+  let isFavouriteItem = $derived(
+    ($currentItem && $favouritesStore?.includes($currentItem.id)) || false,
+  );
 
   let { data } = $props();
 
   let options = [
-    { value: "5m", label: "Last day" },
-    { value: "1h", label: "Last 7 days" },
-    { value: "6h", label: "Last 30 days" },
-    { value: "24h", label: "Last 12 months" },
+    { value: "5m", label: "24 hours" },
+    { value: "1h", label: "7 days" },
+    { value: "6h", label: "30 days" },
+    { value: "24h", label: "12 months" },
   ];
 
-  let selected;
-  run(() => {
-    selected = options.find(
-      (option) => option.value === $page.url.searchParams.get("time_step"),
-    ) ?? {
-      value: "5m",
-      label: "Last day",
-    };
+  let selected = $state<string>("");
+  $effect(() => {
+    selected =
+      options.find(
+        (option) => option.value === page.url.searchParams.get("time_step"),
+      )?.value ?? "5m";
   });
 
   let intervalId: ReturnType<typeof setInterval> | undefined;
@@ -80,67 +75,78 @@
     }
   }
 
-  onMount(() => {
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibilityChange,
-      false,
-    );
+  $effect(() => {
     handleVisibilityChange();
   });
 
   let history = $derived(data.history.data);
 
-  let totalVolume = $derived(data.history.data.reduce(
-    (sum, tick) => (sum += tick.lowPriceVolume + tick.highPriceVolume),
-    0,
-  ));
+  let totalVolume = $derived(
+    data.history.data.reduce(
+      (sum, tick) => (sum += tick.lowPriceVolume + tick.highPriceVolume),
+      0,
+    ),
+  );
 
-  let tax = $derived($currentItem?.low
-    ? calculateTax($currentItem.low, $currentItem.id)
-    : null);
-  let margin =
-    $derived($currentItem?.low && $currentItem.high && typeof tax === "number"
+  let tax = $derived(
+    $currentItem?.low ? calculateTax($currentItem.low, $currentItem.id) : null,
+  );
+  let margin = $derived(
+    $currentItem?.low && $currentItem.high && typeof tax === "number"
       ? Math.floor($currentItem.high - $currentItem.low - tax)
-      : null);
-  let highAlchProfit =
-    $derived($currentItem?.highalch && $currentItem.high && $alchPrice?.high
+      : null,
+  );
+  let highAlchProfit = $derived(
+    $currentItem?.highalch && $currentItem.high && $alchPrice?.high
       ? Math.floor($currentItem.highalch - $currentItem.high - $alchPrice?.high)
-      : null);
-  let lowAlchProfit =
-    $derived($currentItem?.lowalch && $currentItem.high && $alchPrice?.high
+      : null,
+  );
+  let lowAlchProfit = $derived(
+    $currentItem?.lowalch && $currentItem.high && $alchPrice?.high
       ? Math.floor($currentItem.lowalch - $currentItem.high - $alchPrice?.high)
-      : null);
-  let potentialProfit =
-    $derived(margin && $currentItem?.limit
+      : null,
+  );
+  let potentialProfit = $derived(
+    margin && $currentItem?.limit
       ? Math.floor(margin * $currentItem.limit)
-      : null);
-  let returnOnInvestment =
-    $derived($currentItem?.low && margin && tax
+      : null,
+  );
+  let returnOnInvestment = $derived(
+    $currentItem?.low && margin && tax
       ? calculateRoi($currentItem.low, margin)
-      : null);
-  let buyPriceChangePeriodStart =
-    $derived(history?.find((entry) => entry.avgHighPrice)?.avgHighPrice || 0);
-  let buyPriceChangePeriodEnd =
-    $derived(history?.findLast((entry) => entry.avgHighPrice)?.avgHighPrice || 0);
-  let buyPriceChange = $derived(buyPriceChangePeriodEnd - buyPriceChangePeriodStart);
-  let buyPriceChangePercentage =
-    $derived(buyPriceChangePeriodStart > 0
+      : null,
+  );
+  let buyPriceChangePeriodStart = $derived(
+    history?.find((entry) => entry.avgHighPrice)?.avgHighPrice || 0,
+  );
+  let buyPriceChangePeriodEnd = $derived(
+    history?.findLast((entry) => entry.avgHighPrice)?.avgHighPrice || 0,
+  );
+  let buyPriceChange = $derived(
+    buyPriceChangePeriodEnd - buyPriceChangePeriodStart,
+  );
+  let buyPriceChangePercentage = $derived(
+    buyPriceChangePeriodStart > 0
       ? (buyPriceChange / buyPriceChangePeriodStart) * 100
-      : 0);
-  let sellPriceChangePeriodStart =
-    $derived(history?.find((entry) => entry.avgLowPrice)?.avgLowPrice || 0);
-  let sellPriceChangePeriodEnd =
-    $derived(history?.findLast((entry) => entry.avgLowPrice)?.avgLowPrice || 0);
-  let sellPriceChange = $derived(sellPriceChangePeriodEnd - sellPriceChangePeriodStart);
-  let sellPriceChangePercentage =
-    $derived(sellPriceChangePeriodStart > 0
+      : 0,
+  );
+  let sellPriceChangePeriodStart = $derived(
+    history?.find((entry) => entry.avgLowPrice)?.avgLowPrice || 0,
+  );
+  let sellPriceChangePeriodEnd = $derived(
+    history?.findLast((entry) => entry.avgLowPrice)?.avgLowPrice || 0,
+  );
+  let sellPriceChange = $derived(
+    sellPriceChangePeriodEnd - sellPriceChangePeriodStart,
+  );
+  let sellPriceChangePercentage = $derived(
+    sellPriceChangePeriodStart > 0
       ? (sellPriceChange / sellPriceChangePeriodStart) * 100
-      : 0);
+      : 0,
+  );
 
-  async function fetchHistory(option: TimeSeriesOption) {
-    selected = option;
-    goto(`/items/${$page.params.id}?time_step=${option.value}`);
+  function fetchHistory(option: TimeStep) {
+    goto(`/items/${page.params.id}?time_step=${option}`);
   }
 </script>
 
@@ -153,6 +159,7 @@
     class={cn("flex-1 flex-col space-y-4 p-4 md:flex relative", {
       container: $settings.compact,
     })}
+    onvisibilitychange={handleVisibilityChange}
   >
     <div class="flex items-center justify-between">
       <h1 class="md:text-3xl text-xl tracking-tight">
@@ -203,7 +210,7 @@
           variant="outline"
           size="sm"
           class="ml-auto hidden h-8 md:flex gap-1"
-          href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${$page.params.id}`}
+          href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${page.params.id}`}
           target="_blank"
         >
           <ExternalLinkIcon class="size-3.5" />
@@ -224,7 +231,7 @@
               <Card.Title class="text-sm font-medium">Buy Price</Card.Title>
               <ArrowDownCircle />
             </Card.Header>
-            <Card.Content>
+            <Card.Content class="pt-0">
               <p>
                 <span class="text-2xl font-bold">
                   {#if $currentItem?.high}
@@ -251,27 +258,29 @@
                 {/if}
               </p>
               {#if $currentItem?.highTime}
-                <Tooltip.Root>
-                  <Tooltip.Trigger>
-                    <p class="text-xs text-muted-foreground">
-                      {formatDistanceToNowStrict(
-                        new Date($currentItem.highTime * 1000),
-                        {
-                          addSuffix: true,
-                        },
-                      )}
-                      <Info class="inline-block h-3 w-3" />
-                    </p>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>
-                    <span
-                      >{format(
-                        new Date($currentItem.highTime * 1000),
-                        "yyyy-MM-dd HH:mm:ss",
-                      )}</span
-                    >
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <p class="text-xs text-muted-foreground">
+                        {formatDistanceToNowStrict(
+                          new Date($currentItem.highTime * 1000),
+                          {
+                            addSuffix: true,
+                          },
+                        )}
+                        <Info class="inline-block h-3 w-3" />
+                      </p>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>
+                      <span
+                        >{format(
+                          new Date($currentItem.highTime * 1000),
+                          "yyyy-MM-dd HH:mm:ss",
+                        )}</span
+                      >
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
               {/if}
             </Card.Content>
           </Card.Root>
@@ -282,7 +291,7 @@
               <Card.Title class="text-sm font-medium">Sell Price</Card.Title>
               <ArrowUpCircle />
             </Card.Header>
-            <Card.Content>
+            <Card.Content class="pt-0">
               <p>
                 <span class="text-2xl font-bold">
                   {#if $currentItem?.low}
@@ -312,27 +321,29 @@
                 {/if}
               </p>
               {#if $currentItem?.lowTime}
-                <Tooltip.Root>
-                  <Tooltip.Trigger>
-                    <p class="text-xs text-muted-foreground">
-                      {formatDistanceToNowStrict(
-                        new Date($currentItem.lowTime * 1000),
-                        {
-                          addSuffix: true,
-                        },
-                      )}
-                      <Info class="inline-block h-3 w-3" />
-                    </p>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>
-                    <span
-                      >{format(
-                        new Date($currentItem.lowTime * 1000),
-                        "yyyy-MM-dd HH:mm:ss",
-                      )}</span
-                    >
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger>
+                      <p class="text-xs text-muted-foreground">
+                        {formatDistanceToNowStrict(
+                          new Date($currentItem.lowTime * 1000),
+                          {
+                            addSuffix: true,
+                          },
+                        )}
+                        <Info class="inline-block h-3 w-3" />
+                      </p>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>
+                      <span
+                        >{format(
+                          new Date($currentItem.lowTime * 1000),
+                          "yyyy-MM-dd HH:mm:ss",
+                        )}</span
+                      >
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
               {/if}
             </Card.Content>
           </Card.Root>
@@ -344,10 +355,17 @@
             <div class="grid flex-1 gap-1 text-center sm:text-left">
               <Card.Title>Item History</Card.Title>
               <Card.Description>
-                Showing the price history for the last {selected.label.toLowerCase()}.
+                Showing the price history for the last {options.find(
+                  (option) => option.value === selected,
+                )?.label}.
               </Card.Description>
             </div>
-            <TimeStepDropdown bind:selected onSelectedChange={fetchHistory} />
+            <TimeStepDropdown
+              type="single"
+              bind:value={selected}
+              onValueChange={(value) => fetchHistory(value as TimeStep)}
+              {options}
+            />
           </Card.Header>
           <Card.Content class="px-2 pt-4 sm:px-6 sm:pt-6">
             {#if history.length === 0}
@@ -374,35 +392,37 @@
             <div class="grid gap-3">
               <div class="font-semibold">Item Details</div>
               <ul class="grid gap-3">
-                <Tooltip.Root>
-                  <li class="flex items-center justify-between">
-                    <Tooltip.Trigger>
-                      <span class="text-muted-foreground"
-                        >Margin
-                        <Info class="inline-block h-3 w-3" />
-                      </span>
-                    </Tooltip.Trigger>
-                    {#if typeof margin !== "undefined" && margin !== null}
-                      <span class={styleSignedNumberCell(margin)}
-                        >{getSignedPrefix(margin)}{formatter.format(
-                          margin,
-                        )}</span
-                      >
-                    {:else}
-                      -
-                    {/if}
-                  </li>
-                  <Tooltip.Content>
-                    {#if $currentItem?.high && $currentItem.low && typeof tax === "number"}
-                      <span
-                        >{formatter.format($currentItem.high)} - {formatter.format(
-                          $currentItem.low,
-                        )} -
-                        {formatter.format(tax)} (tax)</span
-                      >
-                    {/if}
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <li class="flex items-center justify-between">
+                      <Tooltip.Trigger>
+                        <span class="text-muted-foreground"
+                          >Margin
+                          <Info class="inline-block h-3 w-3" />
+                        </span>
+                      </Tooltip.Trigger>
+                      {#if typeof margin !== "undefined" && margin !== null}
+                        <span class={styleSignedNumberCell(margin)}
+                          >{getSignedPrefix(margin)}{formatter.format(
+                            margin,
+                          )}</span
+                        >
+                      {:else}
+                        -
+                      {/if}
+                    </li>
+                    <Tooltip.Content>
+                      {#if $currentItem?.high && $currentItem.low && typeof tax === "number"}
+                        <span
+                          >{formatter.format($currentItem.high)} - {formatter.format(
+                            $currentItem.low,
+                          )} -
+                          {formatter.format(tax)} (tax)</span
+                        >
+                      {/if}
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground">Limit</span>
                   <span>
@@ -413,117 +433,125 @@
                     {/if}</span
                   >
                 </li>
-                <Tooltip.Root>
-                  <li class="flex items-center justify-between">
-                    <Tooltip.Trigger>
-                      <span class="text-muted-foreground">
-                        Potential Profit
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <li class="flex items-center justify-between">
+                      <Tooltip.Trigger>
+                        <span class="text-muted-foreground">
+                          Potential Profit
 
-                        <Info class="inline-block size-3" />
-                      </span>
-                    </Tooltip.Trigger>
+                          <Info class="inline-block size-3" />
+                        </span>
+                      </Tooltip.Trigger>
 
-                    <span class={styleSignedNumberCell(margin)}>
-                      {#if potentialProfit}
-                        {getSignedPrefix(potentialProfit)}{formatter.format(
-                          potentialProfit,
-                        )}
-                      {:else}
-                        -
-                      {/if}</span
-                    >
-                  </li>
-                  <Tooltip.Content>
-                    {#if margin && $currentItem?.limit}
-                      <span>
-                        {formatter.format(margin)} × {formatter.format(
-                          $currentItem.limit,
-                        )}
-                      </span>
-                    {/if}
-                  </Tooltip.Content>
-                </Tooltip.Root>
-                <Tooltip.Root>
-                  <li class="flex items-center justify-between">
-                    <Tooltip.Trigger>
-                      <span class="text-muted-foreground"
-                        >ROI <Info class="inline-block h-3 w-3" /></span
+                      <span class={styleSignedNumberCell(margin)}>
+                        {#if potentialProfit}
+                          {getSignedPrefix(potentialProfit)}{formatter.format(
+                            potentialProfit,
+                          )}
+                        {:else}
+                          -
+                        {/if}</span
                       >
-                    </Tooltip.Trigger>
-                    <span class={styleSignedNumberCell(margin)}>
-                      {#if returnOnInvestment}
-                        {getSignedPrefix(returnOnInvestment)}{formatter
-                          .format(returnOnInvestment)
-                          ?.concat("%")}
+                    </li>
+                    <Tooltip.Content>
+                      {#if margin && $currentItem?.limit}
+                        <span>
+                          {formatter.format(margin)} × {formatter.format(
+                            $currentItem.limit,
+                          )}
+                        </span>
+                      {/if}
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <li class="flex items-center justify-between">
+                      <Tooltip.Trigger>
+                        <span class="text-muted-foreground"
+                          >ROI <Info class="inline-block h-3 w-3" /></span
+                        >
+                      </Tooltip.Trigger>
+                      <span class={styleSignedNumberCell(margin)}>
+                        {#if returnOnInvestment}
+                          {getSignedPrefix(returnOnInvestment)}{formatter
+                            .format(returnOnInvestment)
+                            ?.concat("%")}
+                        {:else}
+                          -
+                        {/if}
+                      </span>
+                    </li>
+                    <Tooltip.Content>
+                      {#if $currentItem?.low && margin && tax}
+                        <span>
+                          {formatter.format(margin)} / {formatter.format(
+                            $currentItem?.low,
+                          )} × 100
+                        </span>
+                      {/if}
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <li class="flex items-center justify-between">
+                      <Tooltip.Trigger>
+                        <span class="text-muted-foreground"
+                          >Tax
+
+                          <Info class="inline-block size-3" />
+                        </span>
+                      </Tooltip.Trigger>
+                      {#if tax}
+                        {formatter.format(tax)}
                       {:else}
                         -
                       {/if}
-                    </span>
-                  </li>
-                  <Tooltip.Content>
-                    {#if $currentItem?.low && margin && tax}
-                      <span>
-                        {formatter.format(margin)} / {formatter.format(
-                          $currentItem?.low,
-                        )} × 100
-                      </span>
-                    {/if}
-                  </Tooltip.Content>
-                </Tooltip.Root>
-                <Tooltip.Root>
-                  <li class="flex items-center justify-between">
-                    <Tooltip.Trigger>
-                      <span class="text-muted-foreground"
-                        >Tax
-
-                        <Info class="inline-block size-3" />
-                      </span>
-                    </Tooltip.Trigger>
-                    {#if tax}
-                      {formatter.format(tax)}
-                    {:else}
-                      -
-                    {/if}
-                  </li>
-                  <Tooltip.Content>
-                    {#if $currentItem?.low}
-                      <span>
-                        1% of {formatter.format($currentItem.low)}
-                      </span>
-                    {/if}
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                    </li>
+                    <Tooltip.Content>
+                      {#if $currentItem?.low}
+                        <span>
+                          1% of {formatter.format($currentItem.low)}
+                        </span>
+                      {/if}
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
               </ul>
               <Separator class="my-2" />
               <ul class="grid gap-3">
-                <Tooltip.Root>
-                  <li class="flex items-center justify-between">
-                    <Tooltip.Trigger>
-                      <span class="text-muted-foreground"
-                        >High Alch Profit
-                        <Info class="inline-block h-3 w-3" />
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <li class="flex items-center justify-between">
+                      <Tooltip.Trigger>
+                        <span class="text-muted-foreground"
+                          >High Alch Profit
+                          <Info class="inline-block h-3 w-3" />
+                        </span>
+                      </Tooltip.Trigger>
+                      <span class={styleSignedNumberCell(highAlchProfit)}>
+                        {#if highAlchProfit}
+                          {getSignedPrefix(highAlchProfit)}{formatter.format(
+                            highAlchProfit,
+                          )}
+                        {:else}
+                          -
+                        {/if}
                       </span>
-                    </Tooltip.Trigger>
-                    <span class={styleSignedNumberCell(highAlchProfit)}>
-                      {#if highAlchProfit}
-                        {getSignedPrefix(highAlchProfit)}{formatter.format(
-                          highAlchProfit,
-                        )}
-                      {:else}
-                        -
+                    </li>
+                    <Tooltip.Content>
+                      {#if $currentItem?.highalch && $currentItem.high && $alchPrice?.high}
+                        <span>
+                          {formatter.format($currentItem.highalch)} - {formatter.format(
+                            $currentItem.high,
+                          )} - {formatter.format($alchPrice.high)} (alch price)
+                        </span>
                       {/if}
-                    </span>
-                  </li>
-                  <Tooltip.Content>
-                    {#if $currentItem?.highalch && $currentItem.high && $alchPrice?.high}
-                      <span>
-                        {formatter.format($currentItem.highalch)} - {formatter.format(
-                          $currentItem.high,
-                        )} - {formatter.format($alchPrice.high)} (alch price)
-                      </span>
-                    {/if}
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground">High Alch</span>
                   <span>
@@ -534,34 +562,36 @@
                     {/if}
                   </span>
                 </li>
-                <Tooltip.Root>
-                  <li class="flex items-center justify-between">
-                    <Tooltip.Trigger>
-                      <span class="text-muted-foreground"
-                        >Low Alch Profit
-                        <Info class="inline-block h-3 w-3" />
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <li class="flex items-center justify-between">
+                      <Tooltip.Trigger>
+                        <span class="text-muted-foreground"
+                          >Low Alch Profit
+                          <Info class="inline-block h-3 w-3" />
+                        </span>
+                      </Tooltip.Trigger>
+                      <span class={styleSignedNumberCell(lowAlchProfit)}>
+                        {#if lowAlchProfit}
+                          {getSignedPrefix(lowAlchProfit)}{formatter.format(
+                            lowAlchProfit,
+                          )}
+                        {:else}
+                          -
+                        {/if}
                       </span>
-                    </Tooltip.Trigger>
-                    <span class={styleSignedNumberCell(lowAlchProfit)}>
-                      {#if lowAlchProfit}
-                        {getSignedPrefix(lowAlchProfit)}{formatter.format(
-                          lowAlchProfit,
-                        )}
-                      {:else}
-                        -
+                    </li>
+                    <Tooltip.Content>
+                      {#if $currentItem?.lowalch && $currentItem.high && $alchPrice?.high}
+                        <span>
+                          {formatter.format($currentItem.lowalch)} - {formatter.format(
+                            $currentItem.high,
+                          )} - {formatter.format($alchPrice.high)} (alch price)
+                        </span>
                       {/if}
-                    </span>
-                  </li>
-                  <Tooltip.Content>
-                    {#if $currentItem?.lowalch && $currentItem.high && $alchPrice?.high}
-                      <span>
-                        {formatter.format($currentItem.lowalch)} - {formatter.format(
-                          $currentItem.high,
-                        )} - {formatter.format($alchPrice.high)} (alch price)
-                      </span>
-                    {/if}
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                    </Tooltip.Content>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground">Low Alch</span>
                   <span>
@@ -577,7 +607,9 @@
               <ul class="grid gap-3">
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground"
-                    >Volume ({selected.label})</span
+                    >Volume ({options.find(
+                      (option) => option.value === selected,
+                    )?.label})</span
                   >
                   <span>
                     {#if typeof totalVolume !== "undefined"}

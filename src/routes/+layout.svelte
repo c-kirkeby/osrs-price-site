@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from "svelte/legacy";
-
   import { ModeWatcher } from "mode-watcher";
   import "../app.postcss";
   import SiteHeader from "$lib/components/site-header.svelte";
@@ -42,7 +40,7 @@
     }
   }
 
-  run(() => {
+  $effect(() => {
     $itemsStore = data.items;
   });
 

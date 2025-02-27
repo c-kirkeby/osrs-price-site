@@ -18,4 +18,4 @@ export const config = {
       label: "Recipes",
     },
   ],
-};
+} as const;
