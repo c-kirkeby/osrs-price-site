@@ -41,12 +41,7 @@
 >
   <h1 class="text-3xl font-bold tracking-tight">Items</h1>
   {#if $favouriteItemsStore}
-    <DataTable
-      {columns}
-      data={$favouriteItemsStore}
-      {columnVisibility}
-      {initialState}
-    />
+    <DataTable {columns} data={$favouriteItemsStore} />
   {:else}
     <div class="flex items-center text-sm text-muted-foreground justify-center">
       <Loader2 class="mr-2 h-4 w-4 animate-spin" />

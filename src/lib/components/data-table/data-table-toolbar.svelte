@@ -1,16 +1,13 @@
+<script lang="ts" module>
+  type TData = unknown;
+</script>
+
 <script lang="ts" generics="TData">
-  import type { Readable } from "svelte/store";
-
-  import type { Table } from "@tanstack/svelte-table";
-
+  import type { Table } from "@tanstack/table-core";
   import { Input } from "$lib/components/ui/input";
+  import DataTableViewOptions from "$lib/components/data-table/data-table-view-options.svelte";
 
-  import { DataTableViewOptions } from "$lib/components/data-table";
-  interface Props {
-    table: Readable<Table<TData>>;
-  }
-
-  let { table }: Props = $props();
+  let { table }: { table: Table<TData> } = $props();
 </script>
 
 <div class="flex items-center justify-between">
@@ -19,7 +16,8 @@
       class="h-8 w-[150px] lg:w-[250px]"
       placeholder="Search"
       type="text"
-      on:keyup={(event) => $table.setGlobalFilter(String(event?.target?.value))}
+      onkeyup={(event) =>
+        table.setGlobalFilter(String(event?.currentTarget?.value))}
     />
   </div>
   <DataTableViewOptions {table} />

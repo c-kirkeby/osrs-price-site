@@ -1,41 +1,43 @@
+<script lang="ts" module>
+  type TData = unknown;
+</script>
+
 <script lang="ts" generics="TData">
-  import type { Readable } from "svelte/store";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-  import { Button } from "$lib/components/ui/button";
-  import { SlidersHorizontalIcon } from "lucide-svelte";
-  import type { Table } from "@tanstack/svelte-table";
+  import { Settings2 } from "lucide-svelte";
+  import type { Table } from "@tanstack/table-core";
+  import { buttonVariants } from "$lib/components/ui/button";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index";
 
-  interface Props {
-    table: Readable<Table<TData>>;
-  }
-
-  let { table }: Props = $props();
+  let { table }: { table: Table<TData> } = $props();
 </script>
 
 <DropdownMenu.Root>
-  <DropdownMenu.Trigger asChild >
-    {#snippet children({ builder })}
-        <Button
-        variant="outline"
-        size="sm"
-        class="ml-auto hidden h-8 md:flex"
-        builders={[builder]}
-      >
-        <SlidersHorizontalIcon class="mr-2 h-4 w-4" /> Columns
-      </Button>
-          {/snippet}
-    </DropdownMenu.Trigger>
+  <DropdownMenu.Trigger
+    class={buttonVariants({
+      variant: "outline",
+      size: "sm",
+      class: "ml-auto hidden h-8 lg:flex",
+    })}
+  >
+    <Settings2 />
+    View
+  </DropdownMenu.Trigger>
   <DropdownMenu.Content>
-    <DropdownMenu.Label>Toggle columns</DropdownMenu.Label>
-    {#each $table
-      .getAllColumns()
-      .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide()) as column}
-      <DropdownMenu.CheckboxItem
-        checked={column.getIsVisible()}
-        on:click={() => column.toggleVisibility()}
-      >
-        {column.columnDef.header}
-      </DropdownMenu.CheckboxItem>
-    {/each}
+    <DropdownMenu.Group>
+      <DropdownMenu.GroupHeading>Toggle columns</DropdownMenu.GroupHeading>
+      <DropdownMenu.Separator />
+      {#each table
+        .getAllColumns()
+        .filter((col) => typeof col.accessorFn !== "undefined" && col.getCanHide()) as column}
+        <DropdownMenu.CheckboxItem
+          bind:checked={
+            () => column.getIsVisible(), (v) => column.toggleVisibility(!!v)
+          }
+          class="capitalize"
+        >
+          {column.id}
+        </DropdownMenu.CheckboxItem>
+      {/each}
+    </DropdownMenu.Group>
   </DropdownMenu.Content>
 </DropdownMenu.Root>

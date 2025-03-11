@@ -1,7 +1,3 @@
-import DataTableImage from "$lib/components/data-table/data-table-image.svelte";
-import DataTableCell from "$lib/components/data-table/data-table-cell.svelte";
-import { DataTableLink } from "$lib/components/data-table";
-import type { FavouriteItem } from "$lib/types/item";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
 import {
   calculateMargin,
@@ -13,12 +9,15 @@ import {
   styleDateCell,
   styleSignedNumberCell,
 } from "$lib/utils";
-import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
+import { createColumnHelper } from "@tanstack/table-core";
 import { LucideStar } from "lucide-svelte";
 import { get } from "svelte/store";
-import DataTableButtonCell from "$lib/components/data-table/data-table-button-cell.svelte";
 import { favouriteItemsStore } from "$lib/stores/favourite-items";
 import { favouritesStore } from "$lib/stores/favourites";
+import { createRawSnippet } from "svelte";
+import { renderSnippet, renderComponent } from "$lib/components/ui/data-table";
+import FavouriteItemCell from "./favourite-item-cell.svelte";
+import type { FavouriteItem } from "$lib/types/item";
 
 const columnHelper = createColumnHelper<FavouriteItem>();
 
@@ -28,82 +27,91 @@ export const columns = [
     header: "ID",
   }),
   columnHelper.accessor("icon", {
-    cell: (info) =>
-      renderComponent(DataTableImage, {
-        src: `https://oldschool.runescape.wiki/images/${encodeURIComponent(
-          info.getValue()?.replaceAll(" ", "_") ?? "",
-        )}`,
-        alt: info.getValue(),
-        class: "object-contain size-5 mx-auto w-[40px]",
-      }),
-    meta: {
-      hideHeader: true,
+    cell: (info) => {
+      const uriName = info.row.original.name.replaceAll(" ", "_");
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<img src="https://oldschool.runescape.wiki/images/${encodeURIComponent(uriName)}.png" alt="${info.row.original.name}" class="object-contain size-5 mx-auto w-[40px]">`,
+      }));
+      return renderSnippet(snippet, "");
     },
-    header: "Icon",
     enableSorting: false,
     enableColumnFilter: false,
+    header: "",
   }),
   columnHelper.accessor("name", {
-    cell: (info) =>
-      renderComponent(DataTableLink, {
-        value: info.getValue() ?? "",
-        href: `/items/${info.row.original.id}`,
-      }),
+    cell: (info) => {
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<a href="/items/${info.row.original.id}" class="text-primary">${info.getValue()}</a>`,
+      }));
+      return renderSnippet(snippet, "");
+    },
     header: "Name",
   }),
   columnHelper.accessor("members", {
-    cell: (info) =>
-      renderComponent(LucideStar, {
+    cell: (info) => {
+      return renderComponent(LucideStar, {
         class: cn("size-5 stroke-1", {
           "fill-yellow-400": info.getValue(),
           "fill-slate-300": !info.getValue(),
         }),
-      }),
+      });
+    },
     header: "Members",
-    enableSorting: false,
   }),
   columnHelper.accessor("lowalch", {
-    cell: (info) =>
-      renderComponent(DataTableCell, {
-        value: formatNumberCell(info.getValue()) ?? "-",
-        class: "flex justify-end",
-      }),
+    cell: (info) => {
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="flex justify-end">${formatNumberCell(info.getValue()) ?? "-"}</div>`,
+      }));
+      return renderSnippet(snippet, "");
+    },
     sortUndefined: "last",
     header: "Alch Low",
   }),
   columnHelper.accessor("highalch", {
-    cell: (info) =>
-      renderComponent(DataTableCell, {
-        value: formatNumberCell(info.getValue()) ?? "-",
-        class: "flex justify-end",
-      }),
+    cell: (info) => {
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="flex justify-end">${formatNumberCell(info.getValue()) ?? "-"}</div>`,
+      }));
+      return renderSnippet(snippet, "");
+    },
     sortUndefined: "last",
     header: "Alch High",
   }),
   columnHelper.accessor("limit", {
-    cell: (info) =>
-      renderComponent(DataTableCell, {
-        value: formatNumberCell(info.getValue()) ?? "Unknown",
-        class: "flex justify-end",
-      }),
+    cell: (info) => {
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="flex justify-end">${formatNumberCell(info.getValue()) ?? "Unknown"}</div>`,
+      }));
+      return renderSnippet(snippet, "");
+    },
     sortUndefined: "last",
     header: "Limit",
   }),
   columnHelper.accessor("value", {
-    cell: (info) =>
-      renderComponent(DataTableCell, {
-        value: formatNumberCell(info.getValue()) ?? "-",
-        class: "flex justify-end",
-      }),
+    cell: (info) => {
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="flex justify-end">${formatNumberCell(info.getValue()) ?? "-"}</div>`,
+      }));
+      return renderSnippet(snippet, "");
+    },
     sortUndefined: "last",
     header: "Value",
   }),
   columnHelper.accessor("high", {
-    cell: (info) =>
-      renderComponent(DataTableCell, {
-        value: formatNumberCell(info.getValue()) ?? "-",
-        class: cn("flex justify-end"),
-      }),
+    cell: (info) => {
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="flex justify-end">${formatNumberCell(info.getValue()) ?? "-"}</div>`,
+      }));
+      return renderSnippet(snippet, "");
+    },
     sortUndefined: "last",
     header: "Buy Price",
   }),
@@ -115,12 +123,16 @@ export const columns = [
         return "-";
       }
 
-      return renderComponent(DataTableCell, {
-        value: formatDistanceToNowStrict(value * 1000, {
-          addSuffix: true,
-        }),
-        class: styleDateCell(new Date(value * 1000)),
-      });
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="${styleDateCell(new Date(value * 1000))}">${formatDistanceToNowStrict(
+            value * 1000,
+            {
+              addSuffix: true,
+            },
+          )}</div>`,
+      }));
+      return renderSnippet(snippet, "");
     },
     sortUndefined: "last",
     sortingFn: (a, b) => {
@@ -130,11 +142,13 @@ export const columns = [
     },
   }),
   columnHelper.accessor("low", {
-    cell: (info) =>
-      renderComponent(DataTableCell, {
-        value: formatNumberCell(info.getValue()) ?? "-",
-        class: "flex justify-end",
-      }),
+    cell: (info) => {
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="flex justify-end">${formatNumberCell(info.getValue()) ?? "-"}</div>`,
+      }));
+      return renderSnippet(snippet, "");
+    },
     sortUndefined: "last",
     header: "Sell Price",
   }),
@@ -146,12 +160,16 @@ export const columns = [
         return "-";
       }
 
-      return renderComponent(DataTableCell, {
-        value: formatDistanceToNowStrict(value * 1000, {
-          addSuffix: true,
-        }),
-        class: styleDateCell(new Date(value * 1000)),
-      });
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="${styleDateCell(new Date(value * 1000))}">${formatDistanceToNowStrict(
+            value * 1000,
+            {
+              addSuffix: true,
+            },
+          )}</div>`,
+      }));
+      return renderSnippet(snippet, "");
     },
     sortUndefined: "last",
     sortingFn: (a, b) => {
@@ -164,20 +182,22 @@ export const columns = [
     id: "margin",
     header: "Margin",
     cell: (info) => {
-      if (!info.row.getValue("high") || !info.row.getValue("low")) {
+      if (!info.row.original.high || !info.row.original.low) {
         return "-";
       }
 
       const margin = calculateMargin(
-        info.row.getValue("high"),
-        info.row.getValue("low"),
-        info.row.getValue("id"),
+        info.row.original.high,
+        info.row.original.low,
+        info.row.original.id,
       );
 
-      return renderComponent(DataTableCell, {
-        class: cn(styleSignedNumberCell(margin), "flex justify-end"),
-        value: getSignedPrefix(margin) + formatNumberCell(margin) || "-",
-      });
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="${styleSignedNumberCell(margin)} flex justify-end">${getSignedPrefix(margin) + formatNumberCell(margin) || "-"
+          }</div>`,
+      }));
+      return renderSnippet(snippet, "");
     },
     sortingFn: (a, b) => {
       if (
@@ -196,11 +216,13 @@ export const columns = [
     },
   }),
   columnHelper.accessor("volume", {
-    cell: (info) =>
-      renderComponent(DataTableCell, {
-        value: formatNumberCell(info.getValue()) ?? "-",
-        class: "flex justify-end",
-      }),
+    cell: (info) => {
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="flex justify-end">${formatNumberCell(info.getValue()) ?? "-"}</div>`,
+      }));
+      return renderSnippet(snippet, "");
+    },
     sortUndefined: "last",
     header: "Volume (24h)",
   }),
@@ -209,24 +231,26 @@ export const columns = [
     cell: (info) => {
       let grossMargin = 0;
       if (
-        info.row.getValue("high") &&
-        info.row.getValue("low") &&
-        info.row.getValue("volume")
+        info.row.original.high &&
+        info.row.original.low &&
+        info.row.original.volume
       ) {
         grossMargin =
-          info.row.getValue("volume") *
+          info.row.original.volume *
           calculateMargin(
-            info.row.getValue("high"),
-            info.row.getValue("low"),
-            info.row.getValue("id"),
+            info.row.original.high,
+            info.row.original.low,
+            info.row.original.id,
           );
       }
-      return renderComponent(DataTableCell, {
-        value:
-          getSignedPrefix(grossMargin) +
-          formatNumberCell(Math.round(grossMargin)) || "-",
-        class: cn(styleSignedNumberCell(grossMargin), "flex justify-end"),
-      });
+
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="${styleSignedNumberCell(grossMargin)} flex justify-end">${getSignedPrefix(grossMargin) +
+          formatNumberCell(Math.round(grossMargin)) || "-"
+          }</div>`,
+      }));
+      return renderSnippet(snippet, "");
     },
     header: "Gross Profit",
     sortingFn: (a, b) => {
@@ -257,16 +281,14 @@ export const columns = [
   columnHelper.accessor((row) => row, {
     id: "tax",
     cell: (info) => {
-      if (info.row.getValue("low")) {
-        return renderComponent(DataTableCell, {
-          value:
-            formatNumberCell(
-              calculateTax(info.row.getValue("low"), info.row.getValue("id")),
-            ) ?? "0",
-          class: "flex justify-end",
-        });
-      }
-      return "0";
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="flex justify-end">${formatNumberCell(
+            calculateTax(info.row.original.low ?? 0, info.row.original.id),
+          ) ?? "0"
+          }</div>`,
+      }));
+      return renderSnippet(snippet, "");
     },
     sortingFn: (a, b) => {
       if (!a.original.low || !b.original.low) {
@@ -283,25 +305,26 @@ export const columns = [
   columnHelper.accessor((row) => row, {
     id: "roi",
     cell: (info) => {
-      if (!info.row.getValue("high") || !info.row.getValue("low")) {
-        return "";
+      if (!info.row.original.high || !info.row.original.low) {
+        return "-";
       }
 
       const roiValue = calculateRoi(
-        info.row.getValue("low"),
+        info.row.original.low,
         calculateMargin(
-          info.row.getValue("high"),
-          info.row.getValue("low"),
-          info.row.getValue("id"),
+          info.row.original.high,
+          info.row.original.low,
+          info.row.original.id,
         ),
       );
 
-      return renderComponent(DataTableCell, {
-        value:
-          getSignedPrefix(roiValue) + formatNumberCell(roiValue)?.concat("%") ||
-          "-",
-        class: cn(styleSignedNumberCell(roiValue), "flex justify-end"),
-      });
+      const snippet = createRawSnippet(() => ({
+        render: () =>
+          `<div class="${styleSignedNumberCell(roiValue)} flex justify-end">${getSignedPrefix(roiValue) +
+          formatNumberCell(roiValue)?.concat("%") || "-"
+          }</div>`,
+      }));
+      return renderSnippet(snippet, "");
     },
     sortingFn: (a, b) => {
       if (
@@ -335,10 +358,7 @@ export const columns = [
       if (favouriteItems) {
         item = favouriteItems.find((item) => info.row.original.id === item.id);
         isFavourite = item?.is_favourite ?? false;
-      }
-      return renderComponent(DataTableButtonCell, {
-        class: cn({ "fill-primary": info.getValue() }),
-        onclick: (_event) => {
+        const onclick = () => {
           if (!isFavourite && item?.id) {
             favouritesStore.set([...(favourites || []), item.id]);
           } else {
@@ -346,8 +366,13 @@ export const columns = [
               favourites?.filter((favourite) => favourite !== item?.id) ?? [],
             );
           }
-        },
-      });
+        };
+        return renderComponent(FavouriteItemCell, {
+          isFavourite,
+          onclick,
+          class: cn({ "fill-primary": isFavourite }),
+        });
+      }
     },
     header: "Favourite",
     meta: {

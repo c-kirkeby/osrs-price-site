@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { cubicOut } from "svelte/easing";
 import type { TransitionConfig } from "svelte/transition";
-import { onMount } from "svelte";
+import { createRawSnippet, hydrate, onMount } from "svelte";
 import debounce from "lodash/debounce";
 
 export function cn(...inputs: ClassValue[]) {
@@ -254,4 +254,18 @@ export function calculateMargin(
   id?: number,
 ): number {
   return Math.round(buyPrice - sellPrice - calculateTax(buyPrice, id));
+}
+
+export function createSnippet({ wrapper, component, props }) {
+  return createRawSnippet(() => ({
+    render() {
+      return wrapper;
+    },
+    setup(target) {
+      hydrate(component, {
+        target,
+        props,
+      });
+    },
+  }));
 }
