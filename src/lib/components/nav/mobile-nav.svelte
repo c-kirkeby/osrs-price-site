@@ -5,13 +5,12 @@
   import { MobileLink } from "$lib/components/nav";
   import { config } from "$lib/config";
 
-  let open = false;
+  let open = $state(false);
 </script>
 
 <Sheet.Root bind:open>
-  <Sheet.Trigger asChild let:builder>
+  <Sheet.Trigger>
     <Button
-      builders={[builder]}
       variant="ghost"
       class="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
     >

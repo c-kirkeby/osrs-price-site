@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { Button } from "$lib/components/ui/button";
   import * as Command from "$lib/components/ui/command";
   import type { Item } from "$lib/types/item";
@@ -11,24 +13,33 @@
   import { resetMode, setMode } from "mode-watcher";
   import { createItemsIndex, searchItemsIndex } from "$lib/search";
   import { itemsStore } from "$lib/stores/items";
+  interface Props {
+    [key: string]: any
+  }
 
-  let open = false;
-  let value = "";
-  let results: Item[] = [];
-  let status: "loading" | "ready" = "loading";
+  let { ...rest }: Props = $props();
+
+  let open = $state(false);
+  let value = $state("");
+  let results: Item[] = $state([]);
+  let status: "loading" | "ready" = $state("loading");
   const platform = browser && getUserOperatingSystem();
 
-  $: if ($itemsStore?.length && $itemsStore.length > 0) {
-    createItemsIndex($itemsStore);
-    status = "ready";
-  }
+  run(() => {
+    if ($itemsStore?.length && $itemsStore.length > 0) {
+      createItemsIndex($itemsStore);
+      status = "ready";
+    }
+  });
 
-  $: if (status === "ready") {
-    const search = async () => {
-      results = await searchItemsIndex(value);
-    };
-    search();
-  }
+  run(() => {
+    if (status === "ready") {
+      const search = async () => {
+        results = await searchItemsIndex(value);
+      };
+      search();
+    }
+  });
 
   function runCommand(command: () => void) {
     open = false;
@@ -54,7 +65,7 @@
   variant="outline"
   class="relative w-full justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64"
   on:click={() => (open = true)}
-  {...$$restProps}
+  {...rest}
 >
   <span class="hidden lg:inline-flex"> Search items </span>
   <span class="inline-flex lg:hidden">Search</span>

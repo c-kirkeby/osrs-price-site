@@ -10,7 +10,11 @@
     ChevronsRightIcon,
   } from "lucide-svelte";
 
-  export let table: Readable<Table<TData>>;
+  interface Props {
+    table: Readable<Table<TData>>;
+  }
+
+  let { table }: Props = $props();
 </script>
 
 <div class="flex items-center justify-end px-2">

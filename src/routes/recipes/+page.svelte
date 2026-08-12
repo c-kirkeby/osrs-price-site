@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { itemsStore } from "$lib/stores/items";
   import type { Item } from "$lib/types/item";
   import { DataTable } from "$lib/components/data-table";
@@ -9,10 +11,10 @@
   import { settings } from "$lib/stores/settings";
   import type { Step } from "$lib/types/recipe";
 
-  export let data;
+  let { data } = $props();
 
   let recipes = data.recipes;
-  let recipeItems = [];
+  let recipeItems = $state([]);
 
   function getItem(id: number, items: Item[] | null) {
     if (id === 995) {
@@ -50,17 +52,19 @@
     ],
   };
 
-  $: recipeItems = recipes
-    ?.filter((recipe) => recipe.inputs.length > 0 && recipe.outputs.length > 0)
-    .map((recipe) => {
-      const out = {
-        name: recipe.name,
-        children: stepsToItemSteps(recipe.inputs, "input", $itemsStore).concat(
-          stepsToItemSteps(recipe.outputs, "output", $itemsStore),
-        ),
-      };
-      return out;
-    });
+  run(() => {
+    recipeItems = recipes
+      ?.filter((recipe) => recipe.inputs.length > 0 && recipe.outputs.length > 0)
+      .map((recipe) => {
+        const out = {
+          name: recipe.name,
+          children: stepsToItemSteps(recipe.inputs, "input", $itemsStore).concat(
+            stepsToItemSteps(recipe.outputs, "output", $itemsStore),
+          ),
+        };
+        return out;
+      });
+  });
 
   let title = "Recipes";
 </script>

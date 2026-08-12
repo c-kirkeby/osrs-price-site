@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from "$app/stores";
+  import { page } from "$app/state";
   import { cn } from "$lib/utils";
   import { HandCoinsIcon } from "lucide-svelte";
   import { config } from "$lib/config";
@@ -16,7 +16,7 @@
         {href}
         class={cn(
           "transition-colors hover:text-foreground/80",
-          $page.url.pathname === href
+          page.url.pathname === href
             ? "text-foreground"
             : "text-foreground/60",
         )}

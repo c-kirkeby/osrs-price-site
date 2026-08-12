@@ -5,9 +5,15 @@
   type $$Props = HTMLAttributes<HTMLDivElement> & {
     id?: string;
   };
-  let className: $$Props["class"] = undefined;
-  export { className as class };
-  export let id: $$Props["id"] = undefined;
+  
+  interface Props {
+    class?: $$Props["class"];
+    id?: $$Props["id"];
+    children?: import('svelte').Snippet;
+    [key: string]: any
+  }
+
+  let { class: className = undefined, id = undefined, children, ...rest }: Props = $props();
   const uniqueId = nanoid(7);
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
 </script>
@@ -29,7 +35,7 @@
     "[&_text]:fill-foreground [&_text]:stroke-transparent",
     className,
   )}
-  {...$$restProps}
+  {...rest}
 >
-  <slot></slot>
+  {@render children?.()}
 </div>

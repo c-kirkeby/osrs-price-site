@@ -1,6 +1,7 @@
 <script lang="ts">
+  import { run } from "svelte/legacy";
+
   import { ModeWatcher } from "mode-watcher";
-  import "../app.postcss";
   import SiteHeader from "$lib/components/site-header.svelte";
   import { onMount } from "svelte";
   import { itemsStore } from "$lib/stores/items";
@@ -8,8 +9,9 @@
   import { isLoading } from "$lib/stores/loading";
   import { config } from "$lib/config";
   import TailwindIndicator from "$lib/components/tailwind-indicator.svelte";
+  import "./layout.css";
 
-  export let data;
+  let { data, children } = $props();
 
   let intervalId: ReturnType<typeof setInterval> | undefined;
   let interval = () => {
@@ -40,7 +42,9 @@
     }
   }
 
-  $: $itemsStore = data.items;
+  run(() => {
+    $itemsStore = data.items;
+  });
 
   onMount(() => {
     document.addEventListener(
@@ -59,7 +63,7 @@
   <div class="relative flex min-h-screen flex-col">
     <div class="relative flex min-h-screen flex-col bg-background">
       <SiteHeader />
-      <slot />
+      {@render children?.()}
     </div>
   </div>
 </div>

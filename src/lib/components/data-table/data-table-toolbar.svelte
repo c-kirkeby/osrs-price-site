@@ -6,7 +6,11 @@
   import { Input } from "$lib/components/ui/input";
 
   import { DataTableViewOptions } from "$lib/components/data-table";
-  export let table: Readable<Table<TData>>;
+  interface Props {
+    table: Readable<Table<TData>>;
+  }
+
+  let { table }: Props = $props();
 </script>
 
 <div class="flex items-center justify-between">

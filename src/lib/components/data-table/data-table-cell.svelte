@@ -5,20 +5,25 @@
     value: T;
   };
 
-  export let value;
 
-  let className: $$Props["class"] = undefined;
-  export { className as class };
+  interface Props {
+    value: any;
+    class?: $$Props["class"];
+    [key: string]: any
+  }
+
+  let { value, class: className = undefined, ...rest }: Props = $props();
+  
 </script>
 
 {#if Array.isArray(value)}
   {#each value as subRow}
-    <div class={className} {...$$restProps}>
+    <div class={className} {...rest}>
       {subRow}
     </div>
   {/each}
 {:else}
-  <span class={className} {...$$restProps}>
+  <span class={className} {...rest}>
     {value}
   </span>
 {/if}

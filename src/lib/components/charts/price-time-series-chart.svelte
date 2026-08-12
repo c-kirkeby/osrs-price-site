@@ -1,17 +1,23 @@
 <script lang="ts">
+  import { run } from "svelte/legacy";
+
   import type { TimeSeries } from "$lib/types/time-series";
   import { LineChart, Tooltip } from "layerchart";
   import { formatDistanceToNowStrict, formatRelative } from "date-fns";
   import { scaleTime } from "d3-scale";
   import { min } from "d3-array";
   import ChartTooltip from "$lib/components/ui/charts/chart-tooltip.svelte";
-  import capitalize from "lodash/capitalize";
+  import { capitalize } from "es-toolkit/string";
   import { getCompactNumberFormatter, getNumberFormatter } from "$lib/utils";
 
-  $: numberFormatter = getNumberFormatter();
-  $: compactNumberFormatter = getCompactNumberFormatter();
+  let numberFormatter = $derived(getNumberFormatter());
+  let compactNumberFormatter = $derived(getCompactNumberFormatter());
 
-  export let data: TimeSeries[];
+  interface Props {
+    data: TimeSeries[];
+  }
+
+  let { data }: Props = $props();
 
   const chartConfig = {
     avgHighPrice: {
@@ -24,24 +30,26 @@
     },
   };
 
-  $: flatData = data.flatMap((d) =>
-    [
-      {
-        date: new Date(d.timestamp * 1000),
-        value: d.avgHighPrice,
-        type: "high",
-      },
-      {
-        date: new Date(d.timestamp * 1000),
-        value: d.avgLowPrice,
-        type: "low",
-      },
-    ].filter((d) => d.value !== null),
+  let flatData = $derived(
+    data.flatMap((d) =>
+      [
+        {
+          date: new Date(d.timestamp * 1000),
+          value: d.avgHighPrice,
+          type: "high",
+        },
+        {
+          date: new Date(d.timestamp * 1000),
+          value: d.avgLowPrice,
+          type: "low",
+        },
+      ].filter((d) => d.value !== null),
+    ),
   );
 
-  let processedData: TimeSeries[];
+  let processedData: TimeSeries[] = $state();
 
-  $: {
+  run(() => {
     let avgHighPrice: number | null = null;
     let avgLowPrice: number | null = null;
 
@@ -58,10 +66,10 @@
         avgHighPrice,
       } as TimeSeries;
     });
-  }
+  });
 
-  $: x = (x: TimeSeries) => new Date(x.timestamp * 1000);
-  $: yDomain = [min(flatData.map((d) => d.value)), null];
+  let x = $derived((x: TimeSeries) => new Date(x.timestamp * 1000));
+  let yDomain = $derived([min(flatData.map((d) => d.value)), null]);
 </script>
 
 {#if data.length > 0}
@@ -105,25 +113,27 @@
         { key: "avgLowPrice", color: chartConfig.avgLowPrice.color },
       ]}
     >
-      <svelte:fragment slot="tooltip">
-        <Tooltip.Root let:data variant="none">
-          <ChartTooltip
-            tooltipLabel={capitalize(
-              formatRelative(
-                new Date(data.timestamp * 1000),
-                new Date(),
-              ).slice(),
-            )}
-            config={chartConfig}
-            payload={{
-              ...data,
-              avgHighPrice: numberFormatter.format(data.avgHighPrice),
-              avgLowPrice: numberFormatter.format(data.avgLowPrice),
-            }}
-            indicator="dot"
-          />
+      {#snippet tooltip()}
+        <Tooltip.Root variant="none">
+          {#snippet children({ data })}
+            <ChartTooltip
+              tooltipLabel={capitalize(
+                formatRelative(
+                  new Date(data.timestamp * 1000),
+                  new Date(),
+                ).slice(),
+              )}
+              config={chartConfig}
+              payload={{
+                ...data,
+                avgHighPrice: numberFormatter.format(data.avgHighPrice),
+                avgLowPrice: numberFormatter.format(data.avgLowPrice),
+              }}
+              indicator="dot"
+            />
+          {/snippet}
         </Tooltip.Root>
-      </svelte:fragment>
+      {/snippet}
     </LineChart>
   </div>
 {/if}
