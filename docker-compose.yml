@@ -1,13 +1,11 @@
-version: "3.8"
-
 services:
   db:
-    image: postgres:latest
+    image: postgres
     restart: always
     env_file:
       - .env
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql
     ports:
       - 5432:5432
 
