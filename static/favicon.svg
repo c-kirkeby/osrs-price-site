@@ -6,7 +6,7 @@
     circle {
       stroke: hsl(222.2, 84%, 4.9%);
     }
-    @media (prefers-color-scheme: dark) {
+    @media (color-scheme: dark) {
       path {
         stroke: hsl(210, 40%, 98%);
       }
