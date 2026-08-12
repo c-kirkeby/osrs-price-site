@@ -7,9 +7,9 @@
   import { SettingsIcon } from "lucide-svelte";
 </script>
 
-<Popover.Root portal={null}>
-  <Popover.Trigger asChild let:builder>
-    <Button builders={[builder]} variant="ghost" size="icon">
+<Popover.Root>
+  <Popover.Trigger>
+    <Button variant="ghost" size="icon">
       <span class="sr-only">Settings</span>
       <SettingsIcon class="h-4 w-4" />
     </Button>

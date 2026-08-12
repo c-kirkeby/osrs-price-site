@@ -1,4 +1,6 @@
 <script lang="ts" generics="TData extends { children: TData[] }, TValue">
+  import { run } from 'svelte/legacy';
+
   import { cn } from "$lib/utils";
 
   import { writable } from "svelte/store";
@@ -23,15 +25,24 @@
     getGroupedRowModel,
   } from "@tanstack/svelte-table";
 
-  export let columns: ColumnDef<TData, TValue>[];
-  export let data: TData[];
 
-  export let columnVisibility: VisibilityState = {};
-  export let initialState: InitialTableState = {
+  interface Props {
+    columns: ColumnDef<TData, TValue>[];
+    data: TData[];
+    columnVisibility?: VisibilityState;
+    initialState?: InitialTableState;
+  }
+
+  let {
+    columns,
+    data,
+    columnVisibility = $bindable({}),
+    initialState = {
     pagination: {
       pageSize: 10,
     },
-  };
+  }
+  }: Props = $props();
 
   const setColumnVisibility: OnChangeFn<VisibilityState> = (updater) => {
     if (updater instanceof Function) {
@@ -78,7 +89,9 @@
     }));
   };
 
-  $: if (data) rerender();
+  run(() => {
+    if (data) rerender();
+  });
 
   const table = createSvelteTable(options);
 </script>
@@ -94,11 +107,11 @@
               {#if !header.isPlaceholder}
                 <Table.Head class="whitespace-nowrap">
                   <DataTable.ColumnHeader column={header.column}>
-                    <svelte:component
-                      this={flexRender(
+                    {@const SvelteComponent = flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
                       )}
+                    <SvelteComponent
                     />
                   </DataTable.ColumnHeader>
                 </Table.Head>
@@ -119,11 +132,11 @@
             >
               {#each row.getVisibleCells() as cell}
                 <Table.Cell class="p-2 whitespace-nowrap">
-                  <svelte:component
-                    this={flexRender(
+                  {@const SvelteComponent_1 = flexRender(
                       cell.column.columnDef.cell,
                       cell.getContext(),
                     )}
+                  <SvelteComponent_1
                   />
                 </Table.Cell>
               {/each}

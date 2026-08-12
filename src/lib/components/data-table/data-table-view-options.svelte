@@ -5,20 +5,26 @@
   import { SlidersHorizontalIcon } from "lucide-svelte";
   import type { Table } from "@tanstack/svelte-table";
 
-  export let table: Readable<Table<TData>>;
+  interface Props {
+    table: Readable<Table<TData>>;
+  }
+
+  let { table }: Props = $props();
 </script>
 
 <DropdownMenu.Root>
-  <DropdownMenu.Trigger asChild let:builder>
-    <Button
-      variant="outline"
-      size="sm"
-      class="ml-auto hidden h-8 md:flex"
-      builders={[builder]}
-    >
-      <SlidersHorizontalIcon class="mr-2 h-4 w-4" /> Columns
-    </Button>
-  </DropdownMenu.Trigger>
+  <DropdownMenu.Trigger asChild >
+    {#snippet children({ builder })}
+        <Button
+        variant="outline"
+        size="sm"
+        class="ml-auto hidden h-8 md:flex"
+        builders={[builder]}
+      >
+        <SlidersHorizontalIcon class="mr-2 h-4 w-4" /> Columns
+      </Button>
+          {/snippet}
+    </DropdownMenu.Trigger>
   <DropdownMenu.Content>
     <DropdownMenu.Label>Toggle columns</DropdownMenu.Label>
     {#each $table

@@ -25,7 +25,7 @@
   import Button from "$lib/components/ui/button/button.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
-  import { page } from "$app/stores";
+  import { page } from "$app/state";
   import { alchPrice } from "$lib/stores/alch";
   import { settings } from "$lib/stores/settings";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
@@ -38,12 +38,12 @@
   import { config } from "$lib/config";
   import { favouritesStore } from "$lib/stores/favourites";
 
-  $: formatter = getNumberFormatter();
-  $: compactFormatter = getCompactNumberFormatter();
-  $: isFavouriteItem =
-    ($currentItem && $favouritesStore?.includes($currentItem.id)) || false;
+  let formatter = $derived(getNumberFormatter());
+  let compactFormatter = $derived(getCompactNumberFormatter());
+  let isFavouriteItem =
+    $derived(($currentItem && $favouritesStore?.includes($currentItem.id)) || false);
 
-  export let data;
+  let { data } = $props();
 
   let options = [
     { value: "5m", label: "Last day" },
@@ -52,12 +52,12 @@
     { value: "24h", label: "Last 12 months" },
   ];
 
-  $: selected = options.find(
-    (option) => option.value === $page.url.searchParams.get("time_step"),
+  let selected = $derived(options.find(
+    (option) => option.value === page.url.searchParams.get("time_step"),
   ) ?? {
     value: "5m",
     label: "Last day",
-  };
+  });
 
   let intervalId: ReturnType<typeof setInterval> | undefined;
   let interval = () => {
@@ -84,58 +84,58 @@
     handleVisibilityChange();
   });
 
-  $: history = data.history.data;
+  let history = $derived(data.history.data);
 
-  $: totalVolume = data.history.data.reduce(
+  let totalVolume = $derived(data.history.data.reduce(
     (sum, tick) => (sum += tick.lowPriceVolume + tick.highPriceVolume),
     0,
-  );
+  ));
 
-  $: tax = $currentItem?.low
+  let tax = $derived($currentItem?.low
     ? calculateTax($currentItem.low, $currentItem.id)
-    : null;
-  $: margin =
-    $currentItem?.low && $currentItem.high && typeof tax === "number"
+    : null);
+  let margin =
+    $derived($currentItem?.low && $currentItem.high && typeof tax === "number"
       ? Math.floor($currentItem.high - $currentItem.low - tax)
-      : null;
-  $: highAlchProfit =
-    $currentItem?.highalch && $currentItem.high && $alchPrice?.high
+      : null);
+  let highAlchProfit =
+    $derived($currentItem?.highalch && $currentItem.high && $alchPrice?.high
       ? Math.floor($currentItem.highalch - $currentItem.high - $alchPrice?.high)
-      : null;
-  $: lowAlchProfit =
-    $currentItem?.lowalch && $currentItem.high && $alchPrice?.high
+      : null);
+  let lowAlchProfit =
+    $derived($currentItem?.lowalch && $currentItem.high && $alchPrice?.high
       ? Math.floor($currentItem.lowalch - $currentItem.high - $alchPrice?.high)
-      : null;
-  $: potentialProfit =
-    margin && $currentItem?.limit
+      : null);
+  let potentialProfit =
+    $derived(margin && $currentItem?.limit
       ? Math.floor(margin * $currentItem.limit)
-      : null;
-  $: returnOnInvestment =
-    $currentItem?.low && margin && tax
+      : null);
+  let returnOnInvestment =
+    $derived($currentItem?.low && margin && tax
       ? calculateRoi($currentItem.low, margin)
-      : null;
-  $: buyPriceChangePeriodStart =
-    history?.find((entry) => entry.avgHighPrice)?.avgHighPrice || 0;
-  $: buyPriceChangePeriodEnd =
-    history?.findLast((entry) => entry.avgHighPrice)?.avgHighPrice || 0;
-  $: buyPriceChange = buyPriceChangePeriodEnd - buyPriceChangePeriodStart;
-  $: buyPriceChangePercentage =
-    buyPriceChangePeriodStart > 0
+      : null);
+  let buyPriceChangePeriodStart =
+    $derived(history?.find((entry) => entry.avgHighPrice)?.avgHighPrice || 0);
+  let buyPriceChangePeriodEnd =
+    $derived(history?.findLast((entry) => entry.avgHighPrice)?.avgHighPrice || 0);
+  let buyPriceChange = $derived(buyPriceChangePeriodEnd - buyPriceChangePeriodStart);
+  let buyPriceChangePercentage =
+    $derived(buyPriceChangePeriodStart > 0
       ? (buyPriceChange / buyPriceChangePeriodStart) * 100
-      : 0;
-  $: sellPriceChangePeriodStart =
-    history?.find((entry) => entry.avgLowPrice)?.avgLowPrice || 0;
-  $: sellPriceChangePeriodEnd =
-    history?.findLast((entry) => entry.avgLowPrice)?.avgLowPrice || 0;
-  $: sellPriceChange = sellPriceChangePeriodEnd - sellPriceChangePeriodStart;
-  $: sellPriceChangePercentage =
-    sellPriceChangePeriodStart > 0
+      : 0);
+  let sellPriceChangePeriodStart =
+    $derived(history?.find((entry) => entry.avgLowPrice)?.avgLowPrice || 0);
+  let sellPriceChangePeriodEnd =
+    $derived(history?.findLast((entry) => entry.avgLowPrice)?.avgLowPrice || 0);
+  let sellPriceChange = $derived(sellPriceChangePeriodEnd - sellPriceChangePeriodStart);
+  let sellPriceChangePercentage =
+    $derived(sellPriceChangePeriodStart > 0
       ? (sellPriceChange / sellPriceChangePeriodStart) * 100
-      : 0;
+      : 0);
 
   async function fetchHistory(option: TimeSeriesOption) {
     selected = option;
-    goto(`/items/${$page.params.id}?time_step=${option.value}`);
+    goto(`/items/${page.params.id}?time_step=${option.value}`);
   }
 </script>
 
