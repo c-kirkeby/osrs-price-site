@@ -1,39 +1,47 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { itemsStore } from "$lib/stores/items";
   import type { Item } from "$lib/types/item";
-  import { DataTable } from "$lib/components/data-table";
+  import { DataTable, type InitialTableState } from "$lib/components/data-table";
   import { columns } from "./columns";
-  import type { InitialTableState } from "@tanstack/svelte-table";
   import { Loader2 } from "lucide-svelte";
   import { cn } from "$lib/utils";
-  import { settings } from "$lib/stores/settings";
-  import type { Step } from "$lib/types/recipe";
+  import { settings } from "$lib/stores/settings.svelte";
+  import type { RecipeRow, RecipeStepRow, Step } from "$lib/types/recipe";
 
   let { data } = $props();
 
-  let recipes = data.recipes;
-  let recipeItems = $state([]);
-
-  function getItem(id: number, items: Item[] | null) {
+  function getItem(
+    id: number,
+    items: Item[] | null,
+  ): Partial<Pick<Item, "id" | "name" | "high" | "low" | "highTime" | "lowTime">> {
     if (id === 995) {
       return {
         id: 995,
         name: "Coins",
         high: 1,
         low: 1,
-      } as Pick<Item, "id" | "name" | "high" | "low">;
+      };
     }
-    return items?.find((item) => item.id === id);
+    const item = items?.find((i) => i.id === id);
+    return item
+      ? {
+          id: item.id,
+          name: item.name,
+          high: item.high,
+          low: item.low,
+          highTime: item.highTime,
+          lowTime: item.lowTime,
+        }
+      : {};
   }
 
   function stepsToItemSteps(
     steps: Step[],
     type: "input" | "output",
     items: Item[] | null,
-  ) {
+  ): RecipeStepRow[] {
     return steps.map((step) => ({
+      id: step.id,
       quantity: step.quantity,
       type,
       ...getItem(step.id, items),
@@ -42,6 +50,7 @@
 
   let initialState: InitialTableState = {
     pagination: {
+      pageIndex: 0,
       pageSize: 10,
     },
     sorting: [
@@ -52,19 +61,22 @@
     ],
   };
 
-  run(() => {
-    recipeItems = recipes
-      ?.filter((recipe) => recipe.inputs.length > 0 && recipe.outputs.length > 0)
+  const recipeItems: RecipeRow[] = $derived(
+    (data.recipes
+      ?.filter(
+        (recipe) => recipe.inputs.length > 0 && recipe.outputs.length > 0,
+      )
       .map((recipe) => {
-        const out = {
+        return {
           name: recipe.name,
-          children: stepsToItemSteps(recipe.inputs, "input", $itemsStore).concat(
-            stepsToItemSteps(recipe.outputs, "output", $itemsStore),
-          ),
+          children: stepsToItemSteps(
+            recipe.inputs,
+            "input",
+            $itemsStore,
+          ).concat(stepsToItemSteps(recipe.outputs, "output", $itemsStore)),
         };
-        return out;
-      });
-  });
+      })) ?? [],
+  );
 
   let title = "Recipes";
 </script>
@@ -75,7 +87,7 @@
 
 <section
   class={cn("flex-1 flex-col space-y-4 p-4 md:flex relative", {
-    container: $settings.compact,
+    container: !settings.current.compact,
   })}
 >
   <h1 class="text-3xl font-bold tracking-tight">Recipes</h1>

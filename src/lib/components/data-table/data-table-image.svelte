@@ -4,16 +4,21 @@
 
   type $$Props = HTMLImgAttributes;
 
-  
   interface Props {
     class?: $$Props["class"];
     alt?: $$Props["alt"];
-    [key: string]: any
+    [key: string]: any;
   }
 
-  let { class: className = undefined, alt = undefined, ...rest }: Props = $props();
+  let {
+    class: className = undefined,
+    alt = undefined,
+    ...rest
+  }: Props = $props();
 
-  const onerror = (event) => (event.target.src = placeholder);
+  const onerror = (event: Event) => {
+    (event.currentTarget as HTMLImageElement).src = placeholder;
+  };
 </script>
 
 <img class={className} {alt} {onerror} {...rest} />

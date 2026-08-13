@@ -8,14 +8,15 @@ import {
 } from "$lib/utils";
 import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import DataTableCell from "$lib/components/data-table/data-table-cell.svelte";
-import type { ItemRecipe, StepItem } from "$lib/types/recipe";
-import { ChevronDownIcon, ChevronRightIcon } from "lucide-svelte";
-import { DataTableLink } from "$lib/components/data-table";
+import type { RecipeRow, RecipeStepRow } from "$lib/types/recipe";
+import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
+import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+import { DataTableLink, features } from "$lib/components/data-table";
 import { formatDistanceToNowStrict } from "date-fns";
 
-const columnHelper = createColumnHelper<ItemRecipe>();
+const columnHelper = createColumnHelper<typeof features, RecipeRow>();
 
-function calculateRecipeMargin(recipe: ItemRecipe) {
+function calculateRecipeMargin(recipe: RecipeRow) {
   const inputs = recipe.children?.filter((step) => step.type === "input") ?? [];
   const buy = inputs.reduce(
     (sum, input) => sum + input.quantity * (input.low ?? 0),
@@ -33,7 +34,7 @@ function calculateRecipeMargin(recipe: ItemRecipe) {
   return sell - buy;
 }
 
-function calculateRecipeTax(recipe: ItemRecipe) {
+function calculateRecipeTax(recipe: RecipeRow) {
   return recipe.children
     ?.filter((step) => step.type === "output")
     .reduce(
@@ -43,7 +44,7 @@ function calculateRecipeTax(recipe: ItemRecipe) {
     );
 }
 
-export const columns = [
+export const columns = columnHelper.columns([
   columnHelper.display({
     id: "Expand",
     cell: (props) => {
@@ -66,14 +67,12 @@ export const columns = [
         return info.getValue();
       }
 
-      const value =
-        (info.row.original as StepItem).quantity +
-        " × " +
-        info.row.original.name;
+      const step = info.row.original as RecipeStepRow;
+      const value = step.quantity + " × " + info.row.original.name;
 
       return renderComponent(DataTableLink, {
         value,
-        href: `/items/${info.row.original.id}`,
+        href: `/items/${step.id}`,
       });
     },
   }),
@@ -115,7 +114,7 @@ export const columns = [
             .filter((lowTime) => typeof lowTime === "number"),
         );
       } else {
-        value = info.getValue<number>();
+        value = Number(info.getValue());
       }
 
       if (!value) {
@@ -136,20 +135,17 @@ export const columns = [
     id: "cost",
     cell: (info) => {
       let value = 0;
-      if (!("children" in info.getValue())) {
+      const row = info.getValue();
+      if ("children" in row) {
         value =
-          ((info.getValue() as StepItem).type === "input"
-            ? info.getValue().low
-            : 0) ?? 0;
-      } else {
-        value =
-          info
-            .getValue()
-            .children?.filter((step) => step.type === "input")
+          row.children?.filter((step) => step.type === "input")
             .reduce(
               (sum, current) => sum + current.quantity * (current.low ?? 0),
               0,
             ) ?? 0;
+      } else {
+        const step = row as RecipeStepRow;
+        value = step.type === "input" ? (step.low ?? 0) : 0;
       }
       return renderComponent(DataTableCell, {
         class: cn(styleSignedNumberCell(-value), "flex justify-end"),
@@ -163,17 +159,14 @@ export const columns = [
     id: "price",
     cell: (info) => {
       let value = 0;
-      if (!("children" in info.getValue())) {
+      const row = info.getValue();
+      if ("children" in row) {
         value =
-          ((info.getValue() as StepItem).type === "output"
-            ? info.getValue().high
-            : 0) ?? 0;
-      } else {
-        value =
-          info
-            .getValue()
-            .children?.filter((step) => step.type === "output")
+          row.children?.filter((step) => step.type === "output")
             .reduce((sum, current) => sum + (current.high ?? 0), 0) ?? 0;
+      } else {
+        const step = row as RecipeStepRow;
+        value = step.type === "output" ? (step.high ?? 0) : 0;
       }
       return renderComponent(DataTableCell, {
         class: cn(styleSignedNumberCell(value), "flex justify-end"),
@@ -187,13 +180,15 @@ export const columns = [
     header: "Tax",
     cell: (info) => {
       let value: number | undefined = 0;
-      if (!("children" in info.getValue())) {
-        value =
-          (info.getValue() as StepItem).type === "output"
-            ? calculateTax(info.getValue().high ?? 0, info.getValue().id)
-            : 0;
+      const row = info.getValue();
+      if ("children" in row) {
+        value = calculateRecipeTax(row);
       } else {
-        value = calculateRecipeTax(info.getValue());
+        const step = row as RecipeStepRow;
+        value =
+          step.type === "output"
+            ? calculateTax(step.high ?? 0, step.id)
+            : 0;
       }
 
       const negatedValue = value ? -value : null;
@@ -210,28 +205,30 @@ export const columns = [
     header: "Profit",
     cell: (info) => {
       let margin = 0;
-      if (!("children" in info.getValue())) {
-        const high = info.getValue().high ?? 0;
-        const low = info.getValue().low ?? 0;
-        const tax = calculateTax(high, info.getValue().id);
+      const row = info.getValue();
+      if ("children" in row) {
+        margin = calculateRecipeMargin(row);
+      } else {
+        const step = row as RecipeStepRow;
+        const high = step.high ?? 0;
+        const low = step.low ?? 0;
+        const tax = calculateTax(high, step.id);
 
-        if ((info.getValue() as StepItem).type === "input") {
+        if (step.type === "input") {
           margin = -low;
-        } else if ((info.getValue() as StepItem).type === "output") {
+        } else if (step.type === "output") {
           margin = high - tax;
         }
-      } else {
-        margin = calculateRecipeMargin(info.getValue());
       }
       return renderComponent(DataTableCell, {
         class: cn(styleSignedNumberCell(margin), "flex justify-end"),
         value: getSignedPrefix(margin) + formatNumberCell(margin) || "-",
       });
     },
-    sortingFn: (a, b) => {
+    sortFn: (a, b) => {
       return (
         calculateRecipeMargin(a.original) - calculateRecipeMargin(b.original)
       );
     },
   }),
-];
+]);
