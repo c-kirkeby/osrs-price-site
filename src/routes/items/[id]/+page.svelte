@@ -27,7 +27,7 @@
   import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
   import { page } from "$app/state";
   import { alchPrice } from "$lib/stores/alch";
-  import { settings } from "$lib/stores/settings";
+  import { settings } from "$lib/stores/settings.svelte";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
   import { currentItem } from "$lib/stores/current-item";
@@ -40,8 +40,9 @@
 
   let formatter = $derived(getNumberFormatter());
   let compactFormatter = $derived(getCompactNumberFormatter());
-  let isFavouriteItem =
-    $derived(($currentItem && $favouritesStore?.includes($currentItem.id)) || false);
+  let isFavouriteItem = $derived(
+    ($currentItem && $favouritesStore?.includes($currentItem.id)) || false,
+  );
 
   let { data } = $props();
 
@@ -52,12 +53,14 @@
     { value: "24h", label: "Last 12 months" },
   ];
 
-  let selected = $derived(options.find(
-    (option) => option.value === page.url.searchParams.get("time_step"),
-  ) ?? {
-    value: "5m",
-    label: "Last day",
-  });
+  let selected = $derived(
+    options.find(
+      (option) => option.value === page.url.searchParams.get("time_step"),
+    ) ?? {
+      value: "5m",
+      label: "Last day",
+    },
+  );
 
   let intervalId: ReturnType<typeof setInterval> | undefined;
   let interval = () => {
@@ -86,52 +89,69 @@
 
   let history = $derived(data.history.data);
 
-  let totalVolume = $derived(data.history.data.reduce(
-    (sum, tick) => (sum += tick.lowPriceVolume + tick.highPriceVolume),
-    0,
-  ));
+  let totalVolume = $derived(
+    data.history.data.reduce(
+      (sum, tick) => (sum += tick.lowPriceVolume + tick.highPriceVolume),
+      0,
+    ),
+  );
 
-  let tax = $derived($currentItem?.low
-    ? calculateTax($currentItem.low, $currentItem.id)
-    : null);
-  let margin =
-    $derived($currentItem?.low && $currentItem.high && typeof tax === "number"
+  let tax = $derived(
+    $currentItem?.low ? calculateTax($currentItem.low, $currentItem.id) : null,
+  );
+  let margin = $derived(
+    $currentItem?.low && $currentItem.high && typeof tax === "number"
       ? Math.floor($currentItem.high - $currentItem.low - tax)
-      : null);
-  let highAlchProfit =
-    $derived($currentItem?.highalch && $currentItem.high && $alchPrice?.high
+      : null,
+  );
+  let highAlchProfit = $derived(
+    $currentItem?.highalch && $currentItem.high && $alchPrice?.high
       ? Math.floor($currentItem.highalch - $currentItem.high - $alchPrice?.high)
-      : null);
-  let lowAlchProfit =
-    $derived($currentItem?.lowalch && $currentItem.high && $alchPrice?.high
+      : null,
+  );
+  let lowAlchProfit = $derived(
+    $currentItem?.lowalch && $currentItem.high && $alchPrice?.high
       ? Math.floor($currentItem.lowalch - $currentItem.high - $alchPrice?.high)
-      : null);
-  let potentialProfit =
-    $derived(margin && $currentItem?.limit
+      : null,
+  );
+  let potentialProfit = $derived(
+    margin && $currentItem?.limit
       ? Math.floor(margin * $currentItem.limit)
-      : null);
-  let returnOnInvestment =
-    $derived($currentItem?.low && margin && tax
+      : null,
+  );
+  let returnOnInvestment = $derived(
+    $currentItem?.low && margin && tax
       ? calculateRoi($currentItem.low, margin)
-      : null);
-  let buyPriceChangePeriodStart =
-    $derived(history?.find((entry) => entry.avgHighPrice)?.avgHighPrice || 0);
-  let buyPriceChangePeriodEnd =
-    $derived(history?.findLast((entry) => entry.avgHighPrice)?.avgHighPrice || 0);
-  let buyPriceChange = $derived(buyPriceChangePeriodEnd - buyPriceChangePeriodStart);
-  let buyPriceChangePercentage =
-    $derived(buyPriceChangePeriodStart > 0
+      : null,
+  );
+  let buyPriceChangePeriodStart = $derived(
+    history?.find((entry) => entry.avgHighPrice)?.avgHighPrice || 0,
+  );
+  let buyPriceChangePeriodEnd = $derived(
+    history?.findLast((entry) => entry.avgHighPrice)?.avgHighPrice || 0,
+  );
+  let buyPriceChange = $derived(
+    buyPriceChangePeriodEnd - buyPriceChangePeriodStart,
+  );
+  let buyPriceChangePercentage = $derived(
+    buyPriceChangePeriodStart > 0
       ? (buyPriceChange / buyPriceChangePeriodStart) * 100
-      : 0);
-  let sellPriceChangePeriodStart =
-    $derived(history?.find((entry) => entry.avgLowPrice)?.avgLowPrice || 0);
-  let sellPriceChangePeriodEnd =
-    $derived(history?.findLast((entry) => entry.avgLowPrice)?.avgLowPrice || 0);
-  let sellPriceChange = $derived(sellPriceChangePeriodEnd - sellPriceChangePeriodStart);
-  let sellPriceChangePercentage =
-    $derived(sellPriceChangePeriodStart > 0
+      : 0,
+  );
+  let sellPriceChangePeriodStart = $derived(
+    history?.find((entry) => entry.avgLowPrice)?.avgLowPrice || 0,
+  );
+  let sellPriceChangePeriodEnd = $derived(
+    history?.findLast((entry) => entry.avgLowPrice)?.avgLowPrice || 0,
+  );
+  let sellPriceChange = $derived(
+    sellPriceChangePeriodEnd - sellPriceChangePeriodStart,
+  );
+  let sellPriceChangePercentage = $derived(
+    sellPriceChangePeriodStart > 0
       ? (sellPriceChange / sellPriceChangePeriodStart) * 100
-      : 0);
+      : 0,
+  );
 
   async function fetchHistory(option: TimeSeriesOption) {
     selected = option;
@@ -146,7 +166,7 @@
 {#if !$isLoading}
   <section
     class={cn("flex-1 flex-col space-y-4 p-4 md:flex relative", {
-      container: $settings.compact,
+      container: !settings.current.compact,
     })}
   >
     <div class="flex items-center justify-between">

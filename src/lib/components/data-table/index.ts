@@ -6,6 +6,12 @@ import DataTableToolbar from "./data-table-toolbar.svelte";
 import DataTableColumnHeader from "./data-table-column-header.svelte";
 
 export {
+  features,
+  type DataTableFeatures,
+  type InitialTableState,
+} from "./features";
+
+export {
   DataTable,
   DataTablePagination,
   DataTableLink,

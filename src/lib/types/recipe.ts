@@ -20,3 +20,12 @@ export type ItemRecipe = Item & {
 };
 
 export type StepItem = Step & Item;
+
+export type RecipeStepRow = Step & Partial<
+    Pick<Item, "id" | "name" | "high" | "low" | "highTime" | "lowTime">
+  >;
+
+export type RecipeRow = {
+  name?: string;
+  children?: RecipeStepRow[];
+} & Partial<RecipeStepRow>;

@@ -1,5 +1,6 @@
-<script lang="ts" generics="TData, TValue">
-  import type { Column } from "@tanstack/svelte-table";
+<script lang="ts" generics="TData extends RowData, TValue">
+  import type { Column, RowData } from "@tanstack/svelte-table";
+  import type { DataTableFeatures } from "$lib/components/data-table/features";
 
   import { cn } from "$lib/utils";
   import {
@@ -11,17 +12,13 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Button } from "$lib/components/ui/button";
 
-
-  
   interface Props {
     class?: string | undefined | null;
-    column: Column<TData, TValue>;
-    children?: import('svelte').Snippet;
+    column: Column<DataTableFeatures, TData, TValue>;
+    children?: import("svelte").Snippet;
   }
 
   let { class: className = undefined, column, children }: Props = $props();
-
-  const children_render = $derived(children);
 </script>
 
 {#if !column.getCanSort()}
@@ -34,37 +31,31 @@
   {@const isSorted = column.getIsSorted()}
   <div class={cn("flex items-center", className)}>
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild >
-        {#snippet children({ builder })}
-                <Button
-            variant="ghost"
-            builders={[builder]}
-            class="-ml-3 h-8 data-[state-open]:bg-accent"
-          >
-            <span class="capitalize">
-              {@render children_render?.()}
-            </span>
-            {#if isSorted === "asc"}
-              <ArrowUp class="w-4 h-4 ml-2" />
-            {:else if isSorted === "desc"}
-              <ArrowDown class="w-4 h-4 ml-2" />
-            {:else}
-              <ChevronsUpDown class="w-4 h-4 ml-2" />
-            {/if}
-          </Button>
-                      {/snippet}
-            </DropdownMenu.Trigger>
+      <DropdownMenu.Trigger>
+        <Button variant="ghost" class="-ml-3 h-8 data-[state-open]:bg-accent">
+          <span class="capitalize">
+            {@render children?.()}
+          </span>
+          {#if isSorted === "asc"}
+            <ArrowUp class="w-4 h-4 ml-2" />
+          {:else if isSorted === "desc"}
+            <ArrowDown class="w-4 h-4 ml-2" />
+          {:else}
+            <ChevronsUpDown class="w-4 h-4 ml-2" />
+          {/if}
+        </Button>
+      </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.Item on:click={() => column.toggleSorting(false)}>
+        <DropdownMenu.Item onclick={() => column.toggleSorting(false)}>
           <ArrowUp class="w-4 h-4 mr-2" />
           Asc
         </DropdownMenu.Item>
-        <DropdownMenu.Item on:click={() => column.toggleSorting(true)}>
+        <DropdownMenu.Item onclick={() => column.toggleSorting(true)}>
           <ArrowDown class="w-4 h-4 mr-2" />
           Desc
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
-        <DropdownMenu.Item on:click={() => column.toggleVisibility(false)}>
+        <DropdownMenu.Item onclick={() => column.toggleVisibility(false)}>
           <EyeOffIcon class="w-4 h-4 mr-2" />
           Hide
         </DropdownMenu.Item>

@@ -14,15 +14,16 @@ import {
   styleSignedNumberCell,
 } from "$lib/utils";
 import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
-import { LucideStar } from "lucide-svelte";
+import { Star } from "@lucide/svelte";
 import { get } from "svelte/store";
 import DataTableButtonCell from "$lib/components/data-table/data-table-button-cell.svelte";
 import { favouriteItemsStore } from "$lib/stores/favourite-items";
 import { favouritesStore } from "$lib/stores/favourites";
+import { features } from "$lib/components/data-table";
 
-const columnHelper = createColumnHelper<FavouriteItem>();
+const columnHelper = createColumnHelper<typeof features, FavouriteItem>();
 
-export const columns = [
+export const columns = columnHelper.columns([
   columnHelper.accessor("id", {
     cell: (info) => info.getValue(),
     header: "ID",
@@ -53,7 +54,7 @@ export const columns = [
   }),
   columnHelper.accessor("members", {
     cell: (info) =>
-      renderComponent(LucideStar, {
+      renderComponent(Star, {
         class: cn("size-5 stroke-1", {
           "fill-yellow-400": info.getValue(),
           "fill-slate-300": !info.getValue(),
@@ -123,7 +124,7 @@ export const columns = [
       });
     },
     sortUndefined: "last",
-    sortingFn: (a, b) => {
+    sortFn: (a, b) => {
       if (!a.original.highTime || !b.original.highTime) return 0;
       if (a.original.highTime > b.original.highTime) return -1;
       return 1;
@@ -154,7 +155,7 @@ export const columns = [
       });
     },
     sortUndefined: "last",
-    sortingFn: (a, b) => {
+    sortFn: (a, b) => {
       if (!a.original.lowTime || !b.original.lowTime) return 0;
       if (a.original.lowTime > b.original.lowTime) return -1;
       return 1;
@@ -179,7 +180,7 @@ export const columns = [
         value: getSignedPrefix(margin) + formatNumberCell(margin) || "-",
       });
     },
-    sortingFn: (a, b) => {
+    sortFn: (a, b) => {
       if (
         !a.original.high ||
         !a.original.low ||
@@ -214,7 +215,7 @@ export const columns = [
         info.row.getValue("volume")
       ) {
         grossMargin =
-          info.row.getValue("volume") *
+          Number(info.row.getValue("volume")) *
           calculateMargin(
             info.row.getValue("high"),
             info.row.getValue("low"),
@@ -229,7 +230,7 @@ export const columns = [
       });
     },
     header: "Gross Profit",
-    sortingFn: (a, b) => {
+    sortFn: (a, b) => {
       if (
         !a.original.high ||
         !a.original.low ||
@@ -268,7 +269,7 @@ export const columns = [
       }
       return "0";
     },
-    sortingFn: (a, b) => {
+    sortFn: (a, b) => {
       if (!a.original.low || !b.original.low) {
         return 0;
       }
@@ -303,7 +304,7 @@ export const columns = [
         class: cn(styleSignedNumberCell(roiValue), "flex justify-end"),
       });
     },
-    sortingFn: (a, b) => {
+    sortFn: (a, b) => {
       if (
         !a.original.high ||
         !a.original.low ||
@@ -355,4 +356,4 @@ export const columns = [
     },
     enableSorting: false,
   }),
-];
+]);
