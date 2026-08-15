@@ -190,7 +190,7 @@
           size="icon"
           class="ml-auto hidden h-8 w-8 md:flex gap-1"
           target="_blank"
-          on:click={() => {
+          onclick={() => {
             const id = $currentItem?.id;
             if (!isFavouriteItem && id) {
               $favouritesStore = [...($favouritesStore || []), id];
