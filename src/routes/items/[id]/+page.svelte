@@ -1,6 +1,5 @@
 <script lang="ts">
   import {
-    ChevronRight,
     ArrowDownCircle,
     ArrowUpCircle,
     Info,
@@ -46,7 +45,7 @@
 
   let { data } = $props();
 
-  let options = [
+  let options: TimeSeriesOption[] = [
     { value: "5m", label: "Last day" },
     { value: "1h", label: "Last 7 days" },
     { value: "6h", label: "Last 30 days" },
@@ -56,10 +55,11 @@
   let selected = $derived(
     options.find(
       (option) => option.value === page.url.searchParams.get("time_step"),
-    ) ?? {
-      value: "5m",
-      label: "Last day",
-    },
+    ) ??
+      ({
+        value: "5m",
+        label: "Last day",
+      } satisfies TimeSeriesOption),
   );
 
   let intervalId: ReturnType<typeof setInterval> | undefined;
@@ -154,7 +154,6 @@
   );
 
   async function fetchHistory(option: TimeSeriesOption) {
-    selected = option;
     goto(`/items/${page.params.id}?time_step=${option.value}`);
   }
 </script>
@@ -218,7 +217,7 @@
           variant="outline"
           size="sm"
           class="ml-auto hidden h-8 md:flex gap-1"
-          href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${$page.params.id}`}
+          href={`https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id=${page.params.id}`}
           target="_blank"
         >
           <ExternalLinkIcon class="size-3.5" />
@@ -362,7 +361,7 @@
                 Showing the price history for the last {selected.label.toLowerCase()}.
               </Card.Description>
             </div>
-            <TimeStepDropdown bind:selected onSelectedChange={fetchHistory} />
+            <TimeStepDropdown {selected} onSelectedChange={fetchHistory} />
           </Card.Header>
           <Card.Content class="px-2 pt-4 sm:px-6 sm:pt-6">
             {#if history.length === 0}

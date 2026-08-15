@@ -7,7 +7,11 @@ export interface TimeSeries {
 }
 
 export type TimeStep = "5m" | "1h" | "6h" | "24h";
-export type TimeStepLabel = "1 Day" | "7 Days" | "1 Month" | "1 Year";
+export type TimeStepLabel =
+  | "Last day"
+  | "Last 7 days"
+  | "Last 30 days"
+  | "Last 12 months";
 
 export interface TimeSeriesOption {
   value: TimeStep;
