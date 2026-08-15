@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from "svelte/legacy";
-
   import { ModeWatcher } from "mode-watcher";
   import SiteHeader from "$lib/components/site-header.svelte";
   import { onMount } from "svelte";
@@ -10,6 +8,7 @@
   import { config } from "$lib/config";
   import TailwindIndicator from "$lib/components/tailwind-indicator.svelte";
   import "./layout.css";
+  import * as Tooltip from "@/components/ui/tooltip";
 
   let { data, children } = $props();
 
@@ -42,7 +41,7 @@
     }
   }
 
-  run(() => {
+  $effect(() => {
     $itemsStore = data.items;
   });
 
@@ -63,7 +62,9 @@
   <div class="relative flex min-h-screen flex-col">
     <div class="relative flex min-h-screen flex-col bg-background">
       <SiteHeader />
-      {@render children?.()}
+      <Tooltip.Provider>
+        {@render children?.()}
+      </Tooltip.Provider>
     </div>
   </div>
 </div>
