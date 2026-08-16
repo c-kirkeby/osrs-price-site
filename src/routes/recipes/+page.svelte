@@ -1,7 +1,10 @@
 <script lang="ts">
   import { itemsStore } from "$lib/stores/items";
   import type { Item } from "$lib/types/item";
-  import { DataTable, type InitialTableState } from "$lib/components/data-table";
+  import {
+    DataTable,
+    type InitialTableState,
+  } from "$lib/components/data-table";
   import { columns } from "./columns";
   import { Loader2 } from "lucide-svelte";
   import { cn } from "$lib/utils";
@@ -13,7 +16,9 @@
   function getItem(
     id: number,
     items: Item[] | null,
-  ): Partial<Pick<Item, "id" | "name" | "high" | "low" | "highTime" | "lowTime">> {
+  ): Partial<
+    Pick<Item, "id" | "name" | "high" | "low" | "highTime" | "lowTime">
+  > {
     if (id === 995) {
       return {
         id: 995,
@@ -62,7 +67,7 @@
   };
 
   const recipeItems: RecipeRow[] = $derived(
-    (data.recipes
+    data.recipes
       ?.filter(
         (recipe) => recipe.inputs.length > 0 && recipe.outputs.length > 0,
       )
@@ -75,7 +80,7 @@
             $itemsStore,
           ).concat(stepsToItemSteps(recipe.outputs, "output", $itemsStore)),
         };
-      })) ?? [],
+      }) ?? [],
   );
 
   let title = "Recipes";
@@ -87,7 +92,7 @@
 
 <section
   class={cn("flex-1 flex-col space-y-4 p-4 md:flex relative", {
-    container: !settings.current.compact,
+    container: settings.current.compact,
   })}
 >
   <h1 class="text-3xl font-bold tracking-tight">Recipes</h1>

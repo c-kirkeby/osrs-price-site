@@ -1,5 +1,8 @@
 <script lang="ts">
-  import { DataTable, type InitialTableState } from "$lib/components/data-table";
+  import {
+    DataTable,
+    type InitialTableState,
+  } from "$lib/components/data-table";
   import { columns } from "./columns";
   import { cn } from "$lib/utils";
   import { settings } from "$lib/stores/settings.svelte";
@@ -43,7 +46,7 @@
 
 <section
   class={cn("flex flex-1 flex-col space-y-4 p-4 md:flex relative", {
-    container: !settings.current.compact,
+    container: settings.current.compact,
   })}
 >
   <h1 class="text-3xl font-bold tracking-tight">Favourites</h1>
