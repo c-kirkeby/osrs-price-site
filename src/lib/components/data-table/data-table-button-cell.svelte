@@ -11,7 +11,13 @@
   }: HTMLButtonAttributes = $props();
 </script>
 
-<Button variant="ghost" class="flex h-5 w-5 p-0" {...rest} {onclick}>
+<Button
+  variant="ghost"
+  class="flex h-5 w-5 p-0"
+  type="button"
+  {...rest}
+  {onclick}
+>
   <HeartIcon class={cn("h-5 w-5", className)} />
   <span class="sr-only">Add to favourites</span>
 </Button>

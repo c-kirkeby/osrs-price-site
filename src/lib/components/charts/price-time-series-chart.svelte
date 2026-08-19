@@ -24,7 +24,7 @@
     },
     avgLowPrice: {
       label: "Sell Price",
-      color: "var(--chart-5)",
+      color: "var(--chart-2)",
     },
   } satisfies Chart.ChartConfig;
 

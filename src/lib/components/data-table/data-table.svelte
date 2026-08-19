@@ -1,4 +1,4 @@
-<script lang="ts" generics="TData extends Record<string, any>">
+<script lang="ts" generics="TData extends RowData & { children?: TData[] }">
   import { cn } from "$lib/utils";
 
   import * as Table from "$lib/components/ui/table";
@@ -7,6 +7,7 @@
     ColumnDef,
     ColumnVisibilityState,
     OnChangeFn,
+    RowData,
   } from "@tanstack/svelte-table";
   import { createTable, FlexRender } from "@tanstack/svelte-table";
   import {
@@ -16,7 +17,7 @@
   } from "$lib/components/data-table/features";
 
   interface Props {
-    columns: ColumnDef<DataTableFeatures, TData, any>[];
+    columns: ColumnDef<DataTableFeatures, TData>[];
     data: TData[];
     columnVisibility?: ColumnVisibilityState;
     initialState?: InitialTableState;
@@ -117,4 +118,3 @@
   </div>
   <DataTable.Pagination {table} />
 </div>
-

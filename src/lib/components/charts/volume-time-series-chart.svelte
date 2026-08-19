@@ -23,7 +23,7 @@
     },
     lowPriceVolume: {
       label: "Sell Volume",
-      color: "var(--chart-5)",
+      color: "var(--chart-2)",
     },
   } satisfies Chart.ChartConfig;
 
