@@ -1,9 +1,12 @@
 <script lang="ts">
-  import { DataTable, type InitialTableState } from "$lib/components/data-table";
+  import {
+    DataTable,
+    type InitialTableState,
+  } from "$lib/components/data-table";
   import { columns } from "./columns";
   import { cn } from "$lib/utils";
   import { settings } from "$lib/stores/settings.svelte";
-  import { Loader2 } from "lucide-svelte";
+  import { Loader } from "@lucide/svelte";
   import { favouriteItemsStore } from "$lib/stores/favourite-items";
 
   let columnVisibility = {
@@ -49,7 +52,7 @@
     />
   {:else}
     <div class="flex items-center text-sm text-muted-foreground justify-center">
-      <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+      <Loader class="mr-2 h-4 w-4 animate-spin" />
       Loading...
     </div>
   {/if}

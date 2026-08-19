@@ -8,7 +8,7 @@
     ArrowUp,
     ChevronsUpDown,
     EyeOffIcon,
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Button } from "$lib/components/ui/button";
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { cn } from "$lib/utils";
-  import { HandCoinsIcon } from "lucide-svelte";
+  import { HandCoinsIcon } from "@lucide/svelte";
   import { config } from "$lib/config";
 </script>
 
@@ -16,9 +16,7 @@
         {href}
         class={cn(
           "transition-colors hover:text-foreground/80",
-          page.url.pathname === href
-            ? "text-foreground"
-            : "text-foreground/60",
+          page.url.pathname === href ? "text-foreground" : "text-foreground/60",
         )}
       >
         {label}

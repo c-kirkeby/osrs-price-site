@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Sheet from "$lib/components/ui/sheet";
   import { Button } from "$lib/components/ui/button";
-  import { MenuIcon, HandCoinsIcon } from "lucide-svelte";
+  import { MenuIcon, HandCoinsIcon } from "@lucide/svelte";
   import { MobileLink } from "$lib/components/nav";
   import { config } from "$lib/config";
 

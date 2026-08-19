@@ -1,13 +1,13 @@
 <script lang="ts">
   import {
-    ArrowDownCircle,
-    ArrowUpCircle,
+    CircleArrowDown,
+    CircleArrowUp,
     Info,
     ExternalLinkIcon,
     TrendingUp,
     TrendingDown,
     HeartIcon,
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import {
@@ -236,7 +236,7 @@
               class="flex flex-row items-center justify-between space-y-0 pb-2"
             >
               <Card.Title class="text-sm font-medium">Buy Price</Card.Title>
-              <ArrowDownCircle />
+              <CircleArrowDown />
             </Card.Header>
             <Card.Content>
               <p>
@@ -294,7 +294,7 @@
               class="flex flex-row items-center justify-between space-y-0 pb-2"
             >
               <Card.Title class="text-sm font-medium">Sell Price</Card.Title>
-              <ArrowUpCircle />
+              <CircleArrowUp />
             </Card.Header>
             <Card.Content>
               <p>

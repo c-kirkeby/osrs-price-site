@@ -87,7 +87,6 @@
     "es-toolkit": "^1.50.0",
     "flexsearch": "^0.7.43",
     "layerchart": "^2.2.0",
-    "lucide-svelte": "^0.438.0",
     "mode-watcher": "^0.4.1",
     "nanoid": "^5.1.16",
     "pg": "^8.23.0",

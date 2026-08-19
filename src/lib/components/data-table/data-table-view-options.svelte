@@ -1,7 +1,7 @@
 <script lang="ts" generics="TData extends Record<string, any>">
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Button } from "$lib/components/ui/button";
-  import { SlidersHorizontalIcon } from "lucide-svelte";
+  import { SlidersHorizontalIcon } from "@lucide/svelte";
   import type { SvelteTable } from "@tanstack/svelte-table";
   import type { DataTableFeatures } from "$lib/components/data-table/features";
 
@@ -32,4 +32,3 @@
     {/each}
   </DropdownMenu.Content>
 </DropdownMenu.Root>
-

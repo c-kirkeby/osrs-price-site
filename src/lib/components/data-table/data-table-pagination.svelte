@@ -8,7 +8,7 @@
     ChevronRightIcon,
     ChevronsLeftIcon,
     ChevronsRightIcon,
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
 
   interface Props {
     table: SvelteTable<DataTableFeatures, TData>;
