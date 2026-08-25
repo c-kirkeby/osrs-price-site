@@ -9,10 +9,12 @@
 
 <Popover.Root>
   <Popover.Trigger>
-    <Button variant="ghost" size="icon">
-      <span class="sr-only">Settings</span>
-      <SettingsIcon class="h-4 w-4" />
-    </Button>
+    {#snippet child({ props })}
+      <Button {...props} variant="ghost" size="icon">
+        <span class="sr-only">Settings</span>
+        <SettingsIcon class="h-4 w-4" />
+      </Button>
+    {/snippet}
   </Popover.Trigger>
   <Popover.Content class="grid gap-6">
     <div class="flex items-center justify-between space-x-2">

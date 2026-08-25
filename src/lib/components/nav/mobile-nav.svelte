@@ -10,13 +10,16 @@
 
 <Sheet.Root bind:open>
   <Sheet.Trigger>
-    <Button
-      variant="ghost"
-      class="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
-    >
-      <MenuIcon class="h-5 w-5" />
-      <span class="sr-only">Toggle Menu</span>
-    </Button>
+    {#snippet child({ props })}
+      <Button
+        {...props}
+        variant="ghost"
+        class="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+      >
+        <MenuIcon class="h-5 w-5" />
+        <span class="sr-only">Toggle Menu</span>
+      </Button>
+    {/snippet}
   </Sheet.Trigger>
   <Sheet.Content side="left" class="pr-0">
     <MobileLink href="/" class="flex items-center" bind:open>
