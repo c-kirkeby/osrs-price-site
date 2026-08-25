@@ -96,7 +96,7 @@
   })}
 >
   <h1 class="text-3xl font-bold tracking-tight">Recipes</h1>
-  {#if recipeItems}
+  {#if $itemsStore}
     <DataTable {columns} data={recipeItems} {initialState} />
   {:else}
     <div class="flex items-center text-sm text-muted-foreground justify-center">
