@@ -165,7 +165,7 @@
 {#if !$isLoading}
   <section
     class={cn("flex-1 flex-col space-y-4 p-4 md:flex relative", {
-      container: !settings.current.compact,
+      container: settings.current.compact,
     })}
   >
     <div class="flex items-center justify-between">
