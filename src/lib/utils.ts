@@ -37,7 +37,7 @@ export function calculateTax(sellPrice: number, itemId?: number) {
     return 0;
   }
 
-  const potentialTax = Math.floor(sellPrice * 0.01);
+  const potentialTax = Math.floor(sellPrice * 0.02); // increased on 29 May 2025
 
   if (potentialTax > 5_000_000) {
     return 5_000_000;
