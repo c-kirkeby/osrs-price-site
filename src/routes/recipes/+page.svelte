@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { itemsStore } from "$lib/stores/items";
+  import { itemsStore } from "$lib/state/items";
   import type { Item } from "$lib/types/item";
   import {
     DataTable,
@@ -8,7 +8,7 @@
   import { columns } from "./columns";
   import { Loader } from "@lucide/svelte";
   import { cn } from "$lib/utils";
-  import { settings } from "$lib/stores/settings.svelte";
+  import { settings } from "$lib/state/settings.svelte";
   import type { RecipeRow, RecipeStepRow, Step } from "$lib/types/recipe";
 
   let { data } = $props();

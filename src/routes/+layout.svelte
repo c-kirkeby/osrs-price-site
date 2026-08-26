@@ -2,9 +2,9 @@
   import { ModeWatcher } from "mode-watcher";
   import SiteHeader from "$lib/components/site-header.svelte";
   import { onMount } from "svelte";
-  import { itemsStore } from "$lib/stores/items";
+  import { itemsStore } from "$lib/state/items";
   import { fetchPrices, fetchVolumes } from "$lib/api/items";
-  import { isLoading } from "$lib/stores/loading";
+  import { isLoading } from "$lib/state/loading";
   import { config } from "$lib/config";
   import TailwindIndicator from "$lib/components/tailwind-indicator.svelte";
   import "./layout.css";

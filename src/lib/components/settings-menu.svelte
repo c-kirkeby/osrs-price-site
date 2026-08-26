@@ -3,7 +3,7 @@
   import { Switch } from "$lib/components/ui/switch";
   import { Label } from "$lib/components/ui/label";
   import * as Popover from "$lib/components/ui/popover";
-  import { settings } from "$lib/stores/settings.svelte";
+  import { settings } from "$lib/state/settings.svelte";
   import { SettingsIcon } from "@lucide/svelte";
 </script>
 

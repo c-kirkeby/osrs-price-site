@@ -5,9 +5,9 @@
   } from "$lib/components/data-table";
   import { columns } from "./columns";
   import { cn } from "$lib/utils";
-  import { settings } from "$lib/stores/settings.svelte";
+  import { settings } from "$lib/state/settings.svelte";
   import { Loader } from "@lucide/svelte";
-  import { favouriteItemsStore } from "$lib/stores/favourite-items";
+  import { favouriteItemsStore } from "$lib/state/favourite-items";
 
   let columnVisibility = {
     id: false,

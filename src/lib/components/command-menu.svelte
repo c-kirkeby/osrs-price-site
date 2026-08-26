@@ -2,14 +2,14 @@
   import { Button } from "$lib/components/ui/button";
   import * as Command from "$lib/components/ui/command";
   import type { Item } from "$lib/types/item";
-  import { searchHistory } from "$lib/stores/search-history";
+  import { searchHistory } from "$lib/state/search-history";
   import { getUserOperatingSystem } from "$lib/utils";
   import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
   import { X, Sun, Moon, Laptop } from "@lucide/svelte";
   import { resetMode, setMode } from "mode-watcher";
   import { createItemsIndex, searchItemsIndex } from "$lib/search";
-  import { itemsStore } from "$lib/stores/items";
+  import { itemsStore } from "$lib/state/items";
   import * as Kbd from "$lib/components/ui/kbd";
   import * as Dialog from "$lib/components/ui/dialog";
   type Props = Record<string, any>;

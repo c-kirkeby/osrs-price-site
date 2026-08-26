@@ -25,17 +25,17 @@
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
   import { page } from "$app/state";
-  import { alchPrice } from "$lib/stores/alch";
-  import { settings } from "$lib/stores/settings.svelte";
+  import { alchPrice } from "$lib/state/alch";
+  import { settings } from "$lib/state/settings.svelte";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
-  import { currentItem } from "$lib/stores/current-item";
-  import { isLoading } from "$lib/stores/loading";
+  import { currentItem } from "$lib/state/current-item";
+  import { isLoading } from "$lib/state/loading";
   import { goto, invalidate } from "$app/navigation";
   import VolumeTimeSeriesChart from "$lib/components/charts/volume-time-series-chart.svelte";
   import { onMount } from "svelte";
   import { config } from "$lib/config";
-  import { favouritesStore } from "$lib/stores/favourites";
+  import { favouritesStore } from "$lib/state/favourites";
 
   let formatter = $derived(getNumberFormatter());
   let compactFormatter = $derived(getCompactNumberFormatter());
