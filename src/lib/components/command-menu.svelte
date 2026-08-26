@@ -12,6 +12,7 @@
   import { itemsStore } from "$lib/state/items";
   import * as Kbd from "$lib/components/ui/kbd";
   import * as Dialog from "$lib/components/ui/dialog";
+  import { resolve } from "$app/paths";
   type Props = Record<string, any>;
 
   let { ...rest }: Props = $props();
@@ -89,7 +90,7 @@
                 runCommand(() => {
                   open = false;
                   searchHistory.add(result);
-                  goto(`/items/${result.id}`);
+                  goto(resolve(`/items/${result.id}`));
                 })}
             >
               <img
@@ -113,7 +114,7 @@
               onSelect={() =>
                 runCommand(() => {
                   open = false;
-                  goto(`/items/${item.id}`);
+                  goto(resolve(`/items/${item.id}`));
                 })}
             >
               <img

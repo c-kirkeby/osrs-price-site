@@ -36,6 +36,7 @@
   import { onMount } from "svelte";
   import { config } from "$lib/config";
   import { favouritesStore } from "$lib/state/favourites";
+  import { resolve } from "$app/paths";
 
   let formatter = $derived(getNumberFormatter());
   let compactFormatter = $derived(getCompactNumberFormatter());
@@ -154,7 +155,7 @@
   );
 
   async function fetchHistory(option: TimeSeriesOption) {
-    goto(`/items/${page.params.id}?time_step=${option.value}`);
+    goto(resolve(`/items/${page.params.id}?time_step=${option.value}`));
   }
 </script>
 
