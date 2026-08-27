@@ -2,7 +2,7 @@
   import { Button } from "$lib/components/ui/button";
   import * as Command from "$lib/components/ui/command";
   import type { Item } from "$lib/types/item";
-  import { searchHistory } from "$lib/state/search-history";
+  import { searchHistory } from "$lib/state/search-history.svelte";
   import { getUserOperatingSystem } from "$lib/utils";
   import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
@@ -107,9 +107,9 @@
         <Command.Separator />
       {/if}
 
-      {#if $searchHistory.length > 0}
+      {#if searchHistory.items.length > 0}
         <Command.Group heading="History">
-          {#each $searchHistory as item}
+          {#each searchHistory.items as item}
             <Command.Item
               onSelect={() =>
                 runCommand(() => {

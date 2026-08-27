@@ -17,8 +17,8 @@ import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import { Star } from "@lucide/svelte";
 import { get } from "svelte/store";
 import DataTableButtonCell from "$lib/components/data-table/data-table-button-cell.svelte";
-import { favouriteItemsStore } from "$lib/stores/favourite-items";
-import { favouritesStore } from "$lib/stores/favourites";
+import { favouriteItemsStore } from "$lib/state/favourite-items";
+import { favouritesStore } from "$lib/state/favourites";
 import { features } from "$lib/components/data-table";
 
 const columnHelper = createColumnHelper<typeof features, FavouriteItem>();

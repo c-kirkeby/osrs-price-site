@@ -1,5 +1,5 @@
-import { itemsStore } from "$lib/stores/items";
-import { favouritesStore } from "$lib/stores/favourites";
+import { itemsStore } from "$lib/state/items";
+import { favouritesStore } from "$lib/state/favourites";
 import { derived } from "svelte/store";
 
 export const favouriteItemsStore = derived(
