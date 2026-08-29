@@ -7,8 +7,8 @@
   import { cn } from "$lib/utils";
   import { settings } from "$lib/state/settings.svelte";
   import { Loader } from "@lucide/svelte";
-  import { favouritesStore } from "$lib/state/favourites";
-  import { favouriteItemsStore } from "$lib/state/favourite-items";
+  import { favouritesState } from "$lib/state/favourites.svelte";
+  import { favouriteItemsState } from "$lib/state/favourite-items.svelte";
 
   let columnVisibility = {
     id: false,
@@ -50,14 +50,14 @@
   })}
 >
   <h1 class="text-3xl font-bold tracking-tight">Favourites</h1>
-  {#if $favouritesStore?.length ?? 0 > 0}
+  {#if (favouritesState.favourites?.length ?? 0) > 0}
     <DataTable
       {columns}
-      data={$favouriteItemsStore ?? []}
+      data={favouriteItemsState.items}
       {columnVisibility}
       {initialState}
     />
-  {:else if $favouriteItemsStore}
+  {:else if favouriteItemsState.items}
     <div
       class="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm"
     >

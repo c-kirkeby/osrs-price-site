@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { itemsStore } from "$lib/state/items";
+  import { itemsState } from "$lib/state/items.svelte.js";
   import type { Item } from "$lib/types/item";
   import {
     DataTable,
@@ -77,8 +77,10 @@
           children: stepsToItemSteps(
             recipe.inputs,
             "input",
-            $itemsStore,
-          ).concat(stepsToItemSteps(recipe.outputs, "output", $itemsStore)),
+            itemsState.items,
+          ).concat(
+            stepsToItemSteps(recipe.outputs, "output", itemsState.items),
+          ),
         };
       }) ?? [],
   );
@@ -96,7 +98,7 @@
   })}
 >
   <h1 class="text-3xl font-bold tracking-tight">Recipes</h1>
-  {#if $itemsStore}
+  {#if itemsState.items}
     <DataTable {columns} data={recipeItems} {initialState} />
   {:else}
     <div class="flex items-center text-sm text-muted-foreground justify-center">

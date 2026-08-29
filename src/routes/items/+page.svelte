@@ -7,7 +7,7 @@
   import { cn } from "$lib/utils";
   import { settings } from "$lib/state/settings.svelte";
   import { Loader } from "@lucide/svelte";
-  import { favouriteItemsStore } from "$lib/state/favourite-items";
+  import { favouriteItemsState } from "$lib/state/favourite-items.svelte";
 
   let columnVisibility = {
     id: false,
@@ -43,10 +43,10 @@
   })}
 >
   <h1 class="text-3xl font-bold tracking-tight">Items</h1>
-  {#if $favouriteItemsStore}
+  {#if favouriteItemsState.items}
     <DataTable
       {columns}
-      data={$favouriteItemsStore}
+      data={favouriteItemsState.items}
       {columnVisibility}
       {initialState}
     />

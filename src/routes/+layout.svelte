@@ -2,7 +2,7 @@
   import { ModeWatcher } from "mode-watcher";
   import SiteHeader from "$lib/components/site-header.svelte";
   import { onMount } from "svelte";
-  import { itemsStore } from "$lib/state/items";
+  import { itemsState } from "$lib/state/items.svelte.js";
   import { fetchPrices, fetchVolumes } from "$lib/api/items";
   import { isLoading } from "$lib/state/loading.svelte.js";
   import { config } from "$lib/config";
@@ -19,10 +19,10 @@
         fetchPrices(),
         fetchVolumes(),
       ]);
-      if (!$itemsStore) {
+      if (!itemsState.items) {
         return;
       }
-      $itemsStore = $itemsStore.map((item) => {
+      itemsState.items = itemsState.items.map((item) => {
         return {
           ...item,
           ...prices[item.id],
@@ -42,7 +42,7 @@
   }
 
   $effect(() => {
-    $itemsStore = data.items;
+    itemsState.items = data.items;
   });
 
   onMount(() => {

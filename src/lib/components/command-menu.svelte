@@ -9,7 +9,7 @@
   import { X, Sun, Moon, Laptop } from "@lucide/svelte";
   import { resetMode, setMode } from "mode-watcher";
   import { createItemsIndex, searchItemsIndex } from "$lib/search";
-  import { itemsStore } from "$lib/state/items";
+  import { itemsState } from "$lib/state/items.svelte.js";
   import * as Kbd from "$lib/components/ui/kbd";
   import * as Dialog from "$lib/components/ui/dialog";
   import { resolve } from "$app/paths";
@@ -24,8 +24,8 @@
   const platform = browser && getUserOperatingSystem();
 
   $effect(() => {
-    if ($itemsStore?.length && $itemsStore.length > 0) {
-      createItemsIndex($itemsStore);
+    if (itemsState.items?.length && itemsState.items.length > 0) {
+      createItemsIndex(itemsState.items);
       status = "ready";
     }
   });

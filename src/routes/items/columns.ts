@@ -15,10 +15,9 @@ import {
 } from "$lib/utils";
 import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import { Star } from "@lucide/svelte";
-import { get } from "svelte/store";
 import DataTableButtonCell from "$lib/components/data-table/data-table-button-cell.svelte";
-import { favouriteItemsStore } from "$lib/state/favourite-items";
-import { favouritesStore } from "$lib/state/favourites";
+import { favouriteItemsState } from "$lib/state/favourite-items.svelte";
+import { favouritesState } from "$lib/state/favourites.svelte";
 import { features } from "$lib/components/data-table";
 
 const columnHelper = createColumnHelper<typeof features, FavouriteItem>();
@@ -225,7 +224,7 @@ export const columns = columnHelper.columns([
       return renderComponent(DataTableCell, {
         value:
           getSignedPrefix(grossMargin) +
-          formatNumberCell(Math.round(grossMargin)) || "-",
+            formatNumberCell(Math.round(grossMargin)) || "-",
         class: cn(styleSignedNumberCell(grossMargin), "flex justify-end"),
       });
     },
@@ -329,8 +328,7 @@ export const columns = columnHelper.columns([
   }),
   columnHelper.accessor("is_favourite", {
     cell: (info) => {
-      const favouriteItems = get(favouriteItemsStore);
-      const favourites = get(favouritesStore);
+      const favouriteItems = favouriteItemsState.items;
       let isFavourite = false;
       let item: FavouriteItem | undefined;
       if (favouriteItems) {
@@ -341,11 +339,15 @@ export const columns = columnHelper.columns([
         class: cn({ "fill-primary": info.getValue() }),
         onclick: (_event) => {
           if (!isFavourite && item?.id) {
-            favouritesStore.set([...(favourites || []), item.id]);
+            favouritesState.favourites = [
+              ...(favouritesState.favourites || []),
+              item.id,
+            ];
           } else {
-            favouritesStore.set(
-              favourites?.filter((favourite) => favourite !== item?.id) ?? [],
-            );
+            favouritesState.favourites =
+              favouritesState.favourites?.filter(
+                (favourite) => favourite !== item?.id,
+              ) ?? [];
           }
         },
       });
