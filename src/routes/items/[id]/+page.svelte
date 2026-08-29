@@ -30,7 +30,7 @@
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
   import { currentItem } from "$lib/state/current-item";
-  import { isLoading } from "$lib/state/loading";
+  import { isLoading } from "$lib/state/loading.svelte.js";
   import { goto, invalidate } from "$app/navigation";
   import VolumeTimeSeriesChart from "$lib/components/charts/volume-time-series-chart.svelte";
   import { onMount } from "svelte";
@@ -163,7 +163,7 @@
   <title>{$currentItem?.name}</title>
 </svelte:head>
 
-{#if !$isLoading}
+{#if !isLoading.value}
   <section
     class={cn("flex-1 flex-col space-y-4 p-4 md:flex relative", {
       container: settings.current.compact,

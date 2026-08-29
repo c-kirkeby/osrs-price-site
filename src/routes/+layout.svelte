@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { itemsStore } from "$lib/state/items";
   import { fetchPrices, fetchVolumes } from "$lib/api/items";
-  import { isLoading } from "$lib/state/loading";
+  import { isLoading } from "$lib/state/loading.svelte.js";
   import { config } from "$lib/config";
   import TailwindIndicator from "$lib/components/tailwind-indicator.svelte";
   import "./layout.css";
@@ -52,7 +52,7 @@
       false,
     );
     handleVisibilityChange();
-    $isLoading = false;
+    isLoading.value = false;
   });
 </script>
 
