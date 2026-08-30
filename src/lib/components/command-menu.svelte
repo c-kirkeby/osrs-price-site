@@ -9,7 +9,8 @@
   import { X, Sun, Moon, Laptop } from "@lucide/svelte";
   import { resetMode, setMode } from "mode-watcher";
   import { createItemsIndex, searchItemsIndex } from "$lib/search";
-  import { itemsState } from "$lib/state/items.svelte.js";
+  import { useLiveQuery } from "@tanstack/svelte-db";
+  import { itemsCollection } from "$lib/state/db";
   import * as Kbd from "$lib/components/ui/kbd";
   import * as Dialog from "$lib/components/ui/dialog";
   import { resolve } from "$app/paths";
@@ -23,9 +24,11 @@
   let status: "loading" | "ready" = $state("loading");
   const platform = browser && getUserOperatingSystem();
 
+  const itemsQuery = useLiveQuery((q) => q.from({ item: itemsCollection }));
+
   $effect(() => {
-    if (itemsState.items?.length && itemsState.items.length > 0) {
-      createItemsIndex(itemsState.items);
+    if (itemsQuery.isReady && itemsQuery.data.length > 0) {
+      createItemsIndex(itemsQuery.data);
       status = "ready";
     }
   });

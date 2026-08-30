@@ -16,8 +16,7 @@ import {
 import { createColumnHelper, renderComponent } from "@tanstack/svelte-table";
 import { Star } from "@lucide/svelte";
 import DataTableButtonCell from "$lib/components/data-table/data-table-button-cell.svelte";
-import { favouriteItemsState } from "$lib/state/favourite-items.svelte";
-import { favouritesState } from "$lib/state/favourites.svelte";
+import { toggleFavourite } from "$lib/state/db";
 import { features } from "$lib/components/data-table";
 
 const columnHelper = createColumnHelper<typeof features, FavouriteItem>();
@@ -327,31 +326,16 @@ export const columns = columnHelper.columns([
     header: "ROI",
   }),
   columnHelper.accessor("is_favourite", {
-    cell: (info) => {
-      const favouriteItems = favouriteItemsState.items;
-      let isFavourite = false;
-      let item: FavouriteItem | undefined;
-      if (favouriteItems) {
-        item = favouriteItems.find((item) => info.row.original.id === item.id);
-        isFavourite = item?.is_favourite ?? false;
-      }
-      return renderComponent(DataTableButtonCell, {
+    cell: (info) =>
+      renderComponent(DataTableButtonCell, {
         class: cn({ "fill-primary": info.getValue() }),
-        onclick: (_event) => {
-          if (!isFavourite && item?.id) {
-            favouritesState.favourites = [
-              ...(favouritesState.favourites || []),
-              item.id,
-            ];
-          } else {
-            favouritesState.favourites =
-              favouritesState.favourites?.filter(
-                (favourite) => favourite !== item?.id,
-              ) ?? [];
-          }
+        onclick: () => {
+          toggleFavourite(
+            info.row.original.id,
+            info.row.original.is_favourite,
+          );
         },
-      });
-    },
+      }),
     header: "Favourite",
     meta: {
       hideHeader: true,

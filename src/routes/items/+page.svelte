@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { eq, isUndefined, not, useLiveQuery } from "@tanstack/svelte-db";
   import {
     DataTable,
     type InitialTableState,
@@ -7,7 +8,19 @@
   import { cn } from "$lib/utils";
   import { settings } from "$lib/state/settings.svelte";
   import { Loader } from "@lucide/svelte";
-  import { favouriteItemsState } from "$lib/state/favourite-items.svelte";
+  import { itemsCollection, favouritesCollection } from "$lib/state/db";
+
+  const favouriteItemsQuery = useLiveQuery((q) =>
+    q
+      .from({ item: itemsCollection })
+      .leftJoin({ favourite: favouritesCollection }, ({ item, favourite }) =>
+        eq(item.id, favourite.id),
+      )
+      .select(({ item, favourite }) => ({
+        ...item,
+        is_favourite: not(isUndefined(favourite.id)),
+      })),
+  );
 
   let columnVisibility = {
     id: false,
@@ -43,10 +56,10 @@
   })}
 >
   <h1 class="text-3xl font-bold tracking-tight">Items</h1>
-  {#if favouriteItemsState.items}
+  {#if favouriteItemsQuery.isReady}
     <DataTable
       {columns}
-      data={favouriteItemsState.items}
+      data={favouriteItemsQuery.data}
       {columnVisibility}
       {initialState}
     />

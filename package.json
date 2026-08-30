@@ -61,11 +61,14 @@
     "typescript": "^6.0.3",
     "typescript-svelte-plugin": "^0.3.52",
     "vite": "catalog:",
-    "vitest": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "type": "module",
   "dependencies": {
+    "@tanstack/query-core": "^5.102.8",
+    "@tanstack/query-db-collection": "^1.2.11",
+    "@tanstack/svelte-db": "^0.3.6",
     "@tanstack/svelte-table": "^9.2.3",
     "bits-ui": "^2.19.0",
     "clsx": "^2.1.1",

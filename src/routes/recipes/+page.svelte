@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { itemsState } from "$lib/state/items.svelte.js";
+  import { useLiveQuery } from "@tanstack/svelte-db";
+  import { itemsCollection, recipesCollection } from "$lib/state/db";
   import type { Item } from "$lib/types/item";
   import {
     DataTable,
@@ -11,11 +12,12 @@
   import { settings } from "$lib/state/settings.svelte";
   import type { RecipeRow, RecipeStepRow, Step } from "$lib/types/recipe";
 
-  let { data } = $props();
+  const itemsQuery = useLiveQuery((q) => q.from({ item: itemsCollection }));
+  const recipesQuery = useLiveQuery((q) => q.from({ recipe: recipesCollection }));
 
   function getItem(
     id: number,
-    items: Item[] | null,
+    items: Item[],
   ): Partial<
     Pick<Item, "id" | "name" | "high" | "low" | "highTime" | "lowTime">
   > {
@@ -27,7 +29,7 @@
         low: 1,
       };
     }
-    const item = items?.find((i) => i.id === id);
+    const item = items.find((i) => i.id === id);
     return item
       ? {
           id: item.id,
@@ -43,7 +45,7 @@
   function stepsToItemSteps(
     steps: Step[],
     type: "input" | "output",
-    items: Item[] | null,
+    items: Item[],
   ): RecipeStepRow[] {
     return steps.map((step) => ({
       id: step.id,
@@ -67,22 +69,18 @@
   };
 
   const recipeItems: RecipeRow[] = $derived(
-    data.recipes
-      ?.filter(
-        (recipe) => recipe.inputs.length > 0 && recipe.outputs.length > 0,
-      )
+    recipesQuery.data
+      .filter((recipe) => recipe.inputs.length > 0 && recipe.outputs.length > 0)
       .map((recipe) => {
         return {
           name: recipe.name,
           children: stepsToItemSteps(
             recipe.inputs,
             "input",
-            itemsState.items,
-          ).concat(
-            stepsToItemSteps(recipe.outputs, "output", itemsState.items),
-          ),
+            itemsQuery.data,
+          ).concat(stepsToItemSteps(recipe.outputs, "output", itemsQuery.data)),
         };
-      }) ?? [],
+      }),
   );
 
   let title = "Recipes";
@@ -98,7 +96,7 @@
   })}
 >
   <h1 class="text-3xl font-bold tracking-tight">Recipes</h1>
-  {#if itemsState.items}
+  {#if itemsQuery.isReady && recipesQuery.isReady}
     <DataTable {columns} data={recipeItems} {initialState} />
   {:else}
     <div class="flex items-center text-sm text-muted-foreground justify-center">

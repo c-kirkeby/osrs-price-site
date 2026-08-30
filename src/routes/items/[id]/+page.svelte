@@ -22,29 +22,62 @@
   import type { TimeSeriesOption } from "$lib/types/time-series";
   import PriceTimeSeriesChart from "$lib/components/charts/price-time-series-chart.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
+  import Loader from "@lucide/svelte/icons/loader";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
   import { page } from "$app/state";
-  import { alchPriceState } from "$lib/state/alch.svelte.js";
   import { settings } from "$lib/state/settings.svelte";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
-  import { currentItemState } from "$lib/state/current-item.svelte.js";
-  import { isLoading } from "$lib/state/loading.svelte.js";
-  import { goto, invalidate } from "$app/navigation";
+  import {
+    and,
+    eq,
+    useLiveQuery,
+  } from "@tanstack/svelte-db";
+  import {
+    favouritesCollection,
+    itemsCollection,
+    timeSeriesCollection,
+    toggleFavourite,
+  } from "$lib/state/db";
+  import { goto } from "$app/navigation";
   import VolumeTimeSeriesChart from "$lib/components/charts/volume-time-series-chart.svelte";
-  import { onMount } from "svelte";
-  import { config } from "$lib/config";
-  import { favouritesState } from "$lib/state/favourites.svelte.js";
   import { resolve } from "$app/paths";
+
+  const NATURE_RUNE_ID = 561;
+
+  const currentItemQuery = useLiveQuery(
+    (q) =>
+      q
+        .from({ item: itemsCollection })
+        .where(({ item }) => eq(item.id, Number(page.params.id)))
+        .findOne(),
+    [() => page.params.id],
+  );
+
+  const alchPriceQuery = useLiveQuery((q) =>
+    q
+      .from({ item: itemsCollection })
+      .where(({ item }) => eq(item.id, NATURE_RUNE_ID))
+      .findOne(),
+  );
+
+  const favouritesQuery = useLiveQuery((q) =>
+    q.from({ favourite: favouritesCollection }),
+  );
+
+  const currentItem = $derived(currentItemQuery.data);
+  const alchPrice = $derived(alchPriceQuery.data);
 
   let formatter = $derived(getNumberFormatter());
   let compactFormatter = $derived(getCompactNumberFormatter());
-  let isFavouriteItem = $derived(
-    (currentItemState.item &&
-      favouritesState.favourites?.includes(currentItemState.item.id)) ||
-      false,
-  );
+  let isFavouriteItem = $derived.by(() => {
+    const item = currentItem;
+    return (
+      item != null &&
+      favouritesQuery.data.some((favourite) => favourite.id === item.id)
+    );
+  });
 
   let { data } = $props();
 
@@ -65,82 +98,71 @@
       } satisfies TimeSeriesOption),
   );
 
-  let intervalId: ReturnType<typeof setInterval> | undefined;
-  let interval = () => {
-    return setInterval(async () => {
-      invalidate("items:history");
-    }, config.pollMs);
-  };
+  const timeSeriesQuery = useLiveQuery(
+    (q) =>
+      q
+        .from({ point: timeSeriesCollection })
+        .where(({ point }) =>
+          and(
+            eq(point.id, Number(page.params.id)),
+            eq(point.timeStep, selected.value),
+          ),
+        )
+        .orderBy(({ point }) => point.timestamp),
+    [() => page.params.id, () => selected.value],
+  );
 
-  function handleVisibilityChange() {
-    if (document.hidden) {
-      clearInterval(intervalId);
-      intervalId = undefined;
-    } else {
-      intervalId = intervalId || interval();
-    }
-  }
-
-  onMount(() => {
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibilityChange,
-      false,
-    );
-    handleVisibilityChange();
-  });
-
-  let history = $derived(data.history.data);
+  let history = $derived(timeSeriesQuery.data);
 
   let totalVolume = $derived(
-    data.history.data.reduce(
+    history.reduce(
       (sum, tick) => (sum += tick.lowPriceVolume + tick.highPriceVolume),
       0,
     ),
   );
 
   let tax = $derived(
-    currentItemState.item?.low
-      ? calculateTax(currentItemState.item.low, currentItemState.item.id)
+    currentItem?.low
+      ? calculateTax(currentItem.low, currentItem.id)
       : null,
   );
   let margin = $derived(
-    currentItemState.item?.low &&
-      currentItemState.item.high &&
+    currentItem?.low &&
+      currentItem.high &&
       typeof tax === "number"
-      ? Math.floor(currentItemState.item.high - currentItemState.item.low - tax)
+      ? Math.floor(currentItem.high - currentItem.low - tax)
       : null,
   );
   let highAlchProfit = $derived(
-    currentItemState.item?.highalch &&
-      currentItemState.item.high &&
-      alchPriceState.price?.high
+    currentItem?.highalch &&
+      currentItem.high &&
+      alchPrice?.high
       ? Math.floor(
-          currentItemState.item.highalch -
-            currentItemState.item.high -
-            alchPriceState.price?.high,
+          currentItem.highalch -
+            currentItem.high -
+            alchPrice?.high,
         )
       : null,
   );
   let lowAlchProfit = $derived(
-    currentItemState.item?.lowalch &&
-      currentItemState.item.high &&
-      alchPriceState.price?.high
+    currentItem?.lowalch &&
+      currentItem.high &&
+      alchPrice?.high
       ? Math.floor(
-          currentItemState.item.lowalch -
-            currentItemState.item.high -
-            alchPriceState.price?.high,
+          currentItem.lowalch -
+            currentItem.high -
+            alchPrice?.high,
         )
       : null,
   );
   let potentialProfit = $derived(
-    margin && currentItemState.item?.limit
-      ? Math.floor(margin * currentItemState.item.limit)
+    margin && currentItem?.limit
+      ? Math.floor(margin * currentItem.limit)
       : null,
   );
   let returnOnInvestment = $derived(
-    currentItemState.item?.low && margin && tax
-      ? calculateRoi(currentItemState.item.low, margin)
+    currentItem?.low && margin && tax
+      ? calculateRoi(currentItem.low, margin)
       : null,
   );
   let buyPriceChangePeriodStart = $derived(
@@ -178,10 +200,10 @@
 </script>
 
 <svelte:head>
-  <title>{currentItemState.item?.name}</title>
+  <title>{currentItem?.name}</title>
 </svelte:head>
 
-{#if !isLoading.value}
+{#if currentItemQuery.isReady}
   <section
     class={cn("flex-1 flex-col space-y-4 p-4 md:flex relative", {
       container: settings.current.compact,
@@ -189,18 +211,18 @@
   >
     <div class="flex items-center justify-between">
       <h1 class="md:text-3xl text-xl tracking-tight">
-        {#if currentItemState.item?.icon}
+        {#if currentItem?.icon}
           <img
             src={`https://oldschool.runescape.wiki/images/${encodeURIComponent(
-              currentItemState.item.icon.replaceAll(" ", "_"),
+              currentItem.icon.replaceAll(" ", "_"),
             )}`}
-            alt={currentItemState.item.name}
+            alt={currentItem.name}
             class="object-contain inline-block mr-2"
           />
         {/if}
-        <span class="font-bold">{currentItemState.item?.name}</span>
+        <span class="font-bold">{currentItem?.name}</span>
         <span class="text-muted-foreground text-sm ml-2">
-          (ID: {currentItemState.item?.id})
+          (ID: {currentItem?.id})
         </span>
       </h1>
       <div class="flex gap-2">
@@ -210,17 +232,9 @@
           class="ml-auto hidden h-8 w-8 md:flex gap-1"
           target="_blank"
           onclick={() => {
-            const id = currentItemState.item?.id;
-            if (!isFavouriteItem && id) {
-              favouritesState.favourites = [
-                ...(favouritesState.favourites || []),
-                id,
-              ];
-            } else {
-              favouritesState.favourites =
-                favouritesState.favourites?.filter(
-                  (favourite) => favourite !== currentItemState.item?.id,
-                ) ?? [];
+            const id = currentItem?.id;
+            if (id) {
+              toggleFavourite(id, isFavouriteItem);
             }
           }}
         >
@@ -263,8 +277,8 @@
             <Card.Content>
               <p>
                 <span class="text-2xl font-bold">
-                  {#if currentItemState.item?.high}
-                    {formatter.format(currentItemState.item.high)}
+                  {#if currentItem?.high}
+                    {formatter.format(currentItem.high)}
                   {:else}
                     Unknown
                   {/if}
@@ -286,12 +300,12 @@
                   >
                 {/if}
               </p>
-              {#if currentItemState.item?.highTime}
+              {#if currentItem?.highTime}
                 <Tooltip.Root>
                   <Tooltip.Trigger>
                     <p class="text-xs text-muted-foreground">
                       {formatDistanceToNowStrict(
-                        new Date(currentItemState.item.highTime * 1000),
+                        new Date(currentItem.highTime * 1000),
                         {
                           addSuffix: true,
                         },
@@ -302,7 +316,7 @@
                   <Tooltip.Content>
                     <span
                       >{format(
-                        new Date(currentItemState.item.highTime * 1000),
+                        new Date(currentItem.highTime * 1000),
                         "yyyy-MM-dd HH:mm:ss",
                       )}</span
                     >
@@ -321,8 +335,8 @@
             <Card.Content>
               <p>
                 <span class="text-2xl font-bold">
-                  {#if currentItemState.item?.low}
-                    {formatter.format(currentItemState.item.low)}
+                  {#if currentItem?.low}
+                    {formatter.format(currentItem.low)}
                   {:else}
                     Unknown
                   {/if}
@@ -347,12 +361,12 @@
                   >
                 {/if}
               </p>
-              {#if currentItemState.item?.lowTime}
+              {#if currentItem?.lowTime}
                 <Tooltip.Root>
                   <Tooltip.Trigger>
                     <p class="text-xs text-muted-foreground">
                       {formatDistanceToNowStrict(
-                        new Date(currentItemState.item.lowTime * 1000),
+                        new Date(currentItem.lowTime * 1000),
                         {
                           addSuffix: true,
                         },
@@ -363,7 +377,7 @@
                   <Tooltip.Content>
                     <span
                       >{format(
-                        new Date(currentItemState.item.lowTime * 1000),
+                        new Date(currentItem.lowTime * 1000),
                         "yyyy-MM-dd HH:mm:ss",
                       )}</span
                     >
@@ -386,7 +400,14 @@
             <TimeStepDropdown {selected} onSelectedChange={fetchHistory} />
           </Card.Header>
           <Card.Content class="px-2 pt-4 sm:px-6 sm:pt-6">
-            {#if history.length === 0}
+            {#if timeSeriesQuery.isLoading}
+              <div
+                class="h-[400px] flex items-center justify-center text-sm text-muted-foreground"
+              >
+                <Loader class="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </div>
+            {:else if history.length === 0}
               <div
                 class=" h-[400px] flex flex-col items-center justify-center gap-1 text-center"
               >
@@ -429,10 +450,10 @@
                     {/if}
                   </li>
                   <Tooltip.Content>
-                    {#if currentItemState.item?.high && currentItemState.item.low && typeof tax === "number"}
+                    {#if currentItem?.high && currentItem.low && typeof tax === "number"}
                       <span
-                        >{formatter.format(currentItemState.item.high)} - {formatter.format(
-                          currentItemState.item.low,
+                        >{formatter.format(currentItem.high)} - {formatter.format(
+                          currentItem.low,
                         )} -
                         {formatter.format(tax)} (tax)</span
                       >
@@ -442,8 +463,8 @@
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground">Limit</span>
                   <span>
-                    {#if currentItemState.item?.limit}
-                      {formatter.format(currentItemState.item.limit)}
+                    {#if currentItem?.limit}
+                      {formatter.format(currentItem.limit)}
                     {:else}
                       -
                     {/if}</span
@@ -470,10 +491,10 @@
                     >
                   </li>
                   <Tooltip.Content>
-                    {#if margin && currentItemState.item?.limit}
+                    {#if margin && currentItem?.limit}
                       <span>
                         {formatter.format(margin)} × {formatter.format(
-                          currentItemState.item.limit,
+                          currentItem.limit,
                         )}
                       </span>
                     {/if}
@@ -497,10 +518,10 @@
                     </span>
                   </li>
                   <Tooltip.Content>
-                    {#if currentItemState.item?.low && margin && tax}
+                    {#if currentItem?.low && margin && tax}
                       <span>
                         {formatter.format(margin)} / {formatter.format(
-                          currentItemState.item?.low,
+                          currentItem?.low,
                         )} × 100
                       </span>
                     {/if}
@@ -522,9 +543,9 @@
                     {/if}
                   </li>
                   <Tooltip.Content>
-                    {#if currentItemState.item?.low}
+                    {#if currentItem?.low}
                       <span>
-                        1% of {formatter.format(currentItemState.item.low)}
+                        1% of {formatter.format(currentItem.low)}
                       </span>
                     {/if}
                   </Tooltip.Content>
@@ -551,11 +572,11 @@
                     </span>
                   </li>
                   <Tooltip.Content>
-                    {#if currentItemState.item?.highalch && currentItemState.item.high && alchPriceState.price?.high}
+                    {#if currentItem?.highalch && currentItem.high && alchPrice?.high}
                       <span>
-                        {formatter.format(currentItemState.item.highalch)} - {formatter.format(
-                          currentItemState.item.high,
-                        )} - {formatter.format(alchPriceState.price.high)} (alch
+                        {formatter.format(currentItem.highalch)} - {formatter.format(
+                          currentItem.high,
+                        )} - {formatter.format(alchPrice.high)} (alch
                         price)
                       </span>
                     {/if}
@@ -564,8 +585,8 @@
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground">High Alch</span>
                   <span>
-                    {#if currentItemState.item?.highalch}
-                      {formatter.format(currentItemState.item.highalch)}
+                    {#if currentItem?.highalch}
+                      {formatter.format(currentItem.highalch)}
                     {:else}
                       -
                     {/if}
@@ -590,11 +611,11 @@
                     </span>
                   </li>
                   <Tooltip.Content>
-                    {#if currentItemState.item?.lowalch && currentItemState.item.high && alchPriceState.price?.high}
+                    {#if currentItem?.lowalch && currentItem.high && alchPrice?.high}
                       <span>
-                        {formatter.format(currentItemState.item.lowalch)} - {formatter.format(
-                          currentItemState.item.high,
-                        )} - {formatter.format(alchPriceState.price.high)} (alch
+                        {formatter.format(currentItem.lowalch)} - {formatter.format(
+                          currentItem.high,
+                        )} - {formatter.format(alchPrice.high)} (alch
                         price)
                       </span>
                     {/if}
@@ -603,8 +624,8 @@
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground">Low Alch</span>
                   <span>
-                    {#if currentItemState.item?.lowalch}
-                      {formatter.format(currentItemState.item.lowalch)}
+                    {#if currentItem?.lowalch}
+                      {formatter.format(currentItem.lowalch)}
                     {:else}
                       -
                     {/if}
@@ -631,8 +652,8 @@
                 <li class="flex items-center justify-between">
                   <span class="text-muted-foreground">Members</span>
                   <span>
-                    {#if typeof currentItemState.item?.members !== "undefined"}
-                      {currentItemState.item.members ? "Yes" : "No"}
+                    {#if typeof currentItem?.members !== "undefined"}
+                      {currentItem.members ? "Yes" : "No"}
                     {:else}
                       -
                     {/if}

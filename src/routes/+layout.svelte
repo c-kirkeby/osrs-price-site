@@ -1,59 +1,11 @@
 <script lang="ts">
   import { ModeWatcher } from "mode-watcher";
   import SiteHeader from "$lib/components/site-header.svelte";
-  import { onMount } from "svelte";
-  import { itemsState } from "$lib/state/items.svelte.js";
-  import { fetchPrices, fetchVolumes } from "$lib/api/items";
-  import { isLoading } from "$lib/state/loading.svelte.js";
-  import { config } from "$lib/config";
   import TailwindIndicator from "$lib/components/tailwind-indicator.svelte";
   import "./layout.css";
   import * as Tooltip from "@/components/ui/tooltip";
 
-  let { data, children } = $props();
-
-  let intervalId: ReturnType<typeof setInterval> | undefined;
-  let interval = () => {
-    return setInterval(async () => {
-      let [prices, volumes] = await Promise.all([
-        fetchPrices(),
-        fetchVolumes(),
-      ]);
-      if (!itemsState.items) {
-        return;
-      }
-      itemsState.items = itemsState.items.map((item) => {
-        return {
-          ...item,
-          ...prices[item.id],
-          volume: volumes[item.id],
-        };
-      });
-    }, config.pollMs);
-  };
-
-  function handleVisibilityChange() {
-    if (document.hidden) {
-      clearInterval(intervalId);
-      intervalId = undefined;
-    } else {
-      intervalId = intervalId || interval();
-    }
-  }
-
-  $effect(() => {
-    itemsState.items = data.items;
-  });
-
-  onMount(() => {
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibilityChange,
-      false,
-    );
-    handleVisibilityChange();
-    isLoading.value = false;
-  });
+  let { children } = $props();
 </script>
 
 <TailwindIndicator />

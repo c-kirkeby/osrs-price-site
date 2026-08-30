@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { eq, isUndefined, not, useLiveQuery } from "@tanstack/svelte-db";
   import {
     DataTable,
     type InitialTableState,
@@ -7,8 +8,23 @@
   import { cn } from "$lib/utils";
   import { settings } from "$lib/state/settings.svelte";
   import { Loader } from "@lucide/svelte";
-  import { favouritesState } from "$lib/state/favourites.svelte";
-  import { favouriteItemsState } from "$lib/state/favourite-items.svelte";
+  import { itemsCollection, favouritesCollection } from "$lib/state/db";
+
+  const favouritesQuery = useLiveQuery((q) =>
+    q.from({ favourite: favouritesCollection }),
+  );
+
+  const favouriteItemsQuery = useLiveQuery((q) =>
+    q
+      .from({ item: itemsCollection })
+      .leftJoin({ favourite: favouritesCollection }, ({ item, favourite }) =>
+        eq(item.id, favourite.id),
+      )
+      .select(({ item, favourite }) => ({
+        ...item,
+        is_favourite: not(isUndefined(favourite.id)),
+      })),
+  );
 
   let columnVisibility = {
     id: false,
@@ -50,14 +66,19 @@
   })}
 >
   <h1 class="text-3xl font-bold tracking-tight">Favourites</h1>
-  {#if (favouritesState.favourites?.length ?? 0) > 0}
+  {#if !favouritesQuery.isReady || !favouriteItemsQuery.isReady}
+    <div class="flex items-center text-sm text-muted-foreground justify-center">
+      <Loader class="mr-2 h-4 w-4 animate-spin" />
+      Loading...
+    </div>
+  {:else if favouritesQuery.data.length > 0}
     <DataTable
       {columns}
-      data={favouriteItemsState.items}
+      data={favouriteItemsQuery.data}
       {columnVisibility}
       {initialState}
     />
-  {:else if favouriteItemsState.items}
+  {:else}
     <div
       class="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm"
     >
@@ -69,11 +90,6 @@
           Add some to start tracking them.
         </p>
       </div>
-    </div>
-  {:else}
-    <div class="flex items-center text-sm text-muted-foreground justify-center">
-      <Loader class="mr-2 h-4 w-4 animate-spin" />
-      Loading...
     </div>
   {/if}
 </section>
