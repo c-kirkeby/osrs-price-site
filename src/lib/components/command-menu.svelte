@@ -5,7 +5,7 @@
   import { searchHistory } from "$lib/state/search-history.svelte";
   import { getUserOperatingSystem } from "$lib/utils";
   import { goto } from "$app/navigation";
-  import { browser } from "$app/environment";
+  import { browser } from "$app/env";
   import { X, Sun, Moon, Laptop } from "@lucide/svelte";
   import { resetMode, setMode } from "mode-watcher";
   import { createItemsIndex, searchItemsIndex } from "$lib/search";

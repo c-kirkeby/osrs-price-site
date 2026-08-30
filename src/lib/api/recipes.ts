@@ -1,17 +1,12 @@
 import type { Recipe } from "$lib/types/recipe";
+import { RECIPES_ENDPOINT } from '$app/env/public'
 
 export async function getRecipes(
   options: { fetcher: typeof fetch } = {
     fetcher: fetch,
   },
 ): Promise<Recipe[]> {
-  const endpoint = import.meta.env.VITE_APP_RECIPES_ENDPOINT as
-    | string
-    | undefined;
-  if (!endpoint) {
-    throw Error("`VITE_APP_RECIPES_ENDPOINT` environment variable not set.");
-  }
-  const response = await options.fetcher(endpoint);
+  const response = await options.fetcher(RECIPES_ENDPOINT);
   const data: Recipe[] = await response.json();
 
   return data;

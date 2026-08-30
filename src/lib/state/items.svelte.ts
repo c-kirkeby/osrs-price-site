@@ -1,4 +1,4 @@
-import { browser } from "$app/environment";
+import { browser } from "$app/env";
 import type { Item } from "$lib/types/item";
 
 function createItems(initialItems: Item[]) {

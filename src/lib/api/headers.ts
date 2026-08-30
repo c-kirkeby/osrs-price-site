@@ -1,7 +1,5 @@
-if (!import.meta.env.VITE_APP_USER_AGENT) {
-  throw Error("`VITE_APP_USER_AGENT` environment variable not set.");
-}
+import { USER_AGENT } from '$app/env/public'
 
 export const headers = {
-  "User-Agent": import.meta.env.VITE_APP_USER_AGENT as string,
+  "User-Agent": USER_AGENT
 };

@@ -1,4 +1,4 @@
-import { browser } from "$app/environment";
+import { browser } from "$app/env";
 
 function createFavourites(initialFavourites: number[]) {
   let favourites = $state(initialFavourites);

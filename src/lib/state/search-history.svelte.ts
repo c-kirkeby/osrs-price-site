@@ -1,5 +1,5 @@
 import type { Item } from "$lib/types/item";
-import { browser } from "$app/environment";
+import { browser } from "$app/env";
 
 const initialHistory = JSON.parse(
   browser ? (localStorage.getItem("history") ?? "[]") : "[]",
