@@ -555,7 +555,8 @@
                       <span>
                         {formatter.format(currentItemState.item.highalch)} - {formatter.format(
                           currentItemState.item.high,
-                        )} - {formatter.format(alchPriceState.price.high)} (alch price)
+                        )} - {formatter.format(alchPriceState.price.high)} (alch
+                        price)
                       </span>
                     {/if}
                   </Tooltip.Content>
@@ -593,7 +594,8 @@
                       <span>
                         {formatter.format(currentItemState.item.lowalch)} - {formatter.format(
                           currentItemState.item.high,
-                        )} - {formatter.format(alchPriceState.price.high)} (alch price)
+                        )} - {formatter.format(alchPriceState.price.high)} (alch
+                        price)
                       </span>
                     {/if}
                   </Tooltip.Content>
