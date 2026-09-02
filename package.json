@@ -48,6 +48,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@types/d3-array": "^3.2.2",
     "@types/d3-scale": "^4.0.9",
+    "@types/node": "^26.4.0",
     "@typescript/native": "npm:typescript@^7.0.2",
     "autoprefixer": "^10.5.4",
     "eslint-plugin-svelte": "^3.23.0",
