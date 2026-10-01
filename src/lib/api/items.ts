@@ -26,7 +26,7 @@ export type Volumes = Record<number, number>;
 
 export async function fetchMappings(fetcher = fetch): Promise<Mapping[]> {
   const response = await fetcher(
-    "https://prices.runescape.wiki/api/v1/osrs/mapping",
+    "https://prices.runescape.wiki/api/v2/osrs/mapping",
     {
       headers,
     },
@@ -48,7 +48,7 @@ export async function fetchMappings(fetcher = fetch): Promise<Mapping[]> {
 
 export async function fetchPrices(fetcher = fetch): Promise<Prices> {
   const response = await fetcher(
-    "https://prices.runescape.wiki/api/v1/osrs/latest",
+    "https://prices.runescape.wiki/api/v2/osrs/latest",
     {
       headers,
     },
@@ -60,6 +60,11 @@ export async function fetchPrices(fetcher = fetch): Promise<Prices> {
 
   const { data }: JSONResponse = await response.json();
   if (response.ok) {
+    for (const price of Object.values(data)) {
+      for (const key of Object.keys(price) as (keyof Price)[]) {
+        if (price[key] === null) delete price[key];
+      }
+    }
     return data;
   }
 
@@ -72,7 +77,7 @@ export async function fetchPrices(fetcher = fetch): Promise<Prices> {
 
 export async function fetchVolumes(fetcher = fetch): Promise<Volumes> {
   const response = await fetcher(
-    "https://prices.runescape.wiki/api/v1/osrs/volumes",
+    "https://prices.runescape.wiki/api/v2/osrs/volumes",
     {
       headers,
     },

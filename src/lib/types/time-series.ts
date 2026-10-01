@@ -6,14 +6,14 @@ export interface TimeSeries {
   lowPriceVolume: number;
 }
 
-export type TimeStep = "5m" | "1h" | "6h" | "24h";
-export type TimeStepLabel =
+export type Lookback = "24h" | "7d" | "30d" | "1y";
+export type LookbackLabel =
   | "Last day"
   | "Last 7 days"
   | "Last 30 days"
   | "Last 12 months";
 
 export interface TimeSeriesOption {
-  value: TimeStep;
-  label: TimeStepLabel;
+  value: Lookback;
+  label: LookbackLabel;
 }

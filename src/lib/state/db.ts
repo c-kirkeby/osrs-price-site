@@ -2,13 +2,16 @@ import { getItems } from "$lib/api/items";
 import { getRecipes } from "$lib/api/recipes";
 import { getTimeSeries } from "$lib/api/time-series";
 import { config } from "$lib/config";
-import type { TimeStep } from "$lib/types/time-series";
+import type { Lookback } from "$lib/types/time-series";
 import {
   parseLoadSubsetOptions,
   queryCollectionOptions,
 } from "@tanstack/query-db-collection";
 import { QueryClient } from "@tanstack/query-core";
-import { createCollection, localStorageCollectionOptions } from "@tanstack/svelte-db";
+import {
+  createCollection,
+  localStorageCollectionOptions,
+} from "@tanstack/svelte-db";
 
 export interface Favourite {
   id: number;
@@ -59,17 +62,18 @@ export const timeSeriesCollection = createCollection(
     },
     queryFn: async (ctx) => {
       const { filters } = parseLoadSubsetOptions(ctx.meta?.loadSubsetOptions);
-      const id = filters.find((filter) => filter.field[0] === "id")
-        ?.value as number | undefined;
-      const timeStep = filters.find((filter) => filter.field[0] === "timeStep")
-        ?.value as TimeStep | undefined;
+      const id = filters.find((filter) => filter.field[0] === "id")?.value as
+        | number
+        | undefined;
+      const lookback = filters.find((filter) => filter.field[0] === "lookback")
+        ?.value as Lookback | undefined;
 
-      if (id === undefined || timeStep === undefined) {
+      if (id === undefined || lookback === undefined) {
         return [];
       }
 
-      const { data } = await getTimeSeries(id, timeStep);
-      return data.map((point) => ({ ...point, id, timeStep }));
+      const { data } = await getTimeSeries(id, lookback);
+      return data.map((point) => ({ ...point, id, lookback }));
     },
     queryClient,
     getKey: (point) => point.timestamp,

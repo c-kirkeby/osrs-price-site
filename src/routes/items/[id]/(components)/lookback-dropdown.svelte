@@ -4,10 +4,10 @@
 
   let {
     options = [
-      { value: "5m", label: "Last day" },
-      { value: "1h", label: "Last 7 days" },
-      { value: "6h", label: "Last 30 days" },
-      { value: "24h", label: "Last 12 months" },
+      { value: "24h", label: "Last day" },
+      { value: "7d", label: "Last 7 days" },
+      { value: "30d", label: "Last 30 days" },
+      { value: "1y", label: "Last 12 months" },
     ],
     selected,
     onSelectedChange,

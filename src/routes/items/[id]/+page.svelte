@@ -24,16 +24,12 @@
   import Button from "$lib/components/ui/button/button.svelte";
   import Loader from "@lucide/svelte/icons/loader";
   import Separator from "$lib/components/ui/separator/separator.svelte";
-  import TimeStepDropdown from "./(components)/time-step-dropdown.svelte";
+  import LookbackDropdown from "./(components)/lookback-dropdown.svelte";
   import { page } from "$app/state";
   import { settings } from "$lib/state/settings.svelte";
   import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
   import { format } from "date-fns/format";
-  import {
-    and,
-    eq,
-    useLiveQuery,
-  } from "@tanstack/svelte-db";
+  import { and, eq, useLiveQuery } from "@tanstack/svelte-db";
   import {
     favouritesCollection,
     itemsCollection,
@@ -82,10 +78,10 @@
   let { data } = $props();
 
   let options: TimeSeriesOption[] = [
-    { value: "5m", label: "Last day" },
-    { value: "1h", label: "Last 7 days" },
-    { value: "6h", label: "Last 30 days" },
-    { value: "24h", label: "Last 12 months" },
+    { value: "24h", label: "Last day" },
+    { value: "7d", label: "Last 7 days" },
+    { value: "30d", label: "Last 30 days" },
+    { value: "1y", label: "Last 12 months" },
   ];
 
   let selected = $derived(
@@ -93,7 +89,7 @@
       (option) => option.value === page.url.searchParams.get("time_step"),
     ) ??
       ({
-        value: "5m",
+        value: "24h",
         label: "Last day",
       } satisfies TimeSeriesOption),
   );
@@ -105,7 +101,7 @@
         .where(({ point }) =>
           and(
             eq(point.id, Number(page.params.id)),
-            eq(point.timeStep, selected.value),
+            eq(point.lookback, selected.value),
           ),
         )
         .orderBy(({ point }) => point.timestamp),
@@ -122,37 +118,21 @@
   );
 
   let tax = $derived(
-    currentItem?.low
-      ? calculateTax(currentItem.low, currentItem.id)
-      : null,
+    currentItem?.low ? calculateTax(currentItem.low, currentItem.id) : null,
   );
   let margin = $derived(
-    currentItem?.low &&
-      currentItem.high &&
-      typeof tax === "number"
+    currentItem?.low && currentItem.high && typeof tax === "number"
       ? Math.floor(currentItem.high - currentItem.low - tax)
       : null,
   );
   let highAlchProfit = $derived(
-    currentItem?.highalch &&
-      currentItem.high &&
-      alchPrice?.high
-      ? Math.floor(
-          currentItem.highalch -
-            currentItem.high -
-            alchPrice?.high,
-        )
+    currentItem?.highalch && currentItem.high && alchPrice?.high
+      ? Math.floor(currentItem.highalch - currentItem.high - alchPrice?.high)
       : null,
   );
   let lowAlchProfit = $derived(
-    currentItem?.lowalch &&
-      currentItem.high &&
-      alchPrice?.high
-      ? Math.floor(
-          currentItem.lowalch -
-            currentItem.high -
-            alchPrice?.high,
-        )
+    currentItem?.lowalch && currentItem.high && alchPrice?.high
+      ? Math.floor(currentItem.lowalch - currentItem.high - alchPrice?.high)
       : null,
   );
   let potentialProfit = $derived(
@@ -397,7 +377,7 @@
                 Showing the price history for the last {selected.label.toLowerCase()}.
               </Card.Description>
             </div>
-            <TimeStepDropdown {selected} onSelectedChange={fetchHistory} />
+            <LookbackDropdown {selected} onSelectedChange={fetchHistory} />
           </Card.Header>
           <Card.Content class="px-2 pt-4 sm:px-6 sm:pt-6">
             {#if timeSeriesQuery.isLoading}
@@ -576,8 +556,7 @@
                       <span>
                         {formatter.format(currentItem.highalch)} - {formatter.format(
                           currentItem.high,
-                        )} - {formatter.format(alchPrice.high)} (alch
-                        price)
+                        )} - {formatter.format(alchPrice.high)} (alch price)
                       </span>
                     {/if}
                   </Tooltip.Content>
@@ -615,8 +594,7 @@
                       <span>
                         {formatter.format(currentItem.lowalch)} - {formatter.format(
                           currentItem.high,
-                        )} - {formatter.format(alchPrice.high)} (alch
-                        price)
+                        )} - {formatter.format(alchPrice.high)} (alch price)
                       </span>
                     {/if}
                   </Tooltip.Content>
